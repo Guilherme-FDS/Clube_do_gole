@@ -1,0 +1,491 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" style="margin-top: 120px; min-height: 60vh;">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a href="{{ url_for('routes.index') }}">Início</a>
+        <span>/</span>
+        <span>Configurações</span>
+    </nav>
+
+    <div class="configuracoes-layout">
+        <!-- Sidebar Menu -->
+        <div class="configuracoes-sidebar">
+            <div class="user-profile-summary">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h3>{{ usuario.nome }} {{ usuario.sobrenome }}</h3>
+                    <p>{{ usuario.email }}</p>
+                </div>
+            </div>
+
+            <nav class="configuracoes-menu">
+                <a href="#perfil" class="menu-item active" data-tab="perfil">
+                    <i class="fas fa-user"></i>
+                    Perfil
+                </a>
+                <a href="#enderecos" class="menu-item" data-tab="enderecos">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Endereços
+                </a>
+                <a href="#seguranca" class="menu-item" data-tab="seguranca">
+                    <i class="fas fa-shield-alt"></i>
+                    Segurança
+                </a>
+                <a href="#pedidos" class="menu-item" data-tab="pedidos">
+                    <i class="fas fa-shopping-bag"></i>
+                    Meus Pedidos
+                </a>
+            </nav>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="configuracoes-content">
+            <!-- Aba Perfil -->
+            <div id="perfil-tab" class="tab-content active">
+                <div class="tab-header">
+                    <h2>Meu Perfil</h2>
+                    <p>Gerencie suas informações pessoais</p>
+                </div>
+
+                <form class="perfil-form" id="perfilForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nome">Nome *</label>
+                            <input type="text" id="nome" name="nome" value="{{ usuario.nome }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sobrenome">Sobrenome *</label>
+                            <input type="text" id="sobrenome" name="sobrenome" value="{{ usuario.sobrenome }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" value="{{ usuario.email }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="telefone">Telefone *</label>
+                            <input type="tel" id="telefone" name="telefone" value="{{ usuario.telefone }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="cpf">CPF</label>
+                            <input type="text" id="cpf" name="cpf" value="{{ usuario.cpf }}" readonly class="readonly">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="data_nascimento">Data de Nascimento</label>
+                            <input type="date" id="data_nascimento" name="data_nascimento"
+                                value="{{ usuario.data_nascimento }}">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="resetForm()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i>
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Aba Endereços -->
+            <div id="enderecos-tab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Meus Endereços</h2>
+                    <p>Gerencie seus endereços de entrega</p>
+                </div>
+
+                <div class="enderecos-container">
+                    <!-- Endereço Principal -->
+                    {% if endereco_principal %}
+                    <div class="endereco-card principal" data-endereco-id="{{ endereco_principal.id }}"
+                        data-cep="{{ endereco_principal.cep }}" data-endereco="{{ endereco_principal.endereco }}"
+                        data-numero="{{ endereco_principal.numero }}"
+                        data-complemento="{{ endereco_principal.complemento }}"
+                        data-bairro="{{ endereco_principal.bairro }}" data-cidade="{{ endereco_principal.cidade }}"
+                        data-estado="{{ endereco_principal.estado }}" data-pais="{{ endereco_principal.pais }}"
+                        data-principal="true">
+                        <div class="endereco-header">
+                            <h3>Endereço Principal</h3>
+                            <span class="badge-principal">Principal</span>
+                        </div>
+
+                        <div class="endereco-info">
+                            <p><strong>{{ usuario.nome }} {{ usuario.sobrenome }}</strong></p>
+                            <p>{{ endereco_principal.endereco }}, {{ endereco_principal.numero }}</p>
+                            {% if endereco_principal.complemento %}
+                            <p>Complemento: {{ endereco_principal.complemento }}</p>
+                            {% endif %}
+                            <p>{{ endereco_principal.bairro }} - {{ endereco_principal.cidade }}/{{
+                                endereco_principal.estado }}</p>
+                            <p>CEP: {{ endereco_principal.cep }}</p>
+                        </div>
+
+                        <div class="endereco-actions">
+                            <button class="btn-edit" onclick="editarEndereco('{{ endereco_principal.id }}')">
+                                <i class="fas fa-edit"></i>
+                                Editar
+                            </button>
+                            {% if enderecos|length > 1 %}
+                            <button class="btn-delete" onclick="excluirEndereco('{{ endereco_principal.id }}')">
+                                <i class="fas fa-trash"></i>
+                                Excluir
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Outros Endereços -->
+                    {% for endereco in enderecos %}
+                    {% if endereco.principal != "sim" %}
+                    <div class="endereco-card" data-endereco-id="{{ endereco.id }}" data-cep="{{ endereco.cep }}"
+                        data-endereco="{{ endereco.endereco }}" data-numero="{{ endereco.numero }}"
+                        data-complemento="{{ endereco.complemento }}" data-bairro="{{ endereco.bairro }}"
+                        data-cidade="{{ endereco.cidade }}" data-estado="{{ endereco.estado }}"
+                        data-pais="{{ endereco.pais }}" data-principal="false">
+                        <div class="endereco-header">
+                            <h3>Endereço {{ loop.index }}</h3>
+                        </div>
+
+                        <div class="endereco-info">
+                            <p><strong>{{ usuario.nome }} {{ usuario.sobrenome }}</strong></p>
+                            <p>{{ endereco.endereco }}, {{ endereco.numero }}</p>
+                            {% if endereco.complemento %}
+                            <p>Complemento: {{ endereco.complemento }}</p>
+                            {% endif %}
+                            <p>{{ endereco.bairro }} - {{ endereco.cidade }}/{{ endereco.estado }}</p>
+                            <p>CEP: {{ endereco.cep }}</p>
+                        </div>
+
+                        <div class="endereco-actions">
+                            <button class="btn-edit" onclick="editarEndereco('{{ endereco.id }}')">
+                                <i class="fas fa-edit"></i>
+                                Editar
+                            </button>
+                            <button class="btn-set-primary" onclick="definirComoPrincipal('{{ endereco.id }}')">
+                                <i class="fas fa-star"></i>
+                                Tornar Principal
+                            </button>
+                            <button class="btn-delete" onclick="excluirEndereco('{{ endereco.id }}')">
+                                <i class="fas fa-trash"></i>
+                                Excluir
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+
+                    <!-- Botão Adicionar Novo Endereço -->
+                    <div class="add-endereco-card" onclick="abrirModalEndereco()">
+                        <div class="add-endereco-content">
+                            <i class="fas fa-plus-circle"></i>
+                            <h3>Adicionar Novo Endereço</h3>
+                            <p>Clique para cadastrar um novo endereço de entrega</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba Segurança -->
+            <div id="seguranca-tab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Segurança</h2>
+                    <p>Gerencie a segurança da sua conta</p>
+                </div>
+
+                <div class="seguranca-card">
+                    <h3>Alterar Senha</h3>
+                    <form class="senha-form">
+                        <div class="form-group">
+                            <label for="senha_atual">Senha Atual</label>
+                            <input type="password" id="senha_atual" name="senha_atual" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nova_senha">Nova Senha</label>
+                            <input type="password" id="nova_senha" name="nova_senha" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmar_senha">Confirmar Nova Senha</label>
+                            <input type="password" id="confirmar_senha" name="confirmar_senha" required>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-key"></i>
+                            Alterar Senha
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Aba Pedidos -->
+            <div id="pedidos-tab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Meus Pedidos</h2>
+                    <p>Acompanhe seus pedidos e histórico de compras</p>
+                </div>
+
+                {% if pedidos %}
+                <div class="pedidos-container">
+                    {% for pedido in pedidos %}
+                    <div class="pedido-card">
+                        <div class="pedido-header">
+                            <div class="pedido-info">
+                                <h3>Pedido #{{ pedido.id_compra[:8] }}...</h3>
+                                <span class="pedido-data">{{ pedido.data }}</span>
+                            </div>
+                            <div class="pedido-status">
+                                <span class="status-entregue">Entregue</span>
+                            </div>
+                        </div>
+
+                        <div class="pedido-detalhes">
+                            <div class="produto-info">
+                                {% if pedido.imagem_produto %}
+                                <div class="produto-imagem">
+                                    {% if pedido.imagem_produto.startswith('data:image') or
+                                    pedido.imagem_produto.startswith('http') %}
+                                    <img src="{{ pedido.imagem_produto }}" alt="{{ pedido.nome_produto }}">
+                                    {% else %}
+                                    <img src="{{ url_for('static', filename='images/produtos/' + pedido.imagem_produto) }}"
+                                        alt="{{ pedido.nome_produto }}" onerror="this.style.display='none'">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                <div class="produto-detalhes">
+                                    <h4>{{ pedido.nome_produto }}</h4>
+                                    <p>Quantidade: {{ pedido.quantidade }}</p>
+                                    <p class="plano-info">
+                                        <strong>Plano:</strong>
+                                        <span class="plano-tag {{ pedido.plano }}">
+                                            {{ pedido.plano|title }}
+                                            {% if pedido.plano == 'semestral' %}
+                                            (5% desc.)
+                                            {% elif pedido.plano == 'anual' %}
+                                            (10% desc.)
+                                            {% endif %}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="pedido-valores">
+                                <!-- VALOR ORIGINAL -->
+                                <div class="valor-item">
+                                    <span class="valor-label">Valor Original:</span>
+                                    <span class="valor-original" style="text-decoration: line-through; color: #888;">
+                                        R$ {{ "%.2f"|format(pedido.valor_sem_desconto|float) }}
+                                    </span>
+                                </div>
+
+                                <!-- VALOR COM DESCONTO -->
+                                <div class="valor-item">
+                                    <span class="valor-label">Valor Pago:</span>
+                                    <span class="valor-desconto" style="color: green; font-weight: bold;">
+                                        R$ {{ "%.2f"|format(pedido.valor_com_desconto|float) }}
+                                    </span>
+                                </div>
+
+                                <!-- DESCONTO TOTAL APLICADO -->
+                                {% if pedido.desconto_aplicado|float > 0 %}
+                                <div class="valor-item">
+                                    <span class="valor-label">Desconto Total:</span>
+                                    <span class="desconto-total" style="color: #ff6b00; font-weight: bold;">
+                                        {{ "%.1f"|format(pedido.desconto_aplicado|float) }}%
+                                    </span>
+                                </div>
+                                {% endif %}
+
+                                <!-- CUPOM APLICADO -->
+                                {% if pedido.cupom_aplicado and pedido.cupom_aplicado.strip() %}
+                                <div class="valor-item">
+                                    <span class="valor-label">Cupom Utilizado:</span>
+                                    <span class="cupom-info" style="color: #007bff; font-weight: bold;">
+                                        {{ pedido.cupom_aplicado }}
+                                    </span>
+                                </div>
+                                {% endif %}
+
+                                <!-- ECONOMIA TOTAL -->
+                                {% if pedido.valor_sem_desconto|float > pedido.valor_com_desconto|float %}
+                                <div class="valor-item economia">
+                                    <span class="valor-label">Você economizou:</span>
+                                    <span class="valor-economia" style="color: #28a745; font-weight: bold;">
+                                        R$ {{ "%.2f"|format((pedido.valor_sem_desconto|float -
+                                        pedido.valor_com_desconto|float)) }}
+                                    </span>
+                                </div>
+                                {% endif %}
+
+                                <!-- DETALHAMENTO DOS DESCONTOS (OPCIONAL) -->
+                                {% if pedido.desconto_recorrencia and pedido.desconto_recorrencia|float > 0 %}
+                                <div class="desconto-detalhes">
+                                    <small style="color: #666;">
+                                        Inclui {{ "%.1f"|format(pedido.desconto_recorrencia|float) }}% de desconto por
+                                        fidelidade
+                                        {% if pedido.cupom_aplicado and pedido.cupom_aplicado.strip() %}
+                                        + desconto do cupom
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="pedido-actions">
+                            <a href="{{ url_for('routes.comprar_novamente', produto_id=pedido.id_produto) }}"
+                                class="btn-secondary">
+                                <i class="fas fa-redo"></i>
+                                Comprar Novamente
+                            </a>
+                            <button class="btn-primary">
+                                <i class="fas fa-eye"></i>
+                                Ver Detalhes
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="pedidos-vazios">
+                    <div class="vazio-content">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h3>Nenhum pedido encontrado</h3>
+                        <p>Você ainda não realizou nenhuma compra. Que tal explorar nossos produtos?</p>
+                        <a href="{{ url_for('routes.index') }}#planos" class="btn-primary">
+                            <i class="fas fa-shopping-cart"></i>
+                            Fazer Compras
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Endereço -->
+<div id="modalEndereco" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalEnderecoTitulo">Adicionar Novo Endereço</h3>
+            <button class="modal-close" onclick="fecharModalEndereco()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form class="endereco-form" id="enderecoForm">
+            <div class="form-group">
+                <label for="cep">CEP *</label>
+                <input type="text" id="cep" name="cep" required maxlength="9" onblur="buscarCEP()">
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="endereco">Endereço *</label>
+                    <input type="text" id="endereco" name="endereco" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="numero">Número *</label>
+                    <input type="text" id="numero" name="numero" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="complemento">Complemento</label>
+                <input type="text" id="complemento" name="complemento" placeholder="Apartamento, bloco, etc.">
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="bairro">Bairro *</label>
+                    <input type="text" id="bairro" name="bairro" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cidade">Cidade *</label>
+                    <input type="text" id="cidade" name="cidade" required>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="estado">Estado *</label>
+                    <select id="estado" name="estado" required>
+                        <option value="">Selecione</option>
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pais">País *</label>
+                    <input type="text" id="pais" name="pais" value="Brasil" required>
+                </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="endereco_principal" name="endereco_principal">
+                <label for="endereco_principal">Tornar este endereço principal</label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="fecharModalEndereco()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span id="modalEnderecoBotaoTexto">Salvar Endereço</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Link para o CSS específico -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/configuracoes.css') }}">
+
+<!-- Scripts específicos para configurações -->
+<script src="{{ url_for('static', filename='js/configuracoes.js') }}"></script>
+{% endblock %}

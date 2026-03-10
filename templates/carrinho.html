@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Carrinho - Clube do Gole</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/carrinho.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+</head>
+
+<body>
+  {% include 'partials/header.html' %}
+
+  <!-- Carrinho -->
+  <main class="carrinho">
+    <section class="cart-container">
+      <h2 class="titulo-lg">🛒 Meu Carrinho</h2>
+
+      <!-- Alerta para usuários não logados -->
+      {% if is_guest %}
+      <div class="guest-alert">
+        <i class="fas fa-info-circle"></i>
+        <div class="guest-message">
+          <strong>Você não está logado</strong>
+          <p>Adicione itens ao carrinho agora e faça login na hora de finalizar a compra. Seus itens serão mantidos!</p>
+          <a href="{{ url_for('routes.login') }}?redirect=index" class="btn-login-guest">
+            <i class="fas fa-sign-in-alt"></i> Fazer Login
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Mensagens Flash -->
+      <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+      </div>
+
+      {% if itens_carrinho %}
+      <form id="formCarrinho" method="POST">
+        <div class="tabela-wrapper">
+          <!-- Na seção da tabela no HTML, atualize a ordem das colunas: -->
+          <!-- Na seção da tabela no HTML, atualize a ordem das colunas: -->
+          <table class="tabela-carrinho">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Plano</th>
+                <th>Quantidade</th>
+                <th>Valor Unitário</th>
+                <th>Total</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in itens_carrinho %}
+              <tr class="cart-item" id="item-{{ item.id_carrinho }}">
+                <td class="produto-info">
+                  <div class="produto-detalhes">
+                    <strong class="produto-nome">{{ item.nome_produto }}</strong>
+                    {% if item.descricao %}
+                    <small class="produto-descricao">{{ item.descricao }}</small>
+                    {% endif %}
+                  </div>
+                </td>
+                <td>
+                  <span class="plano-badge {{ item.plano }}">{{ item.plano }}</span>
+                </td>
+                <td class="quantidade-cell">
+                  <div class="controle-quantidade">
+                    <button type="button" onclick="diminuirQuantidade('{{ item.id_carrinho }}')"
+                      class="btn-quantidade btn-diminuir">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="quantidade-{{ item.id_carrinho }}" name="quantidade" min="1"
+                      value="{{ item.quantidade }}" class="quantidade-display quantidade-input"
+                      onchange="atualizarQuantidadeManual('{{ item.id_carrinho }}', this.value)">
+
+                    <button type="button" onclick="aumentarQuantidade('{{ item.id_carrinho }}')"
+                      class="btn-quantidade btn-aumentar">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
+                </td>
+                <td class="valor-unitario">R$ {{ "%.2f"|format(item.valor_unitario|float) }}</td>
+                <td class="item-total" id="total-{{ item.id_carrinho }}">R$ {{ "%.2f"|format(item.valor_total|float) }}
+                </td>
+                <td class="acoes-cell">
+                  <div class="acoes-container">
+                    <input type="checkbox" name="selecionar_item" value="{{ item.id_carrinho }}" class="checkbox-item"
+                      checked>
+                    <button type="button" onclick="excluirItem('{{ item.id_carrinho }}')" class="btn-excluir-item"
+                      title="Excluir item">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="resumo-carrinho">
+          <div class="total-carrinho" id="total-carrinho">
+            <span class="total-label">💰 Total do Carrinho:</span>
+            <span class="total-valor">R$ {{ '%.2f'|format(total) }}</span>
+          </div>
+
+          <div class="acoes-carrinho">
+            <a href="{{ url_for('routes.index') }}#planos" class="btn-modern btn-continuar">
+              <i class="fas fa-shopping-bag"></i> Continuar Comprando
+            </a>
+            <button type="button" onclick="abrirCheckout()" class="btn-modern btn-finalizar">
+              <i class="fas fa-check-circle"></i> Finalizar Compra dos Selecionados
+            </button>
+          </div>
+        </div>
+      </form>
+
+      {% else %}
+      <div class="carrinho-vazio">
+        <div class="carrinho-vazio-icon">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h3>Seu carrinho está vazio</h3>
+        <p>Explore nossos produtos e adicione itens incríveis ao seu carrinho!</p>
+        <a href="{{ url_for('routes.index') }}#planos" class="btn-modern btn-continuar">
+          <i class="fas fa-shopping-bag"></i> Continuar Comprando
+        </a>
+      </div>
+      {% endif %}
+    </section>
+  </main>
+
+  {% include 'partials/footer.html' %}
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,263 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="checkout-container">
+    <h1 class="checkout-title titulo-lg">Finalizar Compra</h1>
+    
+    <div class="checkout-content">
+        <!-- COLUNA ESQUERDA - ENDEREÇOS E PAGAMENTO -->
+        <div class="checkout-left">
+            <!-- SEÇÃO DE ENDEREÇO (IGUAL ÀS CONFIGURAÇÕES) -->
+            <section class="address-section">
+                <div class="section-header">
+                    <h2 class="titulo-md">Endereço de Entrega</h2>
+                    <p>Selecione ou adicione um endereço para entrega</p>
+                </div>
+
+                <div class="enderecos-container" id="enderecosContainer">
+                    <!-- Endereços serão carregados via JavaScript -->
+                    <div class="empty-address" id="emptyAddress">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Nenhum endereço cadastrado</h3>
+                        <p>Você precisa cadastrar um endereço para continuar com a compra</p>
+                        <button class="btn-primary" onclick="abrirModalEndereco()">
+                            <i class="fas fa-plus"></i>
+                            Adicionar Primeiro Endereço
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="address-actions">
+                    <button class="btn-secondary" onclick="abrirModalEndereco()">
+                        <i class="fas fa-plus"></i>
+                        Adicionar Novo Endereço
+                    </button>
+                </div>
+            </section>
+
+            <!-- SEÇÃO DE PAGAMENTO -->
+            <section class="payment-section">
+                <h2 class="titulo-md">Forma de Pagamento</h2>
+                <div class="payment-options">
+                    <div class="payment-option">
+                        <input type="radio" id="pix" name="payment" value="pix" checked>
+                        <label for="pix">
+                            <i class="fas fa-qrcode"></i>
+                            <div>
+                                <strong>Pix</strong>
+                                <span class="payment-info">Aprovação imediata</span>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="payment-option">
+                        <input type="radio" id="cartao" name="payment" value="cartao">
+                        <label for="cartao">
+                            <i class="fas fa-credit-card"></i>
+                            <div>
+                                <strong>Cartão de Crédito</strong>
+                                <span class="payment-info">Parcele em até 12x</span>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="payment-option">
+                        <input type="radio" id="boleto" name="payment" value="boleto">
+                        <label for="boleto">
+                            <i class="fas fa-barcode"></i>
+                            <div>
+                                <strong>Boleto Bancário</strong>
+                                <span class="payment-info">Aprovação em 1 a 2 dias úteis</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DADOS DO CARTÃO -->
+            <div class="card-data" id="cardData" style="display: none;">
+                <h3 class="titulo-md">Dados do Cartão</h3>
+                <div class="form-group">
+                    <label for="cardNumber">Número do Cartão</label>
+                    <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cardExpiry">Validade</label>
+                        <input type="text" id="cardExpiry" placeholder="MM/AA" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="cardCVC">CVV</label>
+                        <input type="text" id="cardCVC" placeholder="000" maxlength="3">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cardName">Nome no Cartão</label>
+                    <input type="text" id="cardName" placeholder="Como está no cartão">
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA DIREITA - RESUMO DA COMPRA -->
+        <div class="checkout-right">
+            <section class="order-summary">
+                <h2 class="titulo-md">Resumo do Pedido</h2>
+                
+                <div class="order-items" id="orderItems">
+                    <!-- Produtos serão inseridos aqui via JavaScript -->
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Carregando itens...</p>
+                    </div>
+                </div>
+                
+                <div class="coupon-section">
+                    <input type="text" id="couponCode" placeholder="Digite o código do cupom">
+                    <button id="applyCoupon" class="btn-coupon">Aplicar</button>
+                </div>
+                
+                <div class="order-totals">
+                    <div class="total-line">
+                        <span>Subtotal</span>
+                        <span id="subtotal">R$ 0,00</span>
+                    </div>
+                    <div class="total-line">
+                        <span>Frete</span>
+                        <span id="shipping">Grátis</span>
+                    </div>
+                    <div class="total-line discount" id="discountLine" style="display: none;">
+                        <span>Desconto</span>
+                        <span id="discountValue">-R$ 0,00</span>
+                    </div>
+                    <div class="total-line final">
+                        <strong>Total</strong>
+                        <strong id="totalAmount">R$ 0,00</strong>
+                    </div>
+                </div>
+                
+                <button class="btn-confirm-payment" id="confirmPayment" disabled>
+                    <i class="fas fa-lock"></i>
+                    <span id="confirmPaymentText">Selecione um endereço para continuar</span>
+                </button>
+                
+                <p class="security-note">
+                    <i class="fas fa-shield-alt"></i>
+                    Sua informação está segura e criptografada
+                </p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Endereço (Igual às configurações) -->
+<div id="modalEndereco" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalEnderecoTitulo">Adicionar Novo Endereço</h3>
+            <button class="modal-close" onclick="fecharModalEndereco()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form class="endereco-form" id="enderecoForm">
+            <input type="hidden" id="endereco_id" name="endereco_id">
+            
+            <div class="form-group">
+                <label for="cep">CEP *</label>
+                <input type="text" id="cep" name="cep" required maxlength="9" onblur="buscarCEP()">
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="endereco">Endereço *</label>
+                    <input type="text" id="endereco" name="endereco" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="numero">Número *</label>
+                    <input type="text" id="numero" name="numero" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="complemento">Complemento</label>
+                <input type="text" id="complemento" name="complemento" placeholder="Apartamento, bloco, etc.">
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="bairro">Bairro *</label>
+                    <input type="text" id="bairro" name="bairro" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cidade">Cidade *</label>
+                    <input type="text" id="cidade" name="cidade" required>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="estado">Estado *</label>
+                    <select id="estado" name="estado" required>
+                        <option value="">Selecione</option>
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pais">País *</label>
+                    <input type="text" id="pais" name="pais" value="Brasil" required>
+                </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="endereco_principal" name="endereco_principal">
+                <label for="endereco_principal">Tornar este endereço principal</label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="fecharModalEndereco()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span id="modalEnderecoBotaoTexto">Salvar Endereço</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Link para o CSS específico do checkout -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}">
+
+<!-- Script específico do checkout -->
+<script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+{% endblock %}

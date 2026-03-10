@@ -1,0 +1,229 @@
+/* ===== ESTILOS PARA PÁGINAS ADMIN/EDITAR CUPONS ===== */
+.cupons-container {
+  min-height: 100vh;
+  background: var(--gradiente-hero);
+  padding: var(--espacamento-xl) 0;
+  margin-top: 80px;
+}
+
+.cupons-header {
+  text-align: center;
+  margin-bottom: var(--espacamento-lg);
+  padding: var(--espacamento-md);
+}
+
+.cupons-header h1 {
+  color: var(--cor-dourado);
+  margin-bottom: var(--espacamento-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacamento-sm);
+  font-family: var(--fonte-secundaria);
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.cupons-header p {
+  color: var(--cor-texto-secundario);
+  margin-bottom: var(--espacamento-md);
+  font-size: 1.1rem;
+}
+
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--cor-fundo-secundario);
+  padding: var(--espacamento-lg);
+  border-radius: var(--borda-radius-lg);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: var(--sombra-card);
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacamento-md);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacamento-xs);
+}
+
+.form-group label {
+  color: var(--cor-dourado);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.75rem 1rem;
+  background: var(--cor-fundo);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: var(--borda-radius-md);
+  color: var(--cor-texto);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-family: var(--fonte-principal);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--cor-dourado);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+.form-group small {
+  color: var(--cor-texto-secundario);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-buttons {
+  display: flex;
+  gap: var(--espacamento-sm);
+  margin-top: var(--espacamento-md);
+  flex-wrap: wrap;
+}
+
+.btn-cancelar,
+.btn-salvar {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--borda-radius-lg);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacamento-xs);
+  flex: 1;
+  min-width: 140px;
+}
+
+.btn-salvar {
+  background: var(--gradiente-botao-dourado-claro-escuro);
+  color: var(--cor-fundo);
+}
+
+.btn-salvar:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-destaque);
+}
+
+.btn-cancelar {
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-cancelar:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--cor-dourado);
+  transform: translateY(-2px);
+}
+
+/* Estados de validação */
+.form-input.invalid {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+}
+
+.form-error {
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.cupom-notification {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  padding: var(--espacamento-sm) var(--espacamento-md);
+  border-radius: var(--borda-radius-md);
+  box-shadow: var(--sombra-destaque);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: var(--espacamento-sm);
+  font-weight: 600;
+  max-width: 400px;
+  animation: slideInRight 0.3s ease;
+}
+
+.cupom-notification-success {
+  background: var(--cor-dourado);
+  color: var(--cor-fundo);
+}
+
+.cupom-notification-error {
+  background: #ff6b6b;
+  color: var(--cor-fundo);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .cupons-container {
+    margin-top: 120px;
+    padding: var(--espacamento-md) 0;
+  }
+  
+  .form-container {
+    margin: 0 var(--espacamento-sm);
+    padding: var(--espacamento-md);
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-cancelar,
+  .btn-salvar {
+    flex: none;
+    width: 100%;
+  }
+  
+  .cupons-header h1 {
+    font-size: 1.75rem;
+    flex-direction: column;
+    gap: var(--espacamento-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: var(--espacamento-sm);
+  }
+  
+  .cupons-header {
+    padding: var(--espacamento-sm);
+  }
+}
