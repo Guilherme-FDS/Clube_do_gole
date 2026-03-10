@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciar Produtos - Clube do Gole</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/produtos.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Script -->
+  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/produtos.js') }}" defer></script>
+</head>
+<body>
+  {% include 'partials/header.html' %}
+
+  <main class="estoque-container">
+    <div class="estoque-header">
+      <h1 class="titulo-lg"><i class="fas fa-boxes"></i> Gerenciar Produtos</h1>
+      <p class="texto-corrido">Controle os produtos do catálogo do Clube do Gole</p>
+      <button class="btn-modern" onclick="abrirModal()">
+        <i class="fas fa-plus"></i> Adicionar Novo Produto
+      </button>
+    </div>
+
+    <div class="tabela-wrapper">
+      <table id="tabelaProdutos">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+            <th>Preço</th>
+            <th>Estoque</th>
+            <th>Imagem</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyProdutos">
+          {% for p in produtos %}
+          <tr>
+            <td>{{ p.nome }}</td>
+            <td>
+              <span class="badge-tipo {{ p.tipo|lower }}">{{ p.tipo }}</span>
+            </td>
+            <td>{{ p.descricao }}</td>
+            <td>R$ {{ "%.2f"|format(p.preco|float) }}</td>
+            <td>
+              <span class="estoque-badge {{ 'estoque-alto' if p.estoque|int > 20 else 'estoque-medio' if p.estoque|int > 5 else 'estoque-baixo' }}">
+                {{ p.estoque }}
+              </span>
+            </td>
+            <td>
+              {% if p.imagem %}
+              <img src="{{ p.imagem }}" alt="{{ p.nome }}" class="produto-thumb">
+              {% else %}
+              <span class="sem-imagem">—</span>
+              {% endif %}
+            </td>
+            <td class="acoes">
+              <!-- Botão Editar -->
+              <a href="{{ url_for('routes.editar_produto', id=p.id) }}" class="btn-editar" title="Editar">
+                <i class="fas fa-edit"></i> Editar
+              </a>
+
+              <!-- Botão Excluir -->
+              <a href="{{ url_for('routes.deletar_produto', id=p.id) }}" class="btn-excluir" title="Excluir"
+                onclick="return confirm('Tem certeza que deseja excluir este produto?')">
+                <i class="fas fa-trash"></i> Excluir
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="sem-produtos">Nenhum produto cadastrado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- MODAL DE ADIÇÃO -->
+<div id="modalProduto" class="modal">
+  <div class="modal-content">
+    <h2 class="titulo-md"><i class="fas fa-box"></i> Adicionar Novo Produto</h2>
+    <form action="{{ url_for('routes.adicionar_produto') }}" method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="nomeProduto">Nome do Produto:</label>
+        <input type="text" id="nomeProduto" name="nome" placeholder="Ex: Box 6" required>
+      </div>
+
+      <div class="form-group">
+        <label for="tipoProduto">Tipo:</label>
+        <select id="tipoProduto" name="tipo" required>
+          <option value="Gold">Gold</option>
+          <option value="Premium">Premium</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="descricaoProduto">Descrição:</label>
+        <input type="text" id="descricaoProduto" name="descricao" placeholder="Descrição do produto" required>
+      </div>
+
+      <div class="form-group">
+        <label for="precoProduto">Preço:</label>
+        <input type="number" id="precoProduto" name="preco" placeholder="Ex: 49.90" step="0.01" min="0" required>
+      </div>
+
+      <div class="form-group">
+        <label for="estoqueProduto">Estoque:</label>
+        <input type="number" id="estoqueProduto" name="estoque" placeholder="Ex: 10" min="0" required>
+      </div>
+
+      <div class="form-group">
+        <label for="imagemProduto">Imagem:</label>
+        <!-- Mantém o campo URL para compatibilidade -->
+        <input type="url" id="imagemProdutoUrl" name="imagem" placeholder="https://..." style="margin-bottom: 10px;">
+        
+        <!-- Campo para upload de arquivo -->
+        <input type="file" id="imagemProdutoFile" name="imagem_file" accept="image/*" style="margin-bottom: 10px;">
+        
+        <!-- Preview da imagem -->
+        <img id="imagePreview" src="#" alt="Preview" style="max-width: 200px; display: none; margin-top: 10px;">
+        
+        <!-- Campo hidden para Base64 -->
+        <input type="hidden" id="imagemBase64" name="imagem_base64">
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="btn-modal btn-modal-cancelar" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn-modal btn-modal-salvar">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  {% include 'partials/footer.html' %}
+
+</body>
+
+</html>

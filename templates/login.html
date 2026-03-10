@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block title %}Login - Clube do Gole{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-container">
+        <div class="login-box fade-in">
+            <div class="login-header">
+                <h2 class="titulo-lg">Bem-vindo de volta!</h2>
+                <p class="texto-corrido">Faça login para continuar</p>
+            </div>
+
+            <!-- Flash de erro -->
+            {% with messages = get_flashed_messages(category_filter=["erro"]) %}
+                {% if messages %}
+                    <div class="flash-message error">
+                        <div class="flash-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="flash-content">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Flash de sucesso (ex: após cadastro) -->
+            {% with messages = get_flashed_messages(category_filter=["sucesso"]) %}
+                {% if messages %}
+                    <div class="flash-message success">
+                        <div class="flash-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="flash-content">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('routes.login') }}" class="login-form">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <div class="input-container">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="email" name="email" placeholder="seu@email.com" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="senha" class="form-label">Senha</label>
+                    <div class="input-container">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="senha" name="senha" placeholder="••••••••" class="form-input" required>
+                        <button type="button" class="password-toggle" aria-label="Mostrar senha">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <span class="btn-text">Entrar</span>
+                    <div class="btn-loader"></div>
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>Ou continue com</span>
+            </div>
+
+            <div class="social-login">
+                <button class="btn-social google" type="button">
+                    <i class="fab fa-google"></i>
+                    <span>Entrar com Google</span>
+                </button>
+                <button class="btn-social facebook" type="button">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>Entrar com Facebook</span>
+                </button>
+            </div>
+
+            <div class="login-links">
+                <div class="signup-link">
+                    Não tem uma conta? <a href="{{ url_for('routes.cadastro') }}" class="link-accent">Cadastre-se</a>
+                </div>
+                <div class="back-link">
+                    <a href="{{ url_for('routes.index') }}" class="link-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar para página inicial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link para o CSS específico do login -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+<!-- Script específico para login -->
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

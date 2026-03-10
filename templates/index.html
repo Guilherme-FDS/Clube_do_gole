@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clube do Gole</title>
+
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Script principal -->
+  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Clube do Gole" class="logo-img-small">
+      </div>
+      <nav class="nav-left">
+        <ul>
+          <li><a href="#inicio" class="scroll-link">Início</a></li>
+          <li><a href="#como-funciona" class="scroll-link">Como Funciona</a></li>
+          <li><a href="#planos" class="scroll-link">Planos</a></li>
+          <li><a href="#sobre" class="scroll-link">Sobre</a></li>
+          <li><a href="#contato" class="scroll-link">Contato</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="header-right">
+      <a href="{{ url_for('routes.carrinho') }}" class="icon-btn" id="cartBtn">
+        <i class="fas fa-shopping-cart"></i> Carrinho <span id="cartCount">0</span>
+      </a>
+
+      <!-- BOTÃO DINÂMICO - LOGIN ou MENU DO USUÁRIO -->
+      {% if session.get("usuario_id") %}
+      <div class="user-menu-container">
+        <div class="user-menu-trigger">
+          <span class="icon-btn user-name">
+            <i class="fas fa-user"></i>
+            {{ session.get("primeiro_nome", session.get("usuario_nome", "Usuário")) }}
+          </span>
+          <button class="menu-sanduiche">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+        <div class="user-dropdown">
+          <a href="{{ url_for('routes.configuracoes') }}" class="dropdown-item">
+            <i class="fas fa-cog"></i> Configurações
+          </a>
+          <a href="{{ url_for('routes.logout') }}" class="dropdown-item">
+            <i class="fas fa-sign-out-alt"></i> Sair
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <a href="{{ url_for('routes.login') }}" class="icon-btn">
+        <i class="fas fa-user"></i> Login
+      </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="inicio">
+    <div class="hero-content">
+      <h2 class="titulo-xl fade-in">Descubra novos sabores todos os meses</h2>
+      <p class="texto-corrido fade-in">Assine o Clube do Gole e receba bebidas selecionadas diretamente na sua casa.</p>
+      <button class="btn-modern fade-in">
+        Conheça os Planos
+      </button>
+    </div>
+  </section>
+
+ <!-- CARROSSEL PRINCIPAL -->
+<section class="carousel-modern">
+  <button class="seta esquerda" id="prevSlide">❮</button>
+  <div class="carousel-container" id="carouselContainer">
+    <div class="carousel-slide">
+      <img src="{{ url_for('static', filename='img/carrossel1.png') }}" alt="Imagem 1">
+    </div>
+    <div class="carousel-slide">
+      <img src="{{ url_for('static', filename='img/carrossel2.png') }}" alt="Imagem 2">
+    </div>
+    <div class="carousel-slide">
+      <a href="#planos" class="scroll-link carousel-clickable">
+        <img src="{{ url_for('static', filename='img/carrossel3.png') }}" alt="Imagem 3">
+        <div class="slide-overlay">
+          <span>Clique para ver nossos planos</span>
+        </div>
+      </a>
+    </div>
+    <div class="carousel-slide">
+      <a href="#planos" class="scroll-link carousel-clickable">
+        <img src="{{ url_for('static', filename='img/carrossel4.png') }}" alt="Imagem 4">
+        <div class="slide-overlay">
+          <span>Clique para ver nossos planos</span>
+        </div>
+      </a>
+    </div>
+  </div>
+  <button class="seta direita" id="nextSlide">❯</button>
+  <div class="indicadores" id="carouselIndicators"></div>
+</section>
+
+  <!-- COMO FUNCIONA -->
+  <section class="como-funciona" id="como-funciona">
+    <div class="container">
+      <h2 class="titulo-lg fade-in">Como Funciona</h2>
+      <div class="passos-container">
+        <div class="passo fade-in">
+          <i class="fa-solid fa-wine-bottle icone-passo"></i>
+          <h3>Escolha seu plano ideal</h3>
+          <p>Selecione a assinatura que mais combina com você.</p>
+        </div>
+        <div class="passo fade-in">
+          <i class="fa-solid fa-calendar-days icone-passo"></i>
+          <h3>Defina a frequência</h3>
+          <p>Escolha mensal, trimestral ou semestral.</p>
+        </div>
+        <div class="passo fade-in">
+          <i class="fa-solid fa-box icone-passo"></i>
+          <h3>Nós cuidamos da seleção</h3>
+          <p>Selecionamos bebidas premium para você.</p>
+        </div>
+        <div class="passo fade-in">
+          <i class="fa-solid fa-glass-cheers icone-passo"></i>
+          <h3>Receba e viva a experiência</h3>
+          <p>Receba em casa e aproveite cada momento.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOSSOS PLANOS -->
+  <section id="planos" class="nossos-planos">
+    <div class="container">
+      <h2 class="titulo-lg fade-in">Nossos Planos</h2>
+
+      <!-- BOX GOLD -->
+      <h3 class="categoria-titulo fade-in">Box Gold</h3>
+      {% if produtos_gold %}
+      <div class="produtos-container">
+        {% for produto in produtos_gold %}
+        <div class="produto-card fade-in">
+          <div class="produto-imagem">
+            <img src="{{ produto.imagem or url_for('static', filename='img/sem_imagem.png') }}"
+              alt="{{ produto.nome }}">
+            <div class="badge-premium">GOLD</div>
+          </div>
+          <div class="produto-info">
+            <h4 class="produto-titulo">{{ produto.nome }}</h4>
+            <p class="produto-descricao">{{ produto.descricao }}</p>
+            <p class="preco">R$ {{ "%.2f"|format(produto.preco|float)|replace('.', ',') }}</p>
+            <a href="{{ url_for('routes.produto', produto_id=produto.id) }}" class="btn-produto">Ver Produto</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="texto-centro fade-in">Nenhum produto Gold cadastrado ainda.</p>
+      {% endif %}
+
+      <!-- BOX PREMIUM -->
+      <h3 class="categoria-titulo fade-in mt-5">Box Premium</h3>
+      {% if produtos_premium %}
+      <div class="produtos-container">
+        {% for produto in produtos_premium %}
+        <div class="produto-card fade-in">
+          <div class="produto-imagem">
+            <img src="{{ produto.imagem or url_for('static', filename='img/sem_imagem.png') }}"
+              alt="{{ produto.nome }}">
+            <div class="badge-premium">PREMIUM</div>
+          </div>
+          <div class="produto-info">
+            <h4 class="produto-titulo">{{ produto.nome }}</h4>
+            <p class="produto-descricao">{{ produto.descricao }}</p>
+            <p class="preco">R$ {{ "%.2f"|format(produto.preco|float)|replace('.', ',') }}</p>
+            <a href="{{ url_for('routes.produto', produto_id=produto.id) }}" class="btn-produto">Ver Produto</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="texto-centro fade-in">Nenhum produto Premium cadastrado ainda.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section id="sobre" class="sobre">
+    <div class="container">
+      <h2 class="titulo-lg fade-in">Sobre o Clube do Gole</h2>
+      <div class="sobre-blocos">
+        <div class="sobre-bloco fade-in">
+          <h3>Experiência Única</h3>
+          <p>No <span>Clube do Gole</span>, transformamos a experiência de apreciar bebidas em momentos únicos.</p>
+        </div>
+        <div class="sobre-bloco fade-in">
+          <h3>Seleção Premium</h3>
+          <p>Selecionamos cuidadosamente cada rótulo para que você receba em casa produtos de alta qualidade.</p>
+        </div>
+        <div class="sobre-bloco fade-in">
+          <h3>Descubra Novos Sabores</h3>
+          <p>Explore novos sabores e viva experiências memoráveis a cada gole.</p>
+        </div>
+      </div>
+      <p class="sobre-cta fade-in">🍻 Junte-se ao clube e descubra um mundo de sabores!</p>
+    </div>
+  </section>
+
+  <!-- CONTATO -->
+  <section id="contato" class="contato">
+    <div class="container">
+      <h2 class="titulo-lg fade-in">Fale Conosco</h2>
+      <p class="texto-corrido fade-in">Queremos ouvir você! Entre em contato pelo e-mail ou pelas nossas redes
+        sociais...</p>
+      <div class="contato-info fade-in">
+        <div class="contato-item-email">
+          <i class="fas fa-envelope"></i>
+          <div>
+            <strong>Email:</strong>
+            <a href="mailto:contato@clubedogole.com.br">contato@clubedogole.com.br</a>
+          </div>
+        </div>
+
+        <div class="contato-item">
+          <i class="fas fa-phone"></i>
+          <div>
+            <strong>WhatsApp:</strong>
+            <span>(41) 99999-9999</span>
+          </div>
+        </div>
+        <div class="contato-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <div>
+            <strong>Endereço:</strong>
+            <span>Maringá, Paraná - Brasil</span>
+          </div>
+        </div>
+        <div class="contato-item-horario">
+          <i class="fas fa-clock"></i>
+          <div>
+            <strong>Horário:</strong><br>
+            <span>Seg a Sex: 9h às 18h </span> <br>
+
+            <span> Sáb: 9h às 13h</span>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-siga-nos fade-in">
+          <p>Siga-nos:</p>
+          <div class="redes">
+            <a href="https://www.instagram.com/mixupcode" target="_blank" aria-label="Instagram">
+              <i class="fa-brands fa-instagram"></i>
+            </a>
+            <a href="#" aria-label="Facebook">
+              <i class="fa-brands fa-facebook"></i>
+            </a>
+            <a href="mailto:contato@clubedogole.com" aria-label="Email">
+              <i class="fa-solid fa-envelope"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/mixup-code-86492638a/" target="blank" aria-label="LinkedIn">
+              <i class="fa-brands fa-linkedin"></i>
+            </a>
+            <a href="https://api.whatsapp.com/send/?phone=5544984385699&text=Olá+Jackson%2C+vi+seu+portfólio+e+gostaria+de+conversar%21&type=phone_number&app_absent=0"
+              target="_blank" aria-label="WhatsApp">
+              <i class="fa-brands fa-whatsapp"></i>
+            </a>
+          </div>
+        </div>
+        <p class="footer-copyright fade-in">
+          © 2025 Clube do Gole. Todos os direitos reservados. Created with love by
+          <a href="{{ url_for('routes.mixupcode') }}" class="mixupcode-link">MixUpCode</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>

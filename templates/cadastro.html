@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Clube do Gole</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cadastro.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
+</head>
+<body>
+    <div class="cadastro-container">
+        <h1>Cadastro de Usuário</h1>
+        
+        <!-- Flash de sucesso -->
+        {% with messages = get_flashed_messages(category_filter=["sucesso"]) %}
+        {% if messages %}
+        <div class="flash-success">
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        
+        <!-- Flash de erro -->
+        {% with messages = get_flashed_messages(category_filter=["erro"]) %}
+        {% if messages %}
+        <div class="flash-error">
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('routes.cadastro') }}" method="POST" id="cadastroForm">
+            <h2>Dados Pessoais</h2>
+            <div class="form-grid">
+                <input type="text" name="cpf" id="cpf" placeholder="CPF*" maxlength="14" required>
+                <input type="text" name="nome" placeholder="Nome*" required>
+                <input type="text" name="sobrenome" placeholder="Sobrenome*" required>
+                <input type="date" name="data_nascimento" placeholder="Data de Nascimento*" required>
+                <input type="email" name="email" placeholder="E-mail*" required>
+                <input type="password" name="senha" placeholder="Senha*" required>
+                <input type="tel" name="telefone" placeholder="Telefone*" required>
+            </div>
+
+            <!-- <h2>Endereço 
+                <small>(Digite o CEP e os demais campos serão preenchidos automaticamente)</small>
+            </h2> -->
+            <!-- <div class="form-grid">
+                 CEP com busca automática
+                <div class="cep-group">
+                    <input type="text" name="cep" id="cep" placeholder="CEP*" maxlength="9" required>
+                    <div class="cep-feedback" id="cepFeedback"></div>
+                </div>
+                <input type="text" name="endereco" id="endereco" placeholder="Endereço*" required>
+                <input type="text" name="numero" id="numero" placeholder="Número*" required>
+                <input type="text" name="complemento" id="complemento" placeholder="Complemento">
+                <input type="text" name="bairro" id="bairro" placeholder="Bairro*" required>
+                <input type="text" name="cidade" id="cidade" placeholder="Cidade*" required>
+                <input type="text" name="estado" id="estado" placeholder="Estado*" required>
+                <input type="text" name="pais" id="pais" placeholder="País*" value="Brasil" required>
+            </div> -->
+            <button type="submit" class="btn-cadastrar" id="btnCadastrar">Cadastrar</button>
+        </form>
+
+        <p class="login-link">
+            Já tem uma conta? <a href="{{ url_for('routes.login') }}">Faça login</a>
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/cadastro.js') }}"></script>
+</body>
+</html>

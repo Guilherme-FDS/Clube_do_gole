@@ -1,0 +1,94 @@
+<!-- templates/partials/header.html -->
+<header class="main-header">
+  <div class="header-left">
+    <div class="logo">
+      <a href="{{ url_for('routes.index') }}">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Clube do Gole" class="logo-img-small">
+      </a>
+    </div>
+    <nav class="nav-left">
+      <ul>
+        {# CHECKOUT - MENU SIMPLIFICADO #}
+        {% if request.endpoint == 'routes.checkout' %}
+          <li><a href="{{ url_for('routes.index') }}">Início</a></li>
+          <li><a href="{{ url_for('routes.index') }}#planos">Produtos</a></li>
+          <li><a href="{{ url_for('routes.carrinho') }}">Carrinho</a></li>
+
+        {# PÁGINAS ADMINISTRATIVAS #}
+        {% elif request.endpoint in ['routes.usuario_adm', 'routes.cupons', 'routes.dashboard_vendas', 'routes.produtos', 'routes.editar_cupom', 'routes.editar_produto'] %}
+          <li><a href="{{ url_for('routes.index') }}">Início</a></li>
+          <li><a href="{{ url_for('routes.usuario_adm') }}" class="nav-admin-btn">
+            <i class="fas fa-cog"></i> Painel ADM
+          </a></li>
+          {% if request.endpoint == 'routes.editar_produto' %}
+          <li><a href="{{ url_for('routes.produtos') }}" class="nav-admin-btn">
+            <i class="fas fa-box"></i> Produtos
+          </a></li>
+          {% endif %}
+          {% if request.endpoint == 'routes.editar_cupom' %}
+          <li><a href="{{ url_for('routes.cupons') }}" class="nav-admin-btn">
+            <i class="fas fa-tag"></i> Gerenciar Cupons
+          </a></li>
+          {% endif %}
+
+        {# PÁGINAS NORMAIS #}
+        {% else %}
+          {% if request.endpoint == 'routes.index' %}
+            <li><a href="#inicio" class="scroll-link">Início</a></li>
+            <li><a href="#comofunciona" class="scroll-link">Como Funciona</a></li>
+            <li><a href="#planos" class="scroll-link">Planos</a></li>
+            <li><a href="#sobre" class="scroll-link">Sobre</a></li>
+            <li><a href="#contato" class="scroll-link">Contato</a></li>
+          {% else %}
+            <li><a href="{{ url_for('routes.index') }}#inicio">Início</a></li>
+            <li><a href="{{ url_for('routes.index') }}#como-funciona">Como Funciona</a></li>
+            <li><a href="{{ url_for('routes.index') }}#planos">Planos</a></li>
+            <li><a href="{{ url_for('routes.index') }}#sobre">Sobre</a></li>
+            <li><a href="{{ url_for('routes.index') }}#contato">Contato</a></li>
+          {% endif %}
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+
+  <div class="header-right">
+    <a href="{{ url_for('routes.carrinho') }}" class="icon-btn" id="cartBtn">
+      <i class="fas fa-shopping-cart"></i> Carrinho <span id="cartCount">0</span>
+    </a>
+    
+    <!-- MESMO MENU DO USUÁRIO PARA TODAS AS PÁGINAS -->
+    {% if session.get("usuario_id") %}
+      <div class="user-menu-container">
+        <div class="user-menu-trigger">
+          <span class="icon-btn user-name">
+            <i class="fas fa-user"></i>
+            {{ session.get("primeiro_nome", session.get("usuario_nome", "Usuário")) }}
+          </span>
+          <button class="menu-sanduiche">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+        <div class="user-dropdown">
+          {# SE É ADMIN, MOSTRA LINK PARA PAINEL ADMIN #}
+          {% if session.get("tipo") == "admin" %}
+            <a href="{{ url_for('routes.usuario_adm') }}" class="dropdown-item">
+              <i class="fas fa-cog"></i> Painel Administrativo
+            </a>
+          {% else %}
+            {# SE É CLIENTE, MOSTRA CONFIGURAÇÕES #}
+            <a href="{{ url_for('routes.configuracoes') }}" class="dropdown-item">
+              <i class="fas fa-cog"></i> Configurações
+            </a>
+          {% endif %}
+          <a href="{{ url_for('routes.logout') }}" class="dropdown-item">
+            <i class="fas fa-sign-out-alt"></i> Sair
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <a href="{{ url_for('routes.login') }}" class="icon-btn">
+        <i class="fas fa-user"></i> Login
+      </a>
+    {% endif %}
+  </div>
+</header>
