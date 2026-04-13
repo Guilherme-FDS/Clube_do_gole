@@ -1,0 +1,22 @@
+# Ambiente virtual
+venv/
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Sistema
+.DS_Store
+
+# Logs
+*.log
+
+# Dados sensíveis (CSV específicos)
+static/data/carrinho.csv
+static/data/enderecos.csv
+static/data/usuarios_clientes.csv
+static/data/vendas.csv
+
+# IDE
+.vscode/
