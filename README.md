@@ -2,6 +2,14 @@
 
 Plataforma web de um clube de assinatura de bebidas, com sistema completo de navegação, produtos, carrinho, checkout e área administrativa.
 
+---
+
+## 🌐 Acesse o projeto online
+
+👉 https://web-production-a5f51.up.railway.app
+
+---
+
 ## Sobre o projeto
 
 O **Clube do Gole** é um sistema web inspirado em um modelo real de negócio de assinatura de bebidas, onde o usuário pode navegar por produtos, montar pedidos e interagir com diferentes áreas da aplicação.
@@ -22,6 +30,15 @@ Para acessar o painel administrativo, utilize:
 ### Usuário comum
 
 Para acessar como usuário comum, basta realizar o cadastro e login normalmente pela aplicação.
+
+---
+
+## 🎟️ Cupons para teste
+
+Utilize os cupons abaixo no checkout:
+
+- **GOLE15** → Desconto promocional  
+- **CLUBE10** → Desconto especial  
 
 ---
 
@@ -61,7 +78,6 @@ Clube_do_gole
 │   └── data (arquivos CSV)
 ├── requirements.txt
 └── Procfile
-
 Funcionalidades
 Sistema de navegação entre páginas (Flask)
 Listagem de produtos
