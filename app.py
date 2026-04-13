@@ -1,11 +1,23 @@
 from flask import Flask
 import os
+from dotenv import load_dotenv
 from routes.views import routes
-from flask import session
-app = Flask(__name__)
 
-app.secret_key =  os.urandom(24)
-app.register_blueprint(routes)
+load_dotenv()
+
+def create_app():
+    app = Flask(__name__)
+
+    # Configurações seguras
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
+
+    # Registrar rotas
+    app.register_blueprint(routes)
+
+    return app
+
+
+app = create_app()
 
 if __name__ == "__main__":
     app.run(debug=True)
