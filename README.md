@@ -6,7 +6,7 @@ Plataforma web de um clube de assinatura de bebidas, com sistema completo de nav
 
 ## 🌐 Acesse o projeto online
 
-👉 https://web-production-a5f51.up.railway.app
+👉 https://clube-do-gole.onrender.com
 
 ---
 
@@ -75,9 +75,10 @@ Clube_do_gole
 │   ├── css
 │   ├── js
 │   ├── img
-│   └── data (arquivos CSV)
+│   └── data
 ├── requirements.txt
 └── Procfile
+
 Funcionalidades
 Sistema de navegação entre páginas (Flask)
 Listagem de produtos
@@ -112,19 +113,19 @@ Estruturação de aplicações com Flask
 Separação entre frontend e backend
 Organização de rotas
 Simulação de banco de dados com CSV
-Construção de sistemas completos (tipo ERP / e-commerce)
+Construção de sistemas completos tipo ERP / e-commerce
 Diferenciais
 Projeto baseado em um modelo real de negócio
 Estrutura próxima de aplicações profissionais
 Backend funcional com Flask
 Simulação de dados reais
 Possibilidade de evolução para banco de dados real (PostgreSQL)
-Próximos passos (melhorias futuras)
+Próximos passos
 Integração com banco de dados (PostgreSQL)
 Sistema de autenticação seguro
 API REST
 Integração com pagamentos
-Deploy em nuvem (Render, Railway, etc)
+Deploy em nuvem
 Status do projeto
 
 Em evolução 🚀
