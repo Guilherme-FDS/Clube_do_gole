@@ -141,7 +141,7 @@
                             <td>{{ venda.quantidade }}</td>
                             <td>R$ {{ "%.2f"|format(venda.valor_total|float) }}</td>
                             <td>
-                                <a href="{{ url_for('routes.detalhes_venda', venda_id=venda.id_compra) }}" 
+                                <a href="{{ url_for('admin.detalhes_venda', venda_id=venda.id_compra) }}" 
                                    class="btn-detalhes" title="Ver Detalhes">
                                     <i class="fas fa-eye"></i> Detalhes
                                 </a>

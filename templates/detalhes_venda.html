@@ -16,12 +16,12 @@
             </div>
             <nav class="nav-left">
                 <ul>
-                    <li><a href="{{ url_for('routes.dashboard_vendas') }}">Voltar</a></li>
+                    <li><a href="{{ url_for('admin.dashboard') }}">Voltar</a></li>
                 </ul>
             </nav>
         </div>
         <div class="header-right">
-            <a href="{{ url_for('routes.dashboard_vendas') }}" class="icon-btn">
+            <a href="{{ url_for('admin.dashboard') }}" class="icon-btn">
                 <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
             </a>
         </div>
@@ -89,7 +89,7 @@
 
         <!-- AÇÕES -->
         <div class="acoes-detalhes">
-            <a href="{{ url_for('routes.dashboard_vendas') }}" class="btn-voltar">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn-voltar">
                 <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
             </a>
             <button onclick="window.print()" class="btn-imprimir">

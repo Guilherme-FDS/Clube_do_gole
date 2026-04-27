@@ -39,7 +39,7 @@
     </div>
 
     <!-- Quantidade -->
-    <form action="{{ url_for('routes.adicionar_carrinho') }}" method="POST" id="form-carrinho" class="form-produto">
+    <form action="{{ url_for('carrinho.adicionar') }}" method="POST" id="form-carrinho" class="form-produto">
       <!-- Campos hidden com dados do produto -->
       <input type="hidden" name="id_produto" value="{{ produto.id }}">
       <input type="hidden" name="nome_produto" value="{{ produto.nome }}">
