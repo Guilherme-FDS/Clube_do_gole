@@ -2,49 +2,49 @@
 <header class="main-header">
   <div class="header-left">
     <div class="logo">
-      <a href="{{ url_for('routes.index') }}">
+      <a href="{{ url_for('main.index') }}">
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Clube do Gole" class="logo-img-small">
       </a>
     </div>
     <nav class="nav-left">
       <ul>
         {# CHECKOUT - MENU SIMPLIFICADO #}
-        {% if request.endpoint == 'routes.checkout' %}
-          <li><a href="{{ url_for('routes.index') }}">Início</a></li>
-          <li><a href="{{ url_for('routes.index') }}#planos">Produtos</a></li>
-          <li><a href="{{ url_for('routes.carrinho') }}">Carrinho</a></li>
+        {% if request.endpoint == 'carrinho.checkout' %}
+          <li><a href="{{ url_for('main.index') }}">Início</a></li>
+          <li><a href="{{ url_for('main.index') }}#planos">Produtos</a></li>
+          <li><a href="{{ url_for('carrinho.ver') }}">Carrinho</a></li>
 
         {# PÁGINAS ADMINISTRATIVAS #}
-        {% elif request.endpoint in ['routes.usuario_adm', 'routes.cupons', 'routes.dashboard_vendas', 'routes.produtos', 'routes.editar_cupom', 'routes.editar_produto'] %}
-          <li><a href="{{ url_for('routes.index') }}">Início</a></li>
-          <li><a href="{{ url_for('routes.usuario_adm') }}" class="nav-admin-btn">
+        {% elif request.endpoint in ['admin.painel', 'admin.cupons', 'admin.dashboard', 'main.produtos', 'admin.editar_cupom', 'admin.editar_produto'] %}
+          <li><a href="{{ url_for('main.index') }}">Início</a></li>
+          <li><a href="{{ url_for('admin.painel') }}" class="nav-admin-btn">
             <i class="fas fa-cog"></i> Painel ADM
           </a></li>
-          {% if request.endpoint == 'routes.editar_produto' %}
-          <li><a href="{{ url_for('routes.produtos') }}" class="nav-admin-btn">
+          {% if request.endpoint == 'admin.editar_produto' %}
+          <li><a href="{{ url_for('main.produtos') }}" class="nav-admin-btn">
             <i class="fas fa-box"></i> Produtos
           </a></li>
           {% endif %}
-          {% if request.endpoint == 'routes.editar_cupom' %}
-          <li><a href="{{ url_for('routes.cupons') }}" class="nav-admin-btn">
+          {% if request.endpoint == 'admin.editar_cupom' %}
+          <li><a href="{{ url_for('admin.cupons') }}" class="nav-admin-btn">
             <i class="fas fa-tag"></i> Gerenciar Cupons
           </a></li>
           {% endif %}
 
         {# PÁGINAS NORMAIS #}
         {% else %}
-          {% if request.endpoint == 'routes.index' %}
+          {% if request.endpoint == 'main.index' %}
             <li><a href="#inicio" class="scroll-link">Início</a></li>
             <li><a href="#comofunciona" class="scroll-link">Como Funciona</a></li>
             <li><a href="#planos" class="scroll-link">Planos</a></li>
             <li><a href="#sobre" class="scroll-link">Sobre</a></li>
             <li><a href="#contato" class="scroll-link">Contato</a></li>
           {% else %}
-            <li><a href="{{ url_for('routes.index') }}#inicio">Início</a></li>
-            <li><a href="{{ url_for('routes.index') }}#como-funciona">Como Funciona</a></li>
-            <li><a href="{{ url_for('routes.index') }}#planos">Planos</a></li>
-            <li><a href="{{ url_for('routes.index') }}#sobre">Sobre</a></li>
-            <li><a href="{{ url_for('routes.index') }}#contato">Contato</a></li>
+            <li><a href="{{ url_for('main.index') }}#inicio">Início</a></li>
+            <li><a href="{{ url_for('main.index') }}#como-funciona">Como Funciona</a></li>
+            <li><a href="{{ url_for('main.index') }}#planos">Planos</a></li>
+            <li><a href="{{ url_for('main.index') }}#sobre">Sobre</a></li>
+            <li><a href="{{ url_for('main.index') }}#contato">Contato</a></li>
           {% endif %}
         {% endif %}
       </ul>
@@ -52,7 +52,7 @@
   </div>
 
   <div class="header-right">
-    <a href="{{ url_for('routes.carrinho') }}" class="icon-btn" id="cartBtn">
+    <a href="{{ url_for('carrinho.ver') }}" class="icon-btn" id="cartBtn">
       <i class="fas fa-shopping-cart"></i> Carrinho <span id="cartCount">0</span>
     </a>
     
@@ -71,22 +71,22 @@
         <div class="user-dropdown">
           {# SE É ADMIN, MOSTRA LINK PARA PAINEL ADMIN #}
           {% if session.get("tipo") == "admin" %}
-            <a href="{{ url_for('routes.usuario_adm') }}" class="dropdown-item">
+            <a href="{{ url_for('admin.painel') }}" class="dropdown-item">
               <i class="fas fa-cog"></i> Painel Administrativo
             </a>
           {% else %}
             {# SE É CLIENTE, MOSTRA CONFIGURAÇÕES #}
-            <a href="{{ url_for('routes.configuracoes') }}" class="dropdown-item">
+            <a href="{{ url_for('configuracoes.configuracoes') }}" class="dropdown-item">
               <i class="fas fa-cog"></i> Configurações
             </a>
           {% endif %}
-          <a href="{{ url_for('routes.logout') }}" class="dropdown-item">
+          <a href="{{ url_for('auth.logout') }}" class="dropdown-item">
             <i class="fas fa-sign-out-alt"></i> Sair
           </a>
         </div>
       </div>
     {% else %}
-      <a href="{{ url_for('routes.login') }}" class="icon-btn">
+      <a href="{{ url_for('auth.login') }}" class="icon-btn">
         <i class="fas fa-user"></i> Login
       </a>
     {% endif %}

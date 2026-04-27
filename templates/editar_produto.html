@@ -28,7 +28,7 @@
       </div>
 
       <div class="form-wrapper fade-in">
-        <form action="{{ url_for('routes.editar_produto', id=produto.id) }}" method="POST" class="admin-form" enctype="multipart/form-data">
+        <form action="{{ url_for('admin.editar_produto', id=produto.id) }}" method="POST" class="admin-form" enctype="multipart/form-data">
           <div class="form-group">
             <label for="nomeProduto" class="form-label">Nome do Produto:</label>
             <input type="text" id="nomeProduto" name="nome" value="{{ produto.nome }}" class="form-input" required>
@@ -82,7 +82,7 @@
           </div>
 
           <div class="form-buttons">
-            <a href="{{ url_for('routes.produtos') }}" class="btn-admin btn-cancelar">Cancelar</a>
+            <a href="{{ url_for('main.produtos') }}" class="btn-admin btn-cancelar">Cancelar</a>
             <button type="submit" class="btn-admin btn-salvar">Salvar Alterações</button>
           </div>
         </form>

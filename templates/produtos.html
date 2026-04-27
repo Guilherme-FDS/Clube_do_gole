@@ -65,12 +65,12 @@
             </td>
             <td class="acoes">
               <!-- Botão Editar -->
-              <a href="{{ url_for('routes.editar_produto', id=p.id) }}" class="btn-editar" title="Editar">
+              <a href="{{ url_for('admin.editar_produto', id=p.id) }}" class="btn-editar" title="Editar">
                 <i class="fas fa-edit"></i> Editar
               </a>
 
               <!-- Botão Excluir -->
-              <a href="{{ url_for('routes.deletar_produto', id=p.id) }}" class="btn-excluir" title="Excluir"
+              <a href="{{ url_for('admin.deletar_produto', id=p.id) }}" class="btn-excluir" title="Excluir"
                 onclick="return confirm('Tem certeza que deseja excluir este produto?')">
                 <i class="fas fa-trash"></i> Excluir
               </a>
@@ -90,7 +90,7 @@
 <div id="modalProduto" class="modal">
   <div class="modal-content">
     <h2 class="titulo-md"><i class="fas fa-box"></i> Adicionar Novo Produto</h2>
-    <form action="{{ url_for('routes.adicionar_produto') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ url_for('admin.adicionar_produto') }}" method="POST" enctype="multipart/form-data">
       <div class="form-group">
         <label for="nomeProduto">Nome do Produto:</label>
         <input type="text" id="nomeProduto" name="nome" placeholder="Ex: Box 6" required>

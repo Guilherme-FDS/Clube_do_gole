@@ -32,7 +32,7 @@
         <div class="guest-message">
           <strong>Você não está logado</strong>
           <p>Adicione itens ao carrinho agora e faça login na hora de finalizar a compra. Seus itens serão mantidos!</p>
-          <a href="{{ url_for('routes.login') }}?redirect=index" class="btn-login-guest">
+          <a href="{{ url_for('auth.login') }}?redirect=index" class="btn-login-guest">
             <i class="fas fa-sign-in-alt"></i> Fazer Login
           </a>
         </div>
@@ -122,7 +122,7 @@
           </div>
 
           <div class="acoes-carrinho">
-            <a href="{{ url_for('routes.index') }}#planos" class="btn-modern btn-continuar">
+            <a href="{{ url_for('main.index') }}#planos" class="btn-modern btn-continuar">
               <i class="fas fa-shopping-bag"></i> Continuar Comprando
             </a>
             <button type="button" onclick="abrirCheckout()" class="btn-modern btn-finalizar">
@@ -139,7 +139,7 @@
         </div>
         <h3>Seu carrinho está vazio</h3>
         <p>Explore nossos produtos e adicione itens incríveis ao seu carrinho!</p>
-        <a href="{{ url_for('routes.index') }}#planos" class="btn-modern btn-continuar">
+        <a href="{{ url_for('main.index') }}#planos" class="btn-modern btn-continuar">
           <i class="fas fa-shopping-bag"></i> Continuar Comprando
         </a>
       </div>

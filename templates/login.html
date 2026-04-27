@@ -43,7 +43,7 @@
                 {% endif %}
             {% endwith %}
 
-            <form method="POST" action="{{ url_for('routes.login') }}" class="login-form">
+            <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
                     <div class="input-container">
@@ -86,10 +86,10 @@
 
             <div class="login-links">
                 <div class="signup-link">
-                    Não tem uma conta? <a href="{{ url_for('routes.cadastro') }}" class="link-accent">Cadastre-se</a>
+                    Não tem uma conta? <a href="{{ url_for('auth.cadastro') }}" class="link-accent">Cadastre-se</a>
                 </div>
                 <div class="back-link">
-                    <a href="{{ url_for('routes.index') }}" class="link-secondary">
+                    <a href="{{ url_for('main.index') }}" class="link-secondary">
                         <i class="fas fa-arrow-left"></i>
                         Voltar para página inicial
                     </a>

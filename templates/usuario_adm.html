@@ -27,16 +27,16 @@
       </div>
       <nav class="nav-left">
         <ul>
-          <li><a href="{{ url_for('routes.index') }}">Início</a></li>
-          <li><a href="{{ url_for('routes.cupons') }}">Cupons</a></li>
-          <li><a href="{{ url_for('routes.dashboard_vendas') }}">Vendas</a></li>
-          <li><a href="{{ url_for('routes.produtos') }}">Produtos</a></li>
+          <li><a href="{{ url_for('main.index') }}">Início</a></li>
+          <li><a href="{{ url_for('admin.cupons') }}">Cupons</a></li>
+          <li><a href="{{ url_for('admin.dashboard') }}">Vendas</a></li>
+          <li><a href="{{ url_for('main.produtos') }}">Produtos</a></li>
         </ul>
       </nav>
     </div>
     <div class="header-right">
       <span class="user-welcome">Bem-vindo, Administrador!</span>
-      <a href="{{ url_for('routes.logout') }}" class="icon-btn">
+      <a href="{{ url_for('auth.logout') }}" class="icon-btn">
         <i class="fas fa-sign-out-alt"></i> Sair
       </a>
     </div>
@@ -50,7 +50,7 @@
 
       <div class="admin-grid">
         <!-- CUPONS -->
-        <a href="{{ url_for('routes.cupons') }}" class="admin-card fade-in">
+        <a href="{{ url_for('admin.cupons') }}" class="admin-card fade-in">
           <div class="card-icon">
             <i class="fas fa-tags"></i>
             <span class="card-badge">Ativo</span>
@@ -63,7 +63,7 @@
         </a>
 
         <!-- VENDAS -->
-        <a href="{{ url_for('routes.dashboard_vendas') }}" class="admin-card fade-in">
+        <a href="{{ url_for('admin.dashboard') }}" class="admin-card fade-in">
           <div class="card-icon">
             <i class="fas fa-chart-line"></i>
             <span class="card-badge">Relatórios</span>
@@ -76,7 +76,7 @@
         </a>
 
         <!-- PRODUTOS -->
-        <a href="{{ url_for('routes.produtos') }}" class="admin-card fade-in">
+        <a href="{{ url_for('main.produtos') }}" class="admin-card fade-in">
           <div class="card-icon">
             <i class="fas fa-wine-bottle"></i>
           </div>

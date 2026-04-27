@@ -4,7 +4,7 @@
 <div class="container" style="margin-top: 120px; min-height: 60vh;">
     <!-- Breadcrumb -->
     <nav class="breadcrumb-nav">
-        <a href="{{ url_for('routes.index') }}">Início</a>
+        <a href="{{ url_for('main.index') }}">Início</a>
         <span>/</span>
         <span>Configurações</span>
     </nav>
@@ -348,7 +348,7 @@
                         </div>
 
                         <div class="pedido-actions">
-                            <a href="{{ url_for('routes.comprar_novamente', produto_id=pedido.id_produto) }}"
+                            <a href="{{ url_for('carrinho.comprar_novamente', produto_id=pedido.id_produto) }}"
                                 class="btn-secondary">
                                 <i class="fas fa-redo"></i>
                                 Comprar Novamente
@@ -367,7 +367,7 @@
                         <i class="fas fa-shopping-bag"></i>
                         <h3>Nenhum pedido encontrado</h3>
                         <p>Você ainda não realizou nenhuma compra. Que tal explorar nossos produtos?</p>
-                        <a href="{{ url_for('routes.index') }}#planos" class="btn-primary">
+                        <a href="{{ url_for('main.index') }}#planos" class="btn-primary">
                             <i class="fas fa-shopping-cart"></i>
                             Fazer Compras
                         </a>

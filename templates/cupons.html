@@ -60,13 +60,13 @@
               <td class="acoes">
                 <!-- Botão Ativar/Inativar -->
                 {% if cupom.status == 'ativo' %}
-                <a href="{{ url_for('routes.alterar_status_cupom', cupom_id=cupom.id, novo_status='inativo') }}" 
+                <a href="{{ url_for('admin.alterar_status_cupom', cupom_id=cupom.id, novo_status='inativo') }}" 
                    class="btn-acao btn-inativar"
                    onclick="return confirm('Tem certeza que deseja inativar este cupom?')">
                   <i class="fas fa-pause"></i> Inativar
                 </a>
                 {% else %}
-                <a href="{{ url_for('routes.alterar_status_cupom', cupom_id=cupom.id, novo_status='ativo') }}" 
+                <a href="{{ url_for('admin.alterar_status_cupom', cupom_id=cupom.id, novo_status='ativo') }}" 
                    class="btn-acao btn-ativar"
                    onclick="return confirm('Tem certeza que deseja ativar este cupom?')">
                   <i class="fas fa-play"></i> Ativar
@@ -74,12 +74,12 @@
                 {% endif %}
 
                 <!-- Botão Editar -->
-                <a href="{{ url_for('routes.editar_cupom', cupom_id=cupom.id) }}" class="btn-acao btn-editar">
+                <a href="{{ url_for('admin.editar_cupom', cupom_id=cupom.id) }}" class="btn-acao btn-editar">
                   <i class="fas fa-edit"></i> Editar
                 </a>
 
                 <!-- Botão Excluir -->
-                <a href="{{ url_for('routes.remover_cupom', cupom_id=cupom.id) }}" class="btn-acao btn-excluir"
+                <a href="{{ url_for('admin.remover_cupom', cupom_id=cupom.id) }}" class="btn-acao btn-excluir"
                   onclick="return confirm('Tem certeza que deseja excluir este cupom?')">
                   <i class="fas fa-trash"></i> Excluir
                 </a>
@@ -103,7 +103,7 @@
   <div id="modalCupom" class="modal">
     <div class="modal-content">
       <h2 class="titulo-md"><i class="fas fa-tag"></i> Adicionar Novo Cupom</h2>
-      <form action="{{ url_for('routes.adicionar_cupom') }}" method="POST" id="formCupom">
+      <form action="{{ url_for('admin.adicionar_cupom') }}" method="POST" id="formCupom">
         <div class="form-group">
           <label for="codigoCupom">Código do Cupom:</label>
           <input type="text" id="codigoCupom" name="codigo" placeholder="Ex: CLUBE10" required 

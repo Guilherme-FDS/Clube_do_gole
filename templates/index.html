@@ -36,7 +36,7 @@
       </nav>
     </div>
     <div class="header-right">
-      <a href="{{ url_for('routes.carrinho') }}" class="icon-btn" id="cartBtn">
+      <a href="{{ url_for('carrinho.ver') }}" class="icon-btn" id="cartBtn">
         <i class="fas fa-shopping-cart"></i> Carrinho <span id="cartCount">0</span>
       </a>
 
@@ -53,16 +53,16 @@
           </button>
         </div>
         <div class="user-dropdown">
-          <a href="{{ url_for('routes.configuracoes') }}" class="dropdown-item">
+          <a href="{{ url_for('configuracoes.configuracoes') }}" class="dropdown-item">
             <i class="fas fa-cog"></i> Configurações
           </a>
-          <a href="{{ url_for('routes.logout') }}" class="dropdown-item">
+          <a href="{{ url_for('auth.logout') }}" class="dropdown-item">
             <i class="fas fa-sign-out-alt"></i> Sair
           </a>
         </div>
       </div>
       {% else %}
-      <a href="{{ url_for('routes.login') }}" class="icon-btn">
+      <a href="{{ url_for('auth.login') }}" class="icon-btn">
         <i class="fas fa-user"></i> Login
       </a>
       {% endif %}
@@ -160,7 +160,7 @@
             <h4 class="produto-titulo">{{ produto.nome }}</h4>
             <p class="produto-descricao">{{ produto.descricao }}</p>
             <p class="preco">R$ {{ "%.2f"|format(produto.preco|float)|replace('.', ',') }}</p>
-            <a href="{{ url_for('routes.produto', produto_id=produto.id) }}" class="btn-produto">Ver Produto</a>
+            <a href="{{ url_for('main.produto', produto_id=produto.id) }}" class="btn-produto">Ver Produto</a>
           </div>
         </div>
         {% endfor %}
@@ -184,7 +184,7 @@
             <h4 class="produto-titulo">{{ produto.nome }}</h4>
             <p class="produto-descricao">{{ produto.descricao }}</p>
             <p class="preco">R$ {{ "%.2f"|format(produto.preco|float)|replace('.', ',') }}</p>
-            <a href="{{ url_for('routes.produto', produto_id=produto.id) }}" class="btn-produto">Ver Produto</a>
+            <a href="{{ url_for('main.produto', produto_id=produto.id) }}" class="btn-produto">Ver Produto</a>
           </div>
         </div>
         {% endfor %}
@@ -285,7 +285,7 @@
         </div>
         <p class="footer-copyright fade-in">
           © 2025 Clube do Gole. Todos os direitos reservados. Created with love by
-          <a href="{{ url_for('routes.mixupcode') }}" class="mixupcode-link">MixUpCode</a>
+          <a href="{{ url_for('main.mixupcode') }}" class="mixupcode-link">MixUpCode</a>
         </p>
       </div>
     </div>
