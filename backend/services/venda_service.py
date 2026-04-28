@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from backend.services import cupom_service
-from config import Config
+from backend.config import Config
 from backend.database.connection import fetchall, fetchone, execute
 from backend.services import produto_service
 
