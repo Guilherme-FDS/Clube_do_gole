@@ -1,21 +1,13 @@
 import uuid
 from datetime import datetime
 from config import Config
-from utils import csv_helper as csv
+from database.connection import fetchall, fetchone, execute
 from services import produto_service, cupom_service
 
-CAMPOS = [
-    "id_compra", "id_usuario", "id_produto", "quantidade",
-    "valor_original", "valor_desconto", "valor_total", "data",
-    "plano", "desconto_aplicado", "cupom_aplicado",
-]
 
 def finalizar_compra(usuario_id, itens, codigo_cupom="", desconto_cupom=0.0):
     if not itens:
         return False, "Nenhum item para finalizar."
-
-    usuario_id = str(usuario_id)
-    vendas = csv.ler(Config.VENDAS_FILE)
 
     for item in itens:
         valor_unitario = float(item["valor_unitario"])
@@ -30,105 +22,108 @@ def finalizar_compra(usuario_id, itens, codigo_cupom="", desconto_cupom=0.0):
         valor_final = max(0, valor_apos_plano * (1 - (desconto_cupom / 100)))
         desconto_total = ((valor_original - valor_final) / valor_original * 100) if valor_original else 0
 
-        vendas.append({
-            "id_compra": str(uuid.uuid4()),
-            "id_usuario": usuario_id,
-            "id_produto": item["id_produto"],
-            "quantidade": str(quantidade),
-            "valor_original": round(valor_original, 2),
-            "valor_desconto": round(valor_original - valor_final, 2),
-            "valor_total": round(valor_final, 2),
-            "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "plano": plano,
-            "desconto_aplicado": round(desconto_total, 2),
-            "cupom_aplicado": codigo_cupom,
-        })
+        execute("""
+            INSERT INTO vendas (
+                id_compra, id_usuario, id_produto, quantidade,
+                valor_original, valor_desconto, valor_total,
+                plano, desconto_aplicado, cupom_aplicado, data
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            str(uuid.uuid4()),
+            int(usuario_id),
+            int(item["id_produto"]),
+            quantidade,
+            round(valor_original, 2),
+            round(valor_original - valor_final, 2),
+            round(valor_final, 2),
+            plano,
+            round(desconto_total, 2),
+            codigo_cupom,
+            datetime.now(),
+        ))
 
         produto_service.decrementar_estoque(item["id_produto"], quantidade)
-
-    csv.salvar(Config.VENDAS_FILE, vendas, CAMPOS)
 
     if codigo_cupom:
         cupom_service.consumir(codigo_cupom)
 
     return True, f"{len(itens)} item(ns) finalizado(s) com sucesso!"
 
+
 def pedidos_do_usuario(usuario_id):
-    usuario_id = str(usuario_id)
-    vendas = csv.ler(Config.VENDAS_FILE)
-    produtos = produto_service.listar_todos()
-    meus_pedidos = []
+    rows = fetchall("""
+        SELECT v.*, p.nome AS nome_produto, p.imagem AS imagem_produto,
+               p.descricao AS descricao_produto
+        FROM vendas v
+        LEFT JOIN produtos p ON p.id = v.id_produto
+        WHERE v.id_usuario = %s
+        ORDER BY v.data DESC
+    """, (int(usuario_id),))
 
-    for venda in vendas:
-        if venda["id_usuario"] != usuario_id:
-            continue
-        produto = next((p for p in produtos if p["id"] == venda["id_produto"]), {})
-        valor_original = float(venda.get("valor_original", 0))
-        valor_total = float(venda.get("valor_total", 0))
-        desconto_aplicado = float(venda.get("desconto_aplicado", 0))
+    pedidos = []
+    for v in rows:
+        valor_original = float(v.get("valor_original") or 0)
+        valor_total = float(v.get("valor_total") or 0)
+        desconto_aplicado = float(v.get("desconto_aplicado") or 0)
+        plano = v.get("plano", "mensal")
 
-        if valor_original == 0 and valor_total > 0:
-            valor_original = (valor_total / (1 - desconto_aplicado / 100)) if desconto_aplicado > 0 else valor_total
-
-        plano = venda.get("plano", "mensal")
-        meus_pedidos.append({
-            "id_compra": venda.get("id_compra", ""),
-            "id_produto": venda.get("id_produto", ""),
-            "nome_produto": produto.get("nome", "Produto não encontrado"),
-            "quantidade": venda.get("quantidade", "1"),
+        pedidos.append({
+            "id_compra": str(v.get("id_compra", "")),
+            "id_produto": v.get("id_produto"),
+            "nome_produto": v.get("nome_produto", "Produto não encontrado"),
+            "quantidade": v.get("quantidade", 1),
             "plano": plano,
-            "data": venda.get("data", ""),
-            "imagem_produto": produto.get("imagem", ""),
+            "data": str(v.get("data", "")),
+            "imagem_produto": v.get("imagem_produto", ""),
             "valor_total": valor_total,
             "valor_sem_desconto": valor_original,
             "valor_com_desconto": valor_total,
             "desconto_aplicado": desconto_aplicado,
             "desconto_recorrencia": Config.DESCONTOS_PLANO.get(plano, 0) * 100,
-            "cupom_aplicado": venda.get("cupom_aplicado", ""),
+            "cupom_aplicado": v.get("cupom_aplicado", ""),
             "economia": max(0, valor_original - valor_total),
         })
 
-    meus_pedidos.sort(key=lambda x: x.get("data", ""), reverse=True)
-    return meus_pedidos
+    return pedidos
+
 
 def dados_dashboard():
-    vendas = csv.ler(Config.VENDAS_FILE)
-    produtos = produto_service.listar_todos()
+    vendas = fetchall("""
+        SELECT v.*, p.nome AS nome_produto, p.tipo AS tipo_produto
+        FROM vendas v
+        LEFT JOIN produtos p ON p.id = v.id_produto
+        ORDER BY v.data DESC
+    """)
 
-    for venda in vendas:
-        venda["valor_total"] = float(venda.get("valor_total", 0))
-        venda["quantidade"] = int(venda.get("quantidade", 1))
+    for v in vendas:
+        v["valor_total"] = float(v.get("valor_total") or 0)
+        v["quantidade"] = int(v.get("quantidade") or 1)
 
     faturamento_total = sum(v["valor_total"] for v in vendas)
     clientes_unicos = len(set(v["id_usuario"] for v in vendas))
 
     produtos_vendidos = {}
-    for venda in vendas:
-        produto = next((p for p in produtos if p["id"] == venda["id_produto"]), {})
-        nome = produto.get("nome", f"Produto {venda['id_produto']}")
+    for v in vendas:
+        nome = v.get("nome_produto") or f"Produto {v['id_produto']}"
         if nome not in produtos_vendidos:
-            produtos_vendidos[nome] = {"quantidade": 0, "faturamento": 0, "id": venda["id_produto"]}
-        produtos_vendidos[nome]["quantidade"] += venda["quantidade"]
-        produtos_vendidos[nome]["faturamento"] += venda["valor_total"]
+            produtos_vendidos[nome] = {"quantidade": 0, "faturamento": 0, "id": v["id_produto"]}
+        produtos_vendidos[nome]["quantidade"] += v["quantidade"]
+        produtos_vendidos[nome]["faturamento"] += v["valor_total"]
 
     mais_vendidos = sorted(produtos_vendidos.items(), key=lambda x: x[1]["quantidade"], reverse=True)[:10]
 
     vendas_por_mes = {}
-    for venda in vendas:
-        mes_ano = (venda.get("data") or "")[:7]
+    for v in vendas:
+        mes_ano = str(v.get("data") or "")[:7]
         if not mes_ano:
             continue
         if mes_ano not in vendas_por_mes:
             vendas_por_mes[mes_ano] = {"quantidade": 0, "faturamento": 0, "vendas": 0}
-        vendas_por_mes[mes_ano]["quantidade"] += venda["quantidade"]
-        vendas_por_mes[mes_ano]["faturamento"] += venda["valor_total"]
+        vendas_por_mes[mes_ano]["quantidade"] += v["quantidade"]
+        vendas_por_mes[mes_ano]["faturamento"] += v["valor_total"]
         vendas_por_mes[mes_ano]["vendas"] += 1
 
-    ultimas = sorted(vendas, key=lambda x: x.get("data", ""), reverse=True)[:10]
-    for venda in ultimas:
-        produto = next((p for p in produtos if p["id"] == venda["id_produto"]), {})
-        venda["nome_produto"] = produto.get("nome", f"Produto {venda['id_produto']}")
-        venda["tipo_produto"] = produto.get("tipo", "N/A")
+    ultimas = vendas[:10]
 
     return {
         "total_vendas": len(vendas),
@@ -139,26 +134,23 @@ def dados_dashboard():
         "ultimas_vendas": ultimas,
     }
 
-def buscar_venda(venda_id):
-    vendas = csv.ler(Config.VENDAS_FILE)
-    produtos = produto_service.listar_todos()
-    clientes = csv.ler(Config.USUARIOS_CLIENTE)
 
-    venda = next((v for v in vendas if v["id_compra"] == venda_id), None)
+def buscar_venda(venda_id):
+    venda = fetchone("""
+        SELECT v.*, p.nome AS nome_produto, p.tipo AS tipo_produto,
+               u.nome AS nome_usuario, u.email AS email_usuario
+        FROM vendas v
+        LEFT JOIN produtos p ON p.id = v.id_produto
+        LEFT JOIN usuarios_clientes u ON u.id = v.id_usuario
+        WHERE v.id_compra = %s
+    """, (venda_id,))
+
     if not venda:
         return None
 
-    produto = next((p for p in produtos if p["id"] == venda["id_produto"]), {})
-    usuario = next((u for u in clientes if u["id"] == venda["id_usuario"]), {})
-
-    venda["nome_produto"] = produto.get("nome", f"Produto {venda['id_produto']}")
-    venda["tipo_produto"] = produto.get("tipo", "N/A")
-    venda["nome_usuario"] = usuario.get("nome", "Cliente")
-    venda["email_usuario"] = usuario.get("email", "N/A")
-
     try:
         venda["preco_unitario"] = float(venda["valor_total"]) / int(venda["quantidade"])
-    except (ValueError, ZeroDivisionError):
+    except (TypeError, ZeroDivisionError):
         venda["preco_unitario"] = 0
 
     return venda

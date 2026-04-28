@@ -144,14 +144,12 @@ def finalizar_compra():
 
     if sucesso:
         # marcar itens como finalizados no carrinho
-        from config import Config
-        from utils import csv_helper as csv
-        from services.carrinho_service import CAMPOS as CARRINHO_CAMPOS
-        carrinho = csv.ler(Config.CARRINHO_FILE)
-        for item in carrinho:
-            if item["id_usuario"] == usuario_id and item["id_carrinho"] in ids_selecionados:
-                item["status"] = "finalizado"
-        csv.salvar(Config.CARRINHO_FILE, carrinho, CARRINHO_CAMPOS)
+        from database.connection import execute as db_execute
+        for id_carrinho in ids_selecionados:
+            db_execute(
+                "UPDATE carrinho SET status='finalizado' WHERE id_carrinho=%s AND id_usuario=%s",
+                (id_carrinho, usuario_id)
+            )       
         flash(mensagem, "sucesso")
     else:
         flash(mensagem, "erro")

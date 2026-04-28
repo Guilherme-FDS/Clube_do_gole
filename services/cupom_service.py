@@ -1,27 +1,17 @@
-from config import Config
-from utils import csv_helper as csv
+from database.connection import fetchall, fetchone, execute
 
-CAMPOS = ["id", "codigo", "desconto_percentual", "usos_maximos", "usos_restantes", "status"]
 
 def listar_todos():
-    cupons = csv.ler(Config.CUPONS_FILE)
-    for c in cupons:
-        try:
-            c["usos_restantes"] = int(c.get("usos_restantes", 0))
-            c["desconto_percentual"] = float(c.get("desconto_percentual", 0))
-        except (ValueError, TypeError):
-            c["usos_restantes"] = 0
-            c["desconto_percentual"] = 0.0
-    return cupons
+    return fetchall("SELECT * FROM cupons ORDER BY id")
+
 
 def buscar_por_id(cupom_id):
-    return next((c for c in csv.ler(Config.CUPONS_FILE) if c["id"] == str(cupom_id)), None)
+    return fetchone("SELECT * FROM cupons WHERE id = %s", (cupom_id,))
+
 
 def buscar_por_codigo(codigo):
-    return next(
-        (c for c in csv.ler(Config.CUPONS_FILE) if c.get("codigo") == codigo.upper()),
-        None
-    )
+    return fetchone("SELECT * FROM cupons WHERE codigo = %s", (codigo.upper(),))
+
 
 def validar(codigo):
     """Retorna (valido, mensagem, percentual_desconto)"""
@@ -30,53 +20,53 @@ def validar(codigo):
         return False, "Cupom inválido.", 0.0
     if cupom.get("status") != "ativo":
         return False, "Cupom inativo.", 0.0
-    try:
-        usos_restantes = int(cupom.get("usos_restantes", 0))
-    except (ValueError, TypeError):
-        usos_restantes = 0
-    if usos_restantes <= 0:
+    if cupom.get("usos_restantes", 0) <= 0:
         return False, "Cupom esgotado.", 0.0
     desconto = float(cupom.get("desconto_percentual", 0))
     return True, f"Cupom aplicado! {desconto}% de desconto.", desconto
 
+
 def consumir(codigo):
-    dados = csv.ler(Config.CUPONS_FILE)
-    cupom = next((c for c in dados if c.get("codigo") == codigo.upper()), None)
-    if not cupom:
+    cupom = buscar_por_codigo(codigo)
+    if not cupom or cupom.get("usos_restantes", 0) <= 0:
         return False
-    try:
-        usos = int(cupom.get("usos_restantes", 0))
-    except (ValueError, TypeError):
-        return False
-    if usos <= 0:
-        return False
-    cupom["usos_restantes"] = str(usos - 1)
-    csv.salvar(Config.CUPONS_FILE, dados, CAMPOS)
+    execute("""
+        UPDATE cupons SET usos_restantes = usos_restantes - 1 WHERE codigo = %s
+    """, (codigo.upper(),))
     return True
+
 
 def adicionar(dados):
-    todos = csv.ler(Config.CUPONS_FILE)
-    dados["id"] = csv.proximo_id(todos)
-    todos.append(dados)
-    csv.salvar(Config.CUPONS_FILE, todos, CAMPOS)
-    return dados
+    execute("""
+        INSERT INTO cupons (codigo, desconto_percentual, usos_maximos, usos_restantes, status)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (
+        dados.get("codigo", "").upper(),
+        dados.get("desconto_percentual", 0),
+        dados.get("usos_maximos", 1),
+        dados.get("usos_restantes", 1),
+        dados.get("status", "ativo"),
+    ))
 
-def atualizar(cupom_id, novos_dados):
-    todos = csv.ler(Config.CUPONS_FILE)
-    for cupom in todos:
-        if cupom["id"] == str(cupom_id):
-            cupom.update(novos_dados)
-            csv.salvar(Config.CUPONS_FILE, todos, CAMPOS)
-            return True
-    return False
+
+def atualizar(cupom_id, dados):
+    execute("""
+        UPDATE cupons
+        SET codigo=%s, desconto_percentual=%s, usos_maximos=%s, usos_restantes=%s, status=%s
+        WHERE id=%s
+    """, (
+        dados.get("codigo", "").upper(),
+        dados.get("desconto_percentual", 0),
+        dados.get("usos_maximos", 1),
+        dados.get("usos_restantes", 1),
+        dados.get("status", "ativo"),
+        cupom_id,
+    ))
+
 
 def remover(cupom_id):
-    todos = csv.ler(Config.CUPONS_FILE)
-    novos = [c for c in todos if c["id"] != str(cupom_id)]
-    if len(novos) == len(todos):
-        return False
-    csv.salvar(Config.CUPONS_FILE, novos, CAMPOS)
-    return True
+    execute("DELETE FROM cupons WHERE id = %s", (cupom_id,))
+
 
 def alterar_status(cupom_id, novo_status):
-    return atualizar(cupom_id, {"status": novo_status})
+    execute("UPDATE cupons SET status = %s WHERE id = %s", (novo_status, cupom_id))
