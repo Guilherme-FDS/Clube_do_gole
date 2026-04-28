@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
+from backend.services import cupom_service
 from config import Config
-from database.connection import fetchall, fetchone, execute
-from services import produto_service, cupom_service
+from backend.database.connection import fetchall, fetchone, execute
+from backend.services import produto_service
 
 
 def finalizar_compra(usuario_id, itens, codigo_cupom="", desconto_cupom=0.0):

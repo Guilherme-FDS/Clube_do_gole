@@ -1,4 +1,4 @@
-from database.connection import fetchall, fetchone, execute
+from backend.database.connection import fetchall, fetchone, execute
 
 
 def listar_todos():
