@@ -1,51 +1,55 @@
-from config import Config
-from utils import csv_helper as csv
+from database.connection import fetchall, fetchone, execute
 
-CAMPOS = ["id", "nome", "tipo", "descricao", "preco", "imagem", "estoque"]
 
 def listar_todos():
-    return csv.ler(Config.PRODUTOS_FILE)
+    return fetchall("SELECT * FROM produtos ORDER BY id")
+
 
 def listar_por_tipo(tipo):
-    return [p for p in listar_todos() if p.get("tipo", "").strip().lower() == tipo.lower()]
+    return fetchall("SELECT * FROM produtos WHERE tipo = %s ORDER BY id", (tipo.lower(),))
+
 
 def buscar_por_id(produto_id):
-    return next(
-        (p for p in listar_todos() if str(p.get("id")).strip() == str(produto_id).strip()),
-        None
-    )
+    return fetchone("SELECT * FROM produtos WHERE id = %s", (produto_id,))
+
 
 def adicionar(dados):
-    produtos = listar_todos()
-    dados["id"] = csv.proximo_id(produtos)
-    produtos.append(dados)
-    csv.salvar(Config.PRODUTOS_FILE, produtos, CAMPOS)
-    return dados
+    execute("""
+        INSERT INTO produtos (nome, tipo, descricao, preco, imagem, estoque)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (
+        dados.get("nome"),
+        dados.get("tipo"),
+        dados.get("descricao"),
+        dados.get("preco", 0),
+        dados.get("imagem", ""),
+        dados.get("estoque", 0),
+    ))
 
-def atualizar(produto_id, novos_dados):
-    produtos = listar_todos()
-    for produto in produtos:
-        if produto["id"] == str(produto_id):
-            produto.update(novos_dados)
-            csv.salvar(Config.PRODUTOS_FILE, produtos, CAMPOS)
-            return True
-    return False
+
+def atualizar(produto_id, dados):
+    execute("""
+        UPDATE produtos
+        SET nome=%s, tipo=%s, descricao=%s, preco=%s, imagem=%s, estoque=%s, atualizado_em=NOW()
+        WHERE id=%s
+    """, (
+        dados.get("nome"),
+        dados.get("tipo"),
+        dados.get("descricao"),
+        dados.get("preco", 0),
+        dados.get("imagem", ""),
+        dados.get("estoque", 0),
+        produto_id,
+    ))
+
 
 def remover(produto_id):
-    produtos = listar_todos()
-    novos = [p for p in produtos if p["id"] != str(produto_id)]
-    if len(novos) == len(produtos):
-        return False
-    csv.salvar(Config.PRODUTOS_FILE, novos, CAMPOS)
-    return True
+    execute("DELETE FROM produtos WHERE id = %s", (produto_id,))
+
 
 def decrementar_estoque(produto_id, quantidade):
-    produtos = listar_todos()
-    for produto in produtos:
-        if produto["id"] == str(produto_id):
-            try:
-                atual = int(produto.get("estoque", 0))
-                produto["estoque"] = str(max(0, atual - quantidade))
-            except (ValueError, TypeError):
-                pass
-    csv.salvar(Config.PRODUTOS_FILE, produtos, CAMPOS)
+    execute("""
+        UPDATE produtos
+        SET estoque = GREATEST(0, estoque - %s), atualizado_em=NOW()
+        WHERE id = %s
+    """, (quantidade, produto_id))
