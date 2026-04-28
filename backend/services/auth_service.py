@@ -1,4 +1,4 @@
-from config import Config
+from backend.config import Config
 from backend.utils import csv_helper as csv
 
 CAMPOS_CLIENTE = ["id", "cpf", "nome", "sobrenome", "data_nascimento", "email", "senha", "telefone"]

@@ -1,5 +1,5 @@
 import uuid
-from config import Config
+from backend.config import Config
 from backend.utils import csv_helper as csv
 from backend.services import produto_service
 
