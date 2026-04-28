@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
-from services import produto_service
+from backend.services import produto_service
 
 main_bp = Blueprint("main", __name__)
 

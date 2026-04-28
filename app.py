@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 
@@ -6,21 +7,24 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret')
+    app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', app.config['SECRET_KEY'])
 
-    from routes.main import main_bp
-    from routes.auth import auth_bp
-    from routes.admin import admin_bp
-    from routes.carrinho import carrinho_bp
-    from routes.cupons_api import cupons_api_bp
-    from routes.configuracoes import configuracoes_bp
+    CORS(app, resources={r"/api/*": {"origins": os.getenv("CORS_ORIGIN", "http://localhost:5173")}})
 
-    app.register_blueprint(main_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(carrinho_bp)
-    app.register_blueprint(cupons_api_bp)
-    app.register_blueprint(configuracoes_bp)
+    from backend.routes.auth import auth_bp
+    from backend.routes.admin import admin_bp
+    from backend.routes.produtos import produtos_bp
+    from backend.routes.carrinho import carrinho_bp
+    from routes.cupons import cupons_bp
+    from backend.routes.configuracoes import configuracoes_bp
+
+    app.register_blueprint(auth_bp,          url_prefix="/api/auth")
+    app.register_blueprint(admin_bp,         url_prefix="/api/admin")
+    app.register_blueprint(produtos_bp,      url_prefix="/api/produtos")
+    app.register_blueprint(carrinho_bp,      url_prefix="/api/carrinho")
+    app.register_blueprint(cupons_bp,        url_prefix="/api/cupons")
+    app.register_blueprint(configuracoes_bp, url_prefix="/api/configuracoes")
 
     return app
 

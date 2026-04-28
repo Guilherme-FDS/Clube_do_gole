@@ -1,7 +1,7 @@
 import uuid
 from config import Config
-from utils import csv_helper as csv
-from services import produto_service
+from backend.utils import csv_helper as csv
+from backend.services import produto_service
 
 CAMPOS = [
     "id_carrinho", "id_usuario", "id_produto", "nome_produto",
