@@ -1,7 +1,7 @@
-from backend.services import auth_service
+from services import auth_service
 from flask import Blueprint, request, jsonify
-from backend.services import carrinho_service
-from backend.utils.auth import gerar_token, login_required
+from services import carrinho_service
+from utils.auth import gerar_token, login_required
 
 auth_bp = Blueprint("auth", __name__)
 
