@@ -1,7 +1,7 @@
-from backend.services import auth_service, endereco_service
+from services import auth_service, endereco_service
 from flask import Blueprint, request, jsonify
-from backend.utils.auth import login_required
-from backend.services import venda_service
+from utils.auth import login_required
+from services import venda_service
 
 configuracoes_bp = Blueprint("configuracoes", __name__)
 

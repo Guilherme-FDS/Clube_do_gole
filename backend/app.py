@@ -1,6 +1,10 @@
+import sys, os
+
+# Garante que backend/ está no path — resolve os imports 'from services/utils/routes'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from flask import Flask
 from flask_cors import CORS
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,12 +16,12 @@ def create_app():
 
     CORS(app, resources={r"/api/*": {"origins": os.getenv("CORS_ORIGIN", "http://localhost:5173")}})
 
-    from backend.routes.auth import auth_bp
-    from backend.routes.admin import admin_bp
-    from backend.routes.produtos import produtos_bp
-    from backend.routes.carrinho import carrinho_bp
+    from routes.auth import auth_bp
+    from routes.admin import admin_bp
+    from routes.produtos import produtos_bp
+    from routes.carrinho import carrinho_bp
     from routes.cupons import cupons_bp
-    from backend.routes.configuracoes import configuracoes_bp
+    from routes.configuracoes import configuracoes_bp
 
     app.register_blueprint(auth_bp,          url_prefix="/api/auth")
     app.register_blueprint(admin_bp,         url_prefix="/api/admin")

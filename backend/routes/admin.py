@@ -1,7 +1,7 @@
-from backend.services import cupom_service, produto_service
+from services import cupom_service, produto_service
 from flask import Blueprint, request, jsonify
-from backend.utils.auth import admin_required
-from backend.services import venda_service
+from utils.auth import admin_required
+from services import venda_service
 
 admin_bp = Blueprint("admin", __name__)
 

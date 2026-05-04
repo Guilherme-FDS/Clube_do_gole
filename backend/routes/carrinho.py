@@ -1,9 +1,9 @@
 import uuid
-from backend.services import carrinho_service
+from services import carrinho_service
 from flask import Blueprint, request, jsonify
-from backend.utils.auth import login_required
-from backend.services import venda_service
-from backend.database.connection import execute as db_execute
+from utils.auth import login_required
+from services import venda_service
+from database.connection import execute as db_execute
 
 carrinho_bp = Blueprint("carrinho", __name__)
 
