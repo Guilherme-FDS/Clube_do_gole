@@ -1,33 +1,40 @@
 import uuid
 from config import Config
-from utils import csv_helper as csv
+from database.connection import fetchall, fetchone, execute
 from services import produto_service
 
-CAMPOS = [
-    "id_carrinho", "id_usuario", "id_produto", "nome_produto",
-    "descricao", "plano", "quantidade", "valor_unitario",
-    "valor_total", "status",
-]
 
 def _calcular_total(valor_unitario, plano, quantidade):
     mult = Config.MULTIPLICADORES_PLANO.get(plano, 1)
     desc = Config.DESCONTOS_PLANO.get(plano, 0)
     return round(valor_unitario * mult * quantidade * (1 - desc), 2)
 
-def _itens_ativos(carrinho, usuario_id):
-    return [i for i in carrinho if i["id_usuario"] == usuario_id and i["status"] == "em processo"]
 
 def itens(usuario_id):
-    return _itens_ativos(csv.ler(Config.CARRINHO_FILE), str(usuario_id))
+    return fetchall("""
+        SELECT * FROM carrinho
+        WHERE id_usuario = %s AND status = 'em processo'
+        ORDER BY criado_em
+    """, (int(usuario_id),))
+
 
 def contador(usuario_id):
-    return len(itens(str(usuario_id)))
+    row = fetchone("""
+        SELECT COUNT(*) AS total FROM carrinho
+        WHERE id_usuario = %s AND status = 'em processo'
+    """, (int(usuario_id),))
+    return row["total"] if row else 0
+
 
 def total(usuario_id):
-    return round(sum(float(i.get("valor_total", 0)) for i in itens(str(usuario_id))), 2)
+    row = fetchone("""
+        SELECT COALESCE(SUM(valor_total), 0) AS total FROM carrinho
+        WHERE id_usuario = %s AND status = 'em processo'
+    """, (int(usuario_id),))
+    return round(float(row["total"]), 2) if row else 0
+
 
 def adicionar(usuario_id, produto_id, plano, quantidade):
-    usuario_id = str(usuario_id)
     produto = produto_service.buscar_por_id(produto_id)
     if not produto:
         return False, "Produto não encontrado."
@@ -40,113 +47,113 @@ def adicionar(usuario_id, produto_id, plano, quantidade):
     if valor_unitario <= 0:
         return False, "Preço do produto inválido."
 
-    try:
-        estoque = int(produto.get("estoque", 0))
-    except (ValueError, TypeError):
-        estoque = 0
+    estoque = int(produto.get("estoque", 0) or 0)
+    tipo_produto = (produto.get("tipo") or "").lower()
 
-    tipo_produto = produto.get("tipo", "").lower()
     if estoque <= 0 and tipo_produto != "premium":
         return False, "Produto fora de estoque."
     if estoque > 0 and quantidade > estoque:
         return False, f"Quantidade indisponível. Estoque: {estoque}"
 
-    carrinho = csv.ler(Config.CARRINHO_FILE)
+    # Verifica se já existe no carrinho
+    existente = fetchone("""
+        SELECT * FROM carrinho
+        WHERE id_usuario=%s AND id_produto=%s AND plano=%s AND status='em processo'
+    """, (int(usuario_id), int(produto_id), plano))
 
-    for item in carrinho:
-        if (
-            item["id_usuario"] == usuario_id
-            and str(item["id_produto"]).strip() == str(produto_id).strip()
-            and item["plano"] == plano
-            and item["status"] == "em processo"
-        ):
-            nova_qtd = int(item["quantidade"]) + quantidade
-            if estoque > 0 and nova_qtd > estoque:
-                return False, f"Quantidade indisponível. Estoque: {estoque}"
-            item["quantidade"] = str(nova_qtd)
-            item["valor_total"] = str(_calcular_total(valor_unitario, plano, nova_qtd))
-            csv.salvar(Config.CARRINHO_FILE, carrinho, CAMPOS)
-            return True, f"Quantidade de {produto['nome']} atualizada para {nova_qtd}!"
+    if existente:
+        nova_qtd = int(existente["quantidade"]) + quantidade
+        if estoque > 0 and nova_qtd > estoque:
+            return False, f"Quantidade indisponível. Estoque: {estoque}"
+        novo_total = _calcular_total(valor_unitario, plano, nova_qtd)
+        execute("""
+            UPDATE carrinho SET quantidade=%s, valor_total=%s
+            WHERE id_carrinho=%s
+        """, (nova_qtd, novo_total, existente["id_carrinho"]))
+        return True, f"Quantidade de {produto['nome']} atualizada para {nova_qtd}!"
 
-    carrinho.append({
-        "id_carrinho": str(uuid.uuid4()),
-        "id_usuario": usuario_id,
-        "id_produto": produto_id,
-        "nome_produto": produto.get("nome", ""),
-        "descricao": produto.get("descricao", ""),
-        "plano": plano,
-        "quantidade": str(quantidade),
-        "valor_unitario": str(valor_unitario),
-        "valor_total": str(_calcular_total(valor_unitario, plano, quantidade)),
-        "status": "em processo",
-    })
-    csv.salvar(Config.CARRINHO_FILE, carrinho, CAMPOS)
+    novo_total = _calcular_total(valor_unitario, plano, quantidade)
+    execute("""
+        INSERT INTO carrinho
+            (id_carrinho, id_usuario, id_produto, nome_produto, descricao,
+             plano, quantidade, valor_unitario, valor_total, status)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'em processo')
+    """, (
+        str(uuid.uuid4()),
+        int(usuario_id),
+        int(produto_id),
+        produto.get("nome", ""),
+        produto.get("descricao", ""),
+        plano,
+        quantidade,
+        valor_unitario,
+        novo_total,
+    ))
     return True, f"{produto['nome']} adicionado ao carrinho!"
 
+
 def remover_itens(usuario_id, ids_carrinho):
-    usuario_id = str(usuario_id)
-    carrinho = csv.ler(Config.CARRINHO_FILE)
-    novos = [i for i in carrinho if not (i["id_usuario"] == usuario_id and i["id_carrinho"] in ids_carrinho)]
-    removidos = len(carrinho) - len(novos)
-    if removidos > 0:
-        csv.salvar(Config.CARRINHO_FILE, novos, CAMPOS)
-    return removidos
+    if not ids_carrinho:
+        return 0
+    placeholders = ",".join(["%s"] * len(ids_carrinho))
+    execute(f"""
+        DELETE FROM carrinho
+        WHERE id_usuario=%s AND id_carrinho IN ({placeholders})
+    """, (int(usuario_id), *ids_carrinho))
+    return len(ids_carrinho)
+
 
 def atualizar_quantidade(usuario_id, item_id, nova_quantidade):
-    usuario_id = str(usuario_id)
     if nova_quantidade < 1:
         return False, "Quantidade deve ser maior que zero.", 0, 0
 
-    carrinho = csv.ler(Config.CARRINHO_FILE)
-    item = next((i for i in carrinho if i["id_carrinho"] == item_id and i["id_usuario"] == usuario_id), None)
+    item = fetchone("""
+        SELECT * FROM carrinho WHERE id_carrinho=%s AND id_usuario=%s
+    """, (item_id, int(usuario_id)))
+
     if not item:
         return False, "Item não encontrado no carrinho.", 0, 0
 
     produto = produto_service.buscar_por_id(item["id_produto"])
     if produto:
-        try:
-            estoque = int(produto.get("estoque", 0))
-            if estoque > 0 and nova_quantidade > estoque:
-                return False, f"Quantidade indisponível. Estoque: {estoque}", 0, 0
-        except (ValueError, TypeError):
-            pass
+        estoque = int(produto.get("estoque", 0) or 0)
+        if estoque > 0 and nova_quantidade > estoque:
+            return False, f"Quantidade indisponível. Estoque: {estoque}", 0, 0
 
     valor_unitario = float(item["valor_unitario"])
     novo_valor = _calcular_total(valor_unitario, item["plano"], nova_quantidade)
-    item["quantidade"] = str(nova_quantidade)
-    item["valor_total"] = str(novo_valor)
-    csv.salvar(Config.CARRINHO_FILE, carrinho, CAMPOS)
 
-    total_geral = round(sum(
-        float(i["valor_total"]) for i in carrinho
-        if i["id_usuario"] == usuario_id and i["status"] == "em processo"
-    ), 2)
+    execute("""
+        UPDATE carrinho SET quantidade=%s, valor_total=%s WHERE id_carrinho=%s
+    """, (nova_quantidade, novo_valor, item_id))
+
+    total_geral = total(usuario_id)
     return True, "Quantidade atualizada!", novo_valor, total_geral
 
+
 def limpar_usuario(usuario_id):
-    usuario_id = str(usuario_id)
-    carrinho = csv.ler(Config.CARRINHO_FILE)
-    novos = [i for i in carrinho if not (i["id_usuario"] == usuario_id and i["status"] == "em processo")]
-    csv.salvar(Config.CARRINHO_FILE, novos, CAMPOS)
+    execute("""
+        DELETE FROM carrinho WHERE id_usuario=%s AND status='em processo'
+    """, (int(usuario_id),))
+
 
 def migrar_guest(guest_id, usuario_id):
-    usuario_id = str(usuario_id)
-    carrinho = csv.ler(Config.CARRINHO_FILE)
-    migrados = 0
-    for item in carrinho:
-        if item["id_usuario"] == f"guest_{guest_id}" and item["status"] == "em processo":
-            item["id_usuario"] = usuario_id
-            migrados += 1
-    if migrados > 0:
-        csv.salvar(Config.CARRINHO_FILE, carrinho, CAMPOS)
-    return migrados
+    rows = fetchall("""
+        SELECT * FROM carrinho WHERE id_usuario=%s AND status='em processo'
+    """, (f"guest_{guest_id}",))
+    for item in rows:
+        execute("""
+            UPDATE carrinho SET id_usuario=%s WHERE id_carrinho=%s
+        """, (int(usuario_id), item["id_carrinho"]))
+    return len(rows)
+
 
 def itens_selecionados(usuario_id, ids_carrinho):
-    usuario_id = str(usuario_id)
-    carrinho = csv.ler(Config.CARRINHO_FILE)
-    return [
-        i for i in carrinho
-        if i["id_usuario"] == usuario_id
-        and i["status"] == "em processo"
-        and i["id_carrinho"] in ids_carrinho
-    ]
+    if not ids_carrinho:
+        return []
+    placeholders = ",".join(["%s"] * len(ids_carrinho))
+    return fetchall(f"""
+        SELECT * FROM carrinho
+        WHERE id_usuario=%s AND status='em processo'
+        AND id_carrinho IN ({placeholders})
+    """, (int(usuario_id), *ids_carrinho))

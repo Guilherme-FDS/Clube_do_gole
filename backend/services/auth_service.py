@@ -1,52 +1,109 @@
-from config import Config
-from utils import csv_helper as csv
+import bcrypt
+from database.connection import fetchall, fetchone, execute
 
-CAMPOS_CLIENTE = ["id", "cpf", "nome", "sobrenome", "data_nascimento", "email", "senha", "telefone"]
-CAMPOS_ADM = ["id", "nome", "email", "senha", "tipo"]
 
 def autenticar_admin(email, senha):
-    admins = csv.ler(Config.USUARIOS_ADM)
-    return next((a for a in admins if a.get("email") == email and a.get("senha") == senha), None)
+    adm = fetchone(
+        "SELECT * FROM usuarios_adm WHERE email = %s", (email.lower(),)
+    )
+    if not adm:
+        return None
+    try:
+        if bcrypt.checkpw(senha.encode(), adm["senha"].encode()):
+            return adm
+    except Exception:
+        if adm["senha"] == senha:
+            return adm
+    return None
+
 
 def autenticar_cliente(email, senha):
-    clientes = csv.ler(Config.USUARIOS_CLIENTE)
-    return next((c for c in clientes if c.get("email") == email and c.get("senha") == senha), None)
+    cliente = fetchone(
+        "SELECT * FROM usuarios_clientes WHERE email = %s", (email.lower(),)
+    )
+    if not cliente:
+        return None
+    try:
+        if bcrypt.checkpw(senha.encode(), cliente["senha"].encode()):
+            return cliente
+    except Exception:
+        if cliente["senha"] == senha:
+            return cliente
+    return None
+
 
 def email_ja_cadastrado(email):
-    return any(c.get("email") == email for c in csv.ler(Config.USUARIOS_CLIENTE))
+    return fetchone(
+        "SELECT id FROM usuarios_clientes WHERE email = %s", (email.lower(),)
+    ) is not None
+
 
 def cpf_ja_cadastrado(cpf):
-    return any(c.get("cpf") == cpf for c in csv.ler(Config.USUARIOS_CLIENTE))
+    return fetchone(
+        "SELECT id FROM usuarios_clientes WHERE cpf = %s", (cpf,)
+    ) is not None
+
 
 def cadastrar_cliente(dados):
-    clientes = csv.ler(Config.USUARIOS_CLIENTE)
-    dados["id"] = csv.proximo_id(clientes)
-    clientes.append(dados)
-    csv.salvar(Config.USUARIOS_CLIENTE, clientes, CAMPOS_CLIENTE)
-    return dados
+    senha_hash = bcrypt.hashpw(
+        dados["senha"].encode(), bcrypt.gensalt()
+    ).decode()
+    execute("""
+        INSERT INTO usuarios_clientes
+            (cpf, nome, sobrenome, data_nascimento, email, senha, telefone)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (
+        dados.get("cpf"),
+        dados.get("nome"),
+        dados.get("sobrenome"),
+        dados.get("data_nascimento") or None,
+        dados.get("email", "").lower(),
+        senha_hash,
+        dados.get("telefone"),
+    ))
+    return fetchone(
+        "SELECT * FROM usuarios_clientes WHERE email = %s",
+        (dados["email"].lower(),)
+    )
+
 
 def buscar_cliente_por_id(usuario_id):
-    clientes = csv.ler(Config.USUARIOS_CLIENTE)
-    return next((c for c in clientes if c["id"] == str(usuario_id)), None)
+    return fetchone(
+        "SELECT * FROM usuarios_clientes WHERE id = %s", (int(usuario_id),)
+    )
+
 
 def atualizar_cliente(usuario_id, novos_dados):
-    clientes = csv.ler(Config.USUARIOS_CLIENTE)
-    for cliente in clientes:
-        if cliente["id"] == str(usuario_id):
-            cliente.update(novos_dados)
-            csv.salvar(Config.USUARIOS_CLIENTE, clientes, CAMPOS_CLIENTE)
-            return True
-    return False
+    execute("""
+        UPDATE usuarios_clientes
+        SET nome=%s, sobrenome=%s, email=%s, telefone=%s, data_nascimento=%s
+        WHERE id=%s
+    """, (
+        novos_dados.get("nome"),
+        novos_dados.get("sobrenome"),
+        novos_dados.get("email", "").lower(),
+        novos_dados.get("telefone"),
+        novos_dados.get("data_nascimento") or None,
+        int(usuario_id),
+    ))
+    return True
+
 
 def alterar_senha(usuario_id, senha_atual, nova_senha):
-    clientes = csv.ler(Config.USUARIOS_CLIENTE)
-    cliente = next((c for c in clientes if c["id"] == str(usuario_id)), None)
+    cliente = buscar_cliente_por_id(usuario_id)
     if not cliente:
         return False, "Usuário não encontrado."
-    if cliente.get("senha") != senha_atual:
+    try:
+        ok = bcrypt.checkpw(senha_atual.encode(), cliente["senha"].encode())
+    except Exception:
+        ok = cliente["senha"] == senha_atual
+    if not ok:
         return False, "Senha atual incorreta."
     if len(nova_senha) < 6:
         return False, "A senha deve ter pelo menos 6 caracteres."
-    cliente["senha"] = nova_senha
-    csv.salvar(Config.USUARIOS_CLIENTE, clientes, CAMPOS_CLIENTE)
+    nova_hash = bcrypt.hashpw(nova_senha.encode(), bcrypt.gensalt()).decode()
+    execute(
+        "UPDATE usuarios_clientes SET senha=%s WHERE id=%s",
+        (nova_hash, int(usuario_id))
+    )
     return True, "Senha alterada com sucesso!"
