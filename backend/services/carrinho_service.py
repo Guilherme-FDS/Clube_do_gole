@@ -4,6 +4,10 @@ from database.connection import fetchall, fetchone, execute
 from services import produto_service
 
 
+def _is_guest(usuario_id):
+    return str(usuario_id).startswith('guest_')
+
+
 def _calcular_total(valor_unitario, plano, quantidade):
     mult = Config.MULTIPLICADORES_PLANO.get(plano, 1)
     desc = Config.DESCONTOS_PLANO.get(plano, 0)
@@ -11,6 +15,8 @@ def _calcular_total(valor_unitario, plano, quantidade):
 
 
 def itens(usuario_id):
+    if _is_guest(usuario_id):
+        return []
     return fetchall("""
         SELECT * FROM carrinho
         WHERE id_usuario = %s AND status = 'em processo'
@@ -19,6 +25,8 @@ def itens(usuario_id):
 
 
 def contador(usuario_id):
+    if _is_guest(usuario_id):
+        return 0
     row = fetchone("""
         SELECT COUNT(*) AS total FROM carrinho
         WHERE id_usuario = %s AND status = 'em processo'
@@ -27,6 +35,8 @@ def contador(usuario_id):
 
 
 def total(usuario_id):
+    if _is_guest(usuario_id):
+        return 0
     row = fetchone("""
         SELECT COALESCE(SUM(valor_total), 0) AS total FROM carrinho
         WHERE id_usuario = %s AND status = 'em processo'
@@ -35,6 +45,9 @@ def total(usuario_id):
 
 
 def adicionar(usuario_id, produto_id, plano, quantidade):
+    if _is_guest(usuario_id):
+        return False, "Faça login para adicionar itens ao carrinho."
+
     produto = produto_service.buscar_por_id(produto_id)
     if not produto:
         return False, "Produto não encontrado."
@@ -55,7 +68,6 @@ def adicionar(usuario_id, produto_id, plano, quantidade):
     if estoque > 0 and quantidade > estoque:
         return False, f"Quantidade indisponível. Estoque: {estoque}"
 
-    # Verifica se já existe no carrinho
     existente = fetchone("""
         SELECT * FROM carrinho
         WHERE id_usuario=%s AND id_produto=%s AND plano=%s AND status='em processo'
@@ -93,7 +105,7 @@ def adicionar(usuario_id, produto_id, plano, quantidade):
 
 
 def remover_itens(usuario_id, ids_carrinho):
-    if not ids_carrinho:
+    if _is_guest(usuario_id) or not ids_carrinho:
         return 0
     placeholders = ",".join(["%s"] * len(ids_carrinho))
     execute(f"""
@@ -104,6 +116,9 @@ def remover_itens(usuario_id, ids_carrinho):
 
 
 def atualizar_quantidade(usuario_id, item_id, nova_quantidade):
+    if _is_guest(usuario_id):
+        return False, "Faça login para gerenciar o carrinho.", 0, 0
+
     if nova_quantidade < 1:
         return False, "Quantidade deve ser maior que zero.", 0, 0
 
@@ -132,6 +147,8 @@ def atualizar_quantidade(usuario_id, item_id, nova_quantidade):
 
 
 def limpar_usuario(usuario_id):
+    if _is_guest(usuario_id):
+        return
     execute("""
         DELETE FROM carrinho WHERE id_usuario=%s AND status='em processo'
     """, (int(usuario_id),))
@@ -149,7 +166,7 @@ def migrar_guest(guest_id, usuario_id):
 
 
 def itens_selecionados(usuario_id, ids_carrinho):
-    if not ids_carrinho:
+    if _is_guest(usuario_id) or not ids_carrinho:
         return []
     placeholders = ",".join(["%s"] * len(ids_carrinho))
     return fetchall(f"""

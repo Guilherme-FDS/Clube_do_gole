@@ -188,7 +188,7 @@
                   <div class="produto-detalhes">
                     <h4>{{ pedido.nome_produto }}</h4>
                     <p>Quantidade: {{ pedido.quantidade }}</p>
-                    <p class="plano-info"><strong>Plano:</strong> <span :class="['plano-tag', pedido.plano]">{{ pedido.plano | capitalize }}</span></p>
+                    <p class="plano-info"><strong>Plano:</strong> <span :class="['plano-tag', pedido.plano]">{{ pedido.plano?.charAt(0).toUpperCase() + pedido.plano?.slice(1) }}</span></p>
                   </div>
                 </div>
                 <div class="pedido-valores">
@@ -263,7 +263,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { formatarMoeda } from '@/utils/formatters'
