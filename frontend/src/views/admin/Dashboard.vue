@@ -231,11 +231,16 @@ const ultimasVendasOrdenadas = computed(() => {
 const carregarDados = async () => {
   try {
     const data = await dashboardStore.fetchDashboardData()
-    estatisticas.value = data.estatisticas
-    produtosMaisVendidos.value = data.produtos_mais_vendidos
-    vendasPorMes.value = data.vendas_por_mes
-    ultimasVendas.value = data.ultimas_vendas
-    resumoPorTipo.value = data.resumo_por_tipo
+    estatisticas.value = data?.estatisticas ?? {
+      total_vendas: 0,
+      faturamento_total: 0,
+      clientes_unicos: 0,
+      ticket_medio: 0
+    }
+    produtosMaisVendidos.value = data?.produtos_mais_vendidos ?? {}
+    vendasPorMes.value = data?.vendas_por_mes ?? {}
+    ultimasVendas.value = data?.ultimas_vendas ?? []
+    resumoPorTipo.value = data?.resumo_por_tipo ?? {}
   } catch (error) {
     console.error('Erro ao carregar dashboard:', error)
   }

@@ -138,7 +138,7 @@ async function handleLogin() {
   try {
     await authStore.entrar(email.value, senha.value)
     // Login bem-sucedido: redireciona conforme parâmetro 'redirect' ou para página inicial
-    const redirectTo = route.query.redirect || '/'
+    const redirectTo = route.query.redirect || (authStore.tipo === 'admin' ? '/admin' : '/')
     router.push(redirectTo)
   } catch (error) {
     console.error('Erro no login:', error)
