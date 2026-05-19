@@ -1,103 +1,78 @@
-from services import cupom_service, produto_service
-from flask import Blueprint, request, jsonify
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from database.engine import get_db
+from repositories import auth_repo, produto_repo, endereco_repo, venda_repo, cupom_repo
+from schemas import ProdutoIn, ProdutoOut, CupomIn, CupomOut, ClienteAdminOut, EnderecoOut
 from utils.auth import admin_required
-from services import venda_service
 
-admin_bp = Blueprint("admin", __name__)
+router = APIRouter(prefix="/api/admin", tags=["admin"])
 
-# ── Produtos ──────────────────────────────────────────────────────────────────
+@router.get("/dashboard")
+async def dashboard(_: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    return await venda_repo.dashboard(db)
 
-@admin_bp.route("/produtos")
-@admin_required
-def listar_produtos():
-    return jsonify(produto_service.listar_todos())
+@router.get("/clientes", response_model=list[ClienteAdminOut])
+async def listar_clientes(_: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    return await auth_repo.listar_clientes(db)
 
-@admin_bp.route("/produtos", methods=["POST"])
-@admin_required
-def adicionar_produto():
-    data = request.get_json() or {}
-    produto_service.adicionar(data)
-    return jsonify({"message": "Produto adicionado"}), 201
+@router.get("/clientes/{cliente_id}")
+async def detalhe_cliente(cliente_id: int, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    cliente = await auth_repo.buscar_cliente(db, cliente_id)
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado.")
+    enderecos = await endereco_repo.listar(db, cliente_id)
+    pedidos = await venda_repo.pedidos_do_cliente_admin(db, cliente_id)
+    return {"cliente": ClienteAdminOut.model_validate(cliente), "enderecos": [EnderecoOut.model_validate(e) for e in enderecos], "pedidos": pedidos}
 
-@admin_bp.route("/produtos/<produto_id>", methods=["GET"])
-@admin_required
-def get_produto(produto_id):
-    p = produto_service.buscar_por_id(produto_id)
+@router.get("/produtos", response_model=list[ProdutoOut])
+async def listar_produtos(_: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    return await produto_repo.listar_admin(db)
+
+@router.post("/produtos", response_model=ProdutoOut, status_code=201)
+async def criar_produto(body: ProdutoIn, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    return await produto_repo.criar(db, body.model_dump())
+
+@router.put("/produtos/{produto_id}", response_model=ProdutoOut)
+async def editar_produto(produto_id: int, body: ProdutoIn, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    p = await produto_repo.atualizar(db, produto_id, body.model_dump())
     if not p:
-        return jsonify({"error": "Não encontrado"}), 404
-    return jsonify(p)
+        raise HTTPException(status_code=404, detail="Produto não encontrado.")
+    return p
 
-@admin_bp.route("/produtos/<produto_id>", methods=["PUT"])
-@admin_required
-def editar_produto(produto_id):
-    produto_service.atualizar(produto_id, request.get_json() or {})
-    return jsonify({"message": "Produto atualizado"})
+@router.delete("/produtos/{produto_id}", status_code=204)
+async def deletar_produto(produto_id: int, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    if not await produto_repo.remover(db, produto_id):
+        raise HTTPException(status_code=404, detail="Produto não encontrado.")
 
-@admin_bp.route("/produtos/<produto_id>", methods=["DELETE"])
-@admin_required
-def deletar_produto(produto_id):
-    produto_service.remover(produto_id)
-    return jsonify({"message": "Produto removido"})
+@router.get("/cupons", response_model=list[CupomOut])
+async def listar_cupons(_: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    return await cupom_repo.listar(db)
 
-# ── Cupons ────────────────────────────────────────────────────────────────────
+@router.post("/cupons", response_model=CupomOut, status_code=201)
+async def criar_cupom(body: CupomIn, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    dados = body.model_dump()
+    dados["usos_restantes"] = dados["usos_maximos"]
+    return await cupom_repo.criar(db, dados)
 
-@admin_bp.route("/cupons")
-@admin_required
-def listar_cupons():
-    return jsonify(cupom_service.listar_todos())
+@router.put("/cupons/{cupom_id}", response_model=CupomOut)
+async def editar_cupom(cupom_id: int, body: CupomIn, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    atual = await cupom_repo.buscar_por_id(db, cupom_id)
+    if not atual:
+        raise HTTPException(status_code=404, detail="Cupom não encontrado.")
+    dados = body.model_dump()
+    dados["usos_restantes"] = max(0, dados["usos_maximos"] - (atual.usos_maximos - atual.usos_restantes))
+    return await cupom_repo.atualizar(db, cupom_id, dados)
 
-@admin_bp.route("/cupons", methods=["POST"])
-@admin_required
-def adicionar_cupom():
-    data = request.get_json() or {}
-    usos = data.get("usos_maximos", 1)
-    cupom_service.adicionar({**data, "usos_restantes": usos, "codigo": data.get("codigo","").upper()})
-    return jsonify({"message": "Cupom adicionado"}), 201
+@router.delete("/cupons/{cupom_id}", status_code=204)
+async def deletar_cupom(cupom_id: int, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    if not await cupom_repo.remover(db, cupom_id):
+        raise HTTPException(status_code=404, detail="Cupom não encontrado.")
 
-@admin_bp.route("/cupons/<cupom_id>", methods=["GET"])
-@admin_required
-def get_cupom(cupom_id):
-    c = cupom_service.buscar_por_id(cupom_id)
+@router.patch("/cupons/{cupom_id}/status", response_model=CupomOut)
+async def status_cupom(cupom_id: int, body: dict, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    if body.get("status") not in ("ativo", "inativo"):
+        raise HTTPException(status_code=422, detail="Status inválido.")
+    c = await cupom_repo.atualizar(db, cupom_id, {"status": body["status"]})
     if not c:
-        return jsonify({"error": "Não encontrado"}), 404
-    return jsonify(c)
-
-@admin_bp.route("/cupons/<cupom_id>", methods=["PUT"])
-@admin_required
-def editar_cupom(cupom_id):
-    data = request.get_json() or {}
-    cupom = cupom_service.buscar_por_id(cupom_id)
-    usos_usados = int(cupom.get("usos_maximos",1)) - int(cupom.get("usos_restantes",1))
-    novos_max = int(data.get("usos_maximos", cupom["usos_maximos"]))
-    data["usos_restantes"] = max(0, novos_max - usos_usados)
-    data["codigo"] = data.get("codigo","").upper()
-    cupom_service.atualizar(cupom_id, data)
-    return jsonify({"message": "Cupom atualizado"})
-
-@admin_bp.route("/cupons/<cupom_id>", methods=["DELETE"])
-@admin_required
-def remover_cupom(cupom_id):
-    cupom_service.remover(cupom_id)
-    return jsonify({"message": "Cupom removido"})
-
-@admin_bp.route("/cupons/<cupom_id>/status", methods=["PATCH"])
-@admin_required
-def status_cupom(cupom_id):
-    novo_status = (request.get_json() or {}).get("status")
-    cupom_service.alterar_status(cupom_id, novo_status)
-    return jsonify({"message": f"Status atualizado para {novo_status}"})
-
-# ── Dashboard ─────────────────────────────────────────────────────────────────
-
-@admin_bp.route("/dashboard")
-@admin_required
-def dashboard():
-    return jsonify(venda_service.dados_dashboard())
-
-@admin_bp.route("/vendas/<venda_id>")
-@admin_required
-def detalhes_venda(venda_id):
-    venda = venda_service.buscar_venda(venda_id)
-    if not venda:
-        return jsonify({"error": "Venda não encontrada"}), 404
-    return jsonify(venda)
+        raise HTTPException(status_code=404, detail="Cupom não encontrado.")
+    return c

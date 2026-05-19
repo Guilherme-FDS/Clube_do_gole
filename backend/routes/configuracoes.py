@@ -1,66 +1,58 @@
-from services import auth_service, endereco_service
-from flask import Blueprint, request, jsonify
-from utils.auth import login_required
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from database.engine import get_db
+from repositories import auth_repo, endereco_repo
 from services import venda_service
+from schemas import AtualizarPerfilIn, AlterarSenhaIn, EnderecoIn, EnderecoOut, UsuarioOut
+from utils.auth import login_required
 
-configuracoes_bp = Blueprint("configuracoes", __name__)
+router = APIRouter(prefix="/api/configuracoes", tags=["configuracoes"])
 
-@configuracoes_bp.route("/perfil")
-@login_required
-def perfil():
-    uid = str(request.usuario["id"])
-    usuario = auth_service.buscar_cliente_por_id(uid)
-    if not usuario:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-    enderecos = endereco_service.listar_do_usuario(uid)
-    pedidos = venda_service.pedidos_do_usuario(uid)
-    return jsonify({"usuario": usuario, "enderecos": enderecos, "pedidos": pedidos})
+@router.get("/perfil")
+async def perfil(payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    cliente = await auth_repo.buscar_cliente(db, payload["id"])
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    enderecos = await endereco_repo.listar(db, payload["id"])
+    pedidos = await venda_service.pedidos_do_usuario(db, payload["id"])
+    return {"usuario": UsuarioOut.model_validate(cliente), "enderecos": [EnderecoOut.model_validate(e) for e in enderecos], "pedidos": pedidos}
 
-@configuracoes_bp.route("/perfil", methods=["PUT"])
-@login_required
-def atualizar_perfil():
-    uid = str(request.usuario["id"])
-    data = request.get_json() or {}
-    if not all([data.get("nome"), data.get("sobrenome"), data.get("email"), data.get("telefone")]):
-        return jsonify({"error": "Campos obrigatórios ausentes"}), 400
-    sucesso, msg = auth_service.atualizar_cliente(uid, data)
-    return jsonify({"success": sucesso, "message": msg})
+@router.put("/perfil", response_model=UsuarioOut)
+async def atualizar_perfil(body: AtualizarPerfilIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    return await auth_repo.atualizar_cliente(db, payload["id"], body.model_dump())
 
-@configuracoes_bp.route("/senha", methods=["PUT"])
-@login_required
-def alterar_senha():
-    uid = str(request.usuario["id"])
-    data = request.get_json() or {}
-    sucesso, msg = auth_service.alterar_senha(uid, data.get("senha_atual",""), data.get("nova_senha",""))
-    return jsonify({"success": sucesso, "message": msg})
+@router.put("/senha")
+async def alterar_senha(body: AlterarSenhaIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    sucesso, msg = await auth_repo.alterar_senha(db, payload["id"], body.senha_atual, body.nova_senha)
+    if not sucesso:
+        raise HTTPException(status_code=400, detail=msg)
+    return {"message": msg}
 
-@configuracoes_bp.route("/enderecos")
-@login_required
-def enderecos():
-    return jsonify(endereco_service.listar_do_usuario(str(request.usuario["id"])))
+@router.get("/enderecos", response_model=list[EnderecoOut])
+async def listar_enderecos(payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    return await endereco_repo.listar(db, payload["id"])
 
-@configuracoes_bp.route("/enderecos", methods=["POST"])
-@login_required
-def adicionar_endereco():
-    uid = str(request.usuario["id"])
-    sucesso, msg = endereco_service.adicionar(uid, request.get_json() or {})
-    return jsonify({"success": sucesso, "message": msg}), (201 if sucesso else 400)
+@router.post("/enderecos", response_model=EnderecoOut, status_code=201)
+async def adicionar_endereco(body: EnderecoIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    return await endereco_repo.criar(db, payload["id"], body.model_dump())
 
-@configuracoes_bp.route("/enderecos/<endereco_id>", methods=["PUT"])
-@login_required
-def editar_endereco(endereco_id):
-    uid = str(request.usuario["id"])
-    sucesso, msg = endereco_service.editar(uid, endereco_id, request.get_json() or {})
-    return jsonify({"success": sucesso, "message": msg})
+@router.put("/enderecos/{endereco_id}", response_model=EnderecoOut)
+async def editar_endereco(endereco_id: int, body: EnderecoIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    e = await endereco_repo.atualizar(db, endereco_id, payload["id"], body.model_dump())
+    if not e:
+        raise HTTPException(status_code=404, detail="Endereço não encontrado.")
+    return e
 
-@configuracoes_bp.route("/enderecos/<endereco_id>", methods=["DELETE"])
-@login_required
-def excluir_endereco(endereco_id):
-    sucesso, msg = endereco_service.excluir(str(request.usuario["id"]), endereco_id)
-    return jsonify({"success": sucesso, "message": msg})
+@router.delete("/enderecos/{endereco_id}")
+async def excluir_endereco(endereco_id: int, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    sucesso, msg = await endereco_repo.remover(db, endereco_id, payload["id"])
+    if not sucesso:
+        raise HTTPException(status_code=400, detail=msg)
+    return {"message": msg}
 
-@configuracoes_bp.route("/enderecos/<endereco_id>/principal", methods=["PATCH"])
-@login_required
-def principal_endereco(endereco_id):
-    sucesso, msg = endereco_service.definir_principal(str(request.usuario["id"]), endereco_id)
-    return jsonify({"success": sucesso, "message": msg})
+@router.patch("/enderecos/{endereco_id}/principal")
+async def definir_principal(endereco_id: int, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    sucesso, msg = await endereco_repo.definir_principal(db, endereco_id, payload["id"])
+    if not sucesso:
+        raise HTTPException(status_code=404, detail=msg)
+    return {"message": msg}

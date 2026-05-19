@@ -1,39 +1,49 @@
-import jwt, os, datetime
-from functools import wraps
-from flask import request, jsonify, current_app
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
-def _get_token():
-    h = request.headers.get("Authorization", "")
-    return h[7:] if h.startswith("Bearer ") else None
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-def _decode(token):
+from config import get_settings
+
+settings = get_settings()
+_bearer = HTTPBearer(auto_error=False)
+
+
+def gerar_token(payload: dict[str, Any]) -> str:
+    data = payload.copy()
+    data["exp"] = datetime.now(timezone.utc) + timedelta(days=settings.jwt_expiry_days)
+    return jwt.encode(data, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
+def _decode_token(token: str) -> dict[str, Any] | None:
     try:
-        return jwt.decode(token, current_app.config["JWT_SECRET"], algorithms=["HS256"])
-    except:
+        return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+    except jwt.PyJWTError:
         return None
 
-def gerar_token(payload: dict) -> str:
-    payload["exp"] = datetime.datetime.utcnow() + datetime.timedelta(days=7)
-    return jwt.encode(payload, os.getenv("JWT_SECRET", "dev-secret"), algorithm="HS256")
 
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        payload = _decode(_get_token() or "")
-        if not payload:
-            return jsonify({"error": "Token inválido ou ausente"}), 401
-        request.usuario = payload
-        return f(*args, **kwargs)
-    return decorated
+def _extrair_payload(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+) -> dict[str, Any]:
+    if not credentials:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token ausente")
+    payload = _decode_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido ou expirado")
+    return payload
 
-def admin_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        payload = _decode(_get_token() or "")
-        if not payload:
-            return jsonify({"error": "Token ausente"}), 401
-        if payload.get("tipo") != "admin":
-            return jsonify({"error": "Acesso negado"}), 403
-        request.usuario = payload
-        return f(*args, **kwargs)
-    return decorated
+
+def login_required(
+    payload: dict[str, Any] = Depends(_extrair_payload),
+) -> dict[str, Any]:
+    return payload
+
+
+def admin_required(
+    payload: dict[str, Any] = Depends(_extrair_payload),
+) -> dict[str, Any]:
+    if payload.get("tipo") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acesso negado")
+    return payload

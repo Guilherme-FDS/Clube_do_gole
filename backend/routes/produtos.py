@@ -1,23 +1,26 @@
-from flask import Blueprint, jsonify
-from services import produto_service
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from database.engine import get_db
+from repositories import produto_repo
+from schemas import ProdutoOut
 
-produtos_bp = Blueprint("produtos", __name__)
+router = APIRouter(prefix="/api/produtos", tags=["produtos"])
 
-@produtos_bp.route("/")
-def listar():
-    return jsonify(produto_service.listar_todos())
+@router.get("/", response_model=list[ProdutoOut])
+async def listar(db: AsyncSession = Depends(get_db)):
+    return await produto_repo.listar(db)
 
-@produtos_bp.route("/gold")
-def gold():
-    return jsonify(produto_service.listar_por_tipo("gold"))
+@router.get("/gold", response_model=list[ProdutoOut])
+async def gold(db: AsyncSession = Depends(get_db)):
+    return await produto_repo.listar(db, tipo="gold")
 
-@produtos_bp.route("/premium")
-def premium():
-    return jsonify(produto_service.listar_por_tipo("premium"))
+@router.get("/premium", response_model=list[ProdutoOut])
+async def premium(db: AsyncSession = Depends(get_db)):
+    return await produto_repo.listar(db, tipo="premium")
 
-@produtos_bp.route("/<produto_id>")
-def detalhe(produto_id):
-    p = produto_service.buscar_por_id(produto_id)
+@router.get("/{produto_id}", response_model=ProdutoOut)
+async def detalhe(produto_id: int, db: AsyncSession = Depends(get_db)):
+    p = await produto_repo.buscar(db, produto_id)
     if not p:
-        return jsonify({"error": "Produto não encontrado"}), 404
-    return jsonify(p)
+        raise HTTPException(status_code=404, detail="Produto não encontrado.")
+    return p

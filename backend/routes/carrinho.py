@@ -1,90 +1,65 @@
-import uuid
-from services import carrinho_service
-from flask import Blueprint, request, jsonify
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from database.engine import get_db
+from repositories import carrinho_repo
+from services import carrinho_service, venda_service, cupom_service
+from schemas import AdicionarItemIn, AtualizarQuantidadeIn, FinalizarIn, CarrinhoOut
 from utils.auth import login_required
-from services import venda_service
-from database.connection import execute as db_execute
 
-carrinho_bp = Blueprint("carrinho", __name__)
+router = APIRouter(prefix="/api/carrinho", tags=["carrinho"])
 
-def _uid():
-    """Retorna (usuario_id_str, is_guest) a partir do token ou guest_id enviado."""
-    token_usuario = getattr(request, "usuario", None)
-    if token_usuario:
-        return str(token_usuario["id"]), False
-    guest_id = request.headers.get("X-Guest-Id") or str(uuid.uuid4())
-    return f"guest_{guest_id}", True
 
-@carrinho_bp.route("/")
-def ver():
-    uid, is_guest = _uid()
-    return jsonify({"itens": carrinho_service.itens(uid), "total": carrinho_service.total(uid), "is_guest": is_guest})
+@router.get("/", response_model=CarrinhoOut)
+async def ver(payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    uid = payload["id"]
+    itens = await carrinho_repo.itens_ativos(db, uid)
+    total = await carrinho_repo.total(db, uid)
+    return CarrinhoOut(itens=itens, total=total)
 
-@carrinho_bp.route("/adicionar", methods=["POST"])
-def adicionar():
-    uid, is_guest = _uid()
-    data = request.get_json() or {}
-    produto_id = data.get("produto_id")
-    plano = data.get("plano", "mensal")
-    quantidade = max(1, int(data.get("quantidade", 1)))
-    if not produto_id:
-        return jsonify({"error": "produto_id obrigatório"}), 400
-    sucesso, mensagem = carrinho_service.adicionar(uid, produto_id, plano, quantidade)
-    return jsonify({"success": sucesso, "message": mensagem, "count": carrinho_service.contador(uid)})
 
-@carrinho_bp.route("/remover", methods=["POST"])
-def remover():
-    uid, _ = _uid()
-    data = request.get_json() or {}
-    ids = data.get("ids", [])
+@router.get("/contador")
+async def contador(payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    return {"count": await carrinho_repo.contador(db, payload["id"])}
+
+
+@router.post("/adicionar")
+async def adicionar(body: AdicionarItemIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    sucesso, mensagem = await carrinho_service.adicionar(db, payload["id"], body.produto_id, body.plano, body.quantidade)
+    if not sucesso:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=mensagem)
+    return {"message": mensagem, "count": await carrinho_repo.contador(db, payload["id"])}
+
+
+@router.post("/remover")
+async def remover(body: dict, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    ids = body.get("ids", [])
     if not ids:
-        return jsonify({"error": "Nenhum item informado"}), 400
-    removidos = carrinho_service.remover_itens(uid, ids)
-    return jsonify({"success": removidos > 0, "removidos": removidos, "total": carrinho_service.total(uid)})
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nenhum item informado.")
+    removidos = await carrinho_repo.remover_itens(db, payload["id"], ids)
+    return {"removidos": removidos, "total": await carrinho_repo.total(db, payload["id"])}
 
-@carrinho_bp.route("/quantidade", methods=["POST"])
-@login_required
-def atualizar_quantidade():
-    uid = str(request.usuario["id"])
-    data = request.get_json() or {}
-    sucesso, msg, novo_valor, total = carrinho_service.atualizar_quantidade(uid, data.get("item_id"), int(data.get("quantidade", 1)))
-    return jsonify({"success": sucesso, "message": msg, "novo_total_item": novo_valor, "total_carrinho": total})
 
-@carrinho_bp.route("/contador")
-def contador():
-    uid, is_guest = _uid()
-    return jsonify({"count": carrinho_service.contador(uid), "is_guest": is_guest})
+@router.post("/quantidade")
+async def atualizar_quantidade(body: AtualizarQuantidadeIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    sucesso, msg, novo_valor, total = await carrinho_service.atualizar_quantidade(db, payload["id"], body.item_id, body.quantidade)
+    if not sucesso:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+    return {"message": msg, "novo_total_item": novo_valor, "total_carrinho": total}
 
-@carrinho_bp.route("/itens_selecionados", methods=["POST"])
-@login_required
-def itens_selecionados():
-    uid = str(request.usuario["id"])
-    ids = (request.get_json() or {}).get("ids", [])
-    return jsonify({"itens": carrinho_service.itens_selecionados(uid, ids)})
 
-@carrinho_bp.route("/finalizar", methods=["POST"])
-@login_required
-def finalizar():
-    uid = str(request.usuario["id"])
-    data = request.get_json() or {}
-    ids = data.get("ids", [])
-    cupom = data.get("cupom", "").strip().upper()
-    desconto = float(data.get("desconto_cupom", 0))
+@router.post("/finalizar")
+async def finalizar(body: FinalizarIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    if body.cupom:
+        valido, msg, _ = await cupom_service.validar(db, body.cupom)
+        if not valido:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+    sucesso, mensagem = await venda_service.finalizar_compra(db, payload["id"], body.ids, body.cupom, body.desconto_cupom)
+    if not sucesso:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=mensagem)
+    return {"message": mensagem}
 
-    if not ids:
-        return jsonify({"error": "Nenhum item selecionado"}), 400
 
-    itens = carrinho_service.itens_selecionados(uid, ids)
-    sucesso, mensagem = venda_service.finalizar_compra(uid, itens, cupom, desconto)
-
-    if sucesso:
-        for id_carrinho in ids:
-            db_execute("UPDATE carrinho SET status='finalizado' WHERE id_carrinho=%s AND id_usuario=%s", (id_carrinho, uid))
-
-    return jsonify({"success": sucesso, "message": mensagem}), (200 if sucesso else 400)
-
-@carrinho_bp.route("/meus_pedidos")
-@login_required
-def meus_pedidos():
-    uid = str(request.usuario["id"])
-    return jsonify(venda_service.pedidos_do_usuario(uid))
+@router.get("/meus_pedidos")
+async def meus_pedidos(payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    return await venda_service.pedidos_do_usuario(db, payload["id"])

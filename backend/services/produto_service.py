@@ -1,4 +1,4 @@
-from database.connection import fetchall, fetchone, execute
+from Clube_do_gole.backend.database.engine import fetchall, fetchone, execute
 
 
 def listar_todos():

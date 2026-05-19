@@ -1,59 +1,90 @@
-from services import auth_service
-from flask import Blueprint, request, jsonify
-from services import carrinho_service
+import secrets
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from database.engine import get_db
+from database.models import UsuarioCliente
+from repositories import carrinho_repo, auth_repo
+from schemas import (
+    LoginIn, CadastroIn, TokenOut, UsuarioOut,
+    EsqueceuSenhaIn, RedefinirSenhaIn,
+)
 from utils.auth import gerar_token, login_required
+from utils.email import send_reset_password_email
+from config import get_settings
 
-auth_bp = Blueprint("auth", __name__)
+settings = get_settings()
+router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-@auth_bp.route("/login", methods=["POST"])
-def login():
-    data = request.get_json() or {}
-    email = data.get("email", "").strip().lower()
-    senha = data.get("senha", "").strip()
-    guest_id = data.get("guest_id")
 
-    if not email or not senha:
-        return jsonify({"error": "Preencha todos os campos"}), 400
+@router.post("/login", response_model=TokenOut)
+async def login(body: LoginIn, db: AsyncSession = Depends(get_db)):
+    adm = await auth_repo.autenticar_admin(db, body.email, body.senha)
+    if adm:
+        token = gerar_token({"id": adm.id, "email": adm.email, "tipo": "admin", "nome": adm.nome})
+        return TokenOut(token=token, tipo="admin", nome=adm.nome)
 
-    admin = auth_service.autenticar_admin(email, senha)
-    if admin:
-        token = gerar_token({"id": admin["id"], "email": admin["email"], "tipo": "admin", "nome": admin["nome"]})
-        return jsonify({"token": token, "tipo": "admin", "nome": admin["nome"]})
+    cliente = await auth_repo.autenticar_cliente(db, body.email, body.senha)
+    if not cliente:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-mail ou senha inválidos.")
 
-    cliente = auth_service.autenticar_cliente(email, senha)
+    itens_migrados = 0
+    if body.guest_carrinho:
+        itens_migrados = await carrinho_repo.inserir_guest(db, body.guest_carrinho, cliente.id)
+
+    token = gerar_token({"id": cliente.id, "email": cliente.email, "tipo": "cliente", "nome": cliente.nome})
+    return TokenOut(token=token, tipo="cliente", nome=cliente.nome, itens_migrados=itens_migrados)
+
+
+@router.post("/cadastro", status_code=status.HTTP_201_CREATED)
+async def cadastro(body: CadastroIn, db: AsyncSession = Depends(get_db)):
+    if await auth_repo.email_existe(db, body.email):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="E-mail já cadastrado.")
+    if await auth_repo.cpf_existe(db, body.cpf):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="CPF já cadastrado.")
+    await auth_repo.criar_cliente(db, body.model_dump())
+    return {"message": "Cadastro realizado com sucesso."}
+
+
+@router.get("/me", response_model=UsuarioOut)
+async def me(payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    cliente = await auth_repo.buscar_cliente(db, payload["id"])
+    if not cliente:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
+    return cliente
+
+
+@router.post("/logout")
+async def logout(payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    if payload.get("tipo") == "cliente":
+        await carrinho_repo.limpar_ativos(db, payload["id"])
+    return {"message": "Logout realizado."}
+
+
+@router.post("/esqueceu-senha")
+async def esqueceu_senha(body: EsqueceuSenhaIn, db: AsyncSession = Depends(get_db)):
+    cliente = await auth_repo.buscar_cliente_por_email(db, body.email)
     if cliente:
-        uid = str(cliente["id"])
-        itens_migrados = 0
-        if guest_id:
-            itens_migrados = carrinho_service.migrar_guest(f"guest_{guest_id}", uid)
-        token = gerar_token({"id": cliente["id"], "email": cliente["email"], "tipo": "cliente", "nome": cliente["nome"]})
-        return jsonify({"token": token, "tipo": "cliente", "nome": cliente["nome"], "itens_migrados": itens_migrados})
+        token = secrets.token_urlsafe(48)
+        await auth_repo.salvar_token_reset(db, cliente.id, token, settings.reset_token_expire_minutes)
+        await send_reset_password_email(cliente.email, cliente.nome, token)
+    # Sempre retorna 200 — não revela se email existe
+    return {"message": "Se este email estiver cadastrado, você receberá as instruções em breve."}
 
-    return jsonify({"error": "E-mail ou senha inválidos"}), 401
 
-@auth_bp.route("/cadastro", methods=["POST"])
-def cadastro():
-    data = request.get_json() or {}
-    obrigatorios = ["cpf", "nome", "sobrenome", "data_nascimento", "email", "senha", "telefone"]
-    if any(not data.get(c, "").strip() for c in obrigatorios):
-        return jsonify({"error": "Preencha todos os campos obrigatórios"}), 400
-
-    if auth_service.email_ja_cadastrado(data["email"].lower()):
-        return jsonify({"error": "E-mail já cadastrado"}), 409
-    if auth_service.cpf_ja_cadastrado(data["cpf"]):
-        return jsonify({"error": "CPF já cadastrado"}), 409
-
-    auth_service.cadastrar_cliente(data)
-    return jsonify({"message": "Cadastro realizado com sucesso"}), 201
-
-@auth_bp.route("/me")
-@login_required
-def me():
-    return jsonify(request.usuario)
-
-@auth_bp.route("/logout", methods=["POST"])
-@login_required
-def logout():
-    uid = str(request.usuario["id"])
-    carrinho_service.limpar_usuario(uid)
-    return jsonify({"message": "Logout realizado"})
+@router.post("/redefinir-senha")
+async def redefinir_senha(body: RedefinirSenhaIn, db: AsyncSession = Depends(get_db)):
+    from repositories.auth_repo import _hash
+    token_obj = await auth_repo.buscar_token_reset(db, body.token)
+    if not token_obj:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido ou já utilizado.")
+    if token_obj.expira_em.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token expirado. Solicite um novo link.")
+    cliente = await db.get(UsuarioCliente, token_obj.usuario_id)
+    if not cliente:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
+    cliente.senha = _hash(body.nova_senha)
+    await auth_repo.consumir_token_reset(db, token_obj)
+    return {"message": "Senha redefinida com sucesso!"}
