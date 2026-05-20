@@ -1,64 +1,98 @@
 <template>
   <div class="home">
-    <!-- HERO -->
+
+    <!-- HERO (escuro) -->
     <section class="hero" id="inicio">
       <div class="hero-content">
-        <h2 class="titulo-xl fade-in" :class="{ visible: fadeInVisible }">Descubra novos sabores todos os meses</h2>
-        <p class="texto-corrido fade-in" :class="{ visible: fadeInVisible }">Assine o Clube do Gole e receba bebidas selecionadas diretamente na sua casa.</p>
-        <button class="btn-modern fade-in" :class="{ visible: fadeInVisible }" @click="scrollToSection('planos')">
-          Conheça os Planos
-        </button>
+        <div class="hero-badge">Curadoria Exclusiva de Destilados</div>
+        <h2 class="titulo-xl fade-in" :class="{ visible: fadeInVisible }">
+          Descubra novos sabores<br><span>todos os meses</span>
+        </h2>
+        <p class="texto-corrido fade-in" :class="{ visible: fadeInVisible }">
+          Assine o Clube do Gole e receba <strong>bebidas selecionadas</strong> de whisky,
+          gin, vodka e licores diretamente na sua casa.
+        </p>
+        <div class="hero-botoes fade-in" :class="{ visible: fadeInVisible }">
+          <button class="btn-modern" @click="scrollToSection('planos')">Conheça os Planos</button>
+          <button class="btn-outline" @click="scrollToSection('como-funciona')">Como Funciona</button>
+        </div>
+        <div class="hero-stats fade-in" :class="{ visible: fadeInVisible }">
+          <div class="stat-item">
+            <span class="stat-numero">+500</span>
+            <span class="stat-label">Rótulos Exclusivos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-numero">+3mil</span>
+            <span class="stat-label">Membros Ativos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-numero">100%</span>
+            <span class="stat-label">Premium Quality</span>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- CARROSSEL PRINCIPAL -->
+    <!-- CARROSSEL (sem seção alternada, neutro) -->
     <section class="carousel-modern">
       <button class="seta esquerda" @click="prevSlide">❮</button>
       <div class="carousel-container" ref="carouselContainer">
         <div class="carousel-slide" v-for="(slide, index) in slides" :key="index">
-          <a v-if="slide.link" href="#" @click.prevent="scrollToSection('planos')" class="scroll-link carousel-clickable">
+          <a v-if="slide.link" href="#" @click.prevent="scrollToSection('planos')"
+            class="scroll-link carousel-clickable">
             <img :src="slide.image" :alt="slide.alt">
-            <div class="slide-overlay">
-              <span>{{ slide.overlayText }}</span>
-            </div>
+            <div class="slide-overlay"><span>{{ slide.overlayText }}</span></div>
           </a>
           <img v-else :src="slide.image" :alt="slide.alt">
         </div>
       </div>
       <button class="seta direita" @click="nextSlide">❯</button>
       <div class="indicadores">
-        <div 
-          v-for="(slide, index) in slides" 
-          :key="index"
-          class="indicador" 
-          :class="{ active: currentIndex === index }"
-          @click="goToSlide(index)"
-        ></div>
+        <div v-for="(slide, index) in slides" :key="index" class="indicador" :class="{ active: currentIndex === index }"
+          @click="goToSlide(index)"></div>
       </div>
     </section>
 
-    <!-- COMO FUNCIONA -->
+    <!-- COMO FUNCIONA (claro) -->
     <section class="como-funciona" id="como-funciona">
-      <div class="container">
-        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">Como Funciona</h2>
+      <div class="container" style="text-align:center;">
+        <span class="section-badge">Processo Simples</span>
+        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
+          Como <span class="dourado">Funciona</span>
+        </h2>
+        <p class="como-funciona-intro fade-in" :class="{ visible: fadeInVisible }">
+          Em apenas 4 passos, você começa sua jornada de descobertas no mundo dos destilados premium
+        </p>
         <div class="passos-container">
-          <div v-for="(passo, index) in passos" :key="index" class="passo fade-in" :class="{ visible: fadeInVisible }" :style="{ transitionDelay: `${index * 100}ms` }">
+          <div v-for="(passo, index) in passos" :key="index" class="passo fade-in" :class="{ visible: fadeInVisible }"
+            :style="{ transitionDelay: `${index * 100}ms` }">
             <i :class="passo.icone + ' icone-passo'"></i>
             <h3>{{ passo.titulo }}</h3>
             <p>{{ passo.descricao }}</p>
           </div>
         </div>
+        <div class="como-funciona-cta fade-in" :class="{ visible: fadeInVisible }">
+          <button class="btn-modern" style="background:var(--gradiente-botao);color:var(--cor-fundo);"
+            @click="scrollToSection('planos')">
+            Começar Agora
+          </button>
+        </div>
       </div>
     </section>
 
-    <!-- NOSSOS PLANOS -->
+    <!-- NOSSOS PLANOS (escuro) -->
     <section id="planos" class="nossos-planos">
-      <div class="container">
-        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">Nossos Planos</h2>
+      <div class="container" style="text-align:center;">
+        <span class="section-badge" style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">Nossas
+          Assinaturas</span>
+        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
+          Nossos <span class="dourado">Planos</span>
+        </h2>
 
-        <h3 class="categoria-titulo fade-in" :class="{ visible: fadeInVisible }">Box Gold</h3>
+        <h3 class="categoria-titulo gold fade-in" :class="{ visible: fadeInVisible }">Box Gold</h3>
         <div v-if="produtosGold.length" class="produtos-container">
-          <div v-for="produto in produtosGold" :key="produto.id" class="produto-card fade-in" :class="{ visible: fadeInVisible }">
+          <div v-for="produto in produtosGold" :key="produto.id" class="produto-card fade-in"
+            :class="{ visible: fadeInVisible }">
             <div class="produto-imagem">
               <img :src="produto.imagem || '/img/sem_imagem.png'" :alt="produto.nome">
               <div class="badge-premium">GOLD</div>
@@ -71,11 +105,13 @@
             </div>
           </div>
         </div>
-        <p v-else class="texto-centro fade-in" :class="{ visible: fadeInVisible }">Nenhum produto Gold cadastrado ainda.</p>
+        <p v-else class="texto-centro fade-in" :class="{ visible: fadeInVisible }">Nenhum produto Gold cadastrado ainda.
+        </p>
 
         <h3 class="categoria-titulo fade-in mt-5" :class="{ visible: fadeInVisible }">Box Premium</h3>
         <div v-if="produtosPremium.length" class="produtos-container">
-          <div v-for="produto in produtosPremium" :key="produto.id" class="produto-card fade-in" :class="{ visible: fadeInVisible }">
+          <div v-for="produto in produtosPremium" :key="produto.id" class="produto-card fade-in"
+            :class="{ visible: fadeInVisible }">
             <div class="produto-imagem">
               <img :src="produto.imagem || '/img/sem_imagem.png'" :alt="produto.nome">
               <div class="badge-premium">PREMIUM</div>
@@ -88,30 +124,50 @@
             </div>
           </div>
         </div>
-        <p v-else class="texto-centro fade-in" :class="{ visible: fadeInVisible }">Nenhum produto Premium cadastrado ainda.</p>
+        <p v-else class="texto-centro fade-in" :class="{ visible: fadeInVisible }">Nenhum produto Premium cadastrado
+          ainda.</p>
       </div>
     </section>
 
-    <!-- SOBRE -->
+    <!-- SOBRE (claro) -->
     <section class="sobre" id="sobre">
-      <div class="container">
-        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">Sobre o Clube do Gole</h2>
+      <div class="container" style="text-align:center;">
+        <span class="section-badge">Sobre Nós</span>
+        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
+          Clube do <span class="dourado" style="color:var(--cor-dourado-escuro);">Gole</span>
+        </h2>
+        <p class="sobre-intro fade-in" :class="{ visible: fadeInVisible }">
+          Somos apaixonados por destilados e acreditamos que cada bebida tem uma história para
+          contar. O Clube do Gole nasceu para democratizar o acesso a <strong>bebidas premium</strong> e criar
+          uma comunidade de <strong>apreciadores</strong> que buscam qualidade e novas experiências.
+        </p>
         <div class="sobre-blocos">
-          <div v-for="(bloco, index) in sobreBlocos" :key="index" class="sobre-bloco fade-in" :class="{ visible: fadeInVisible }">
+          <div v-for="(bloco, index) in sobreBlocos" :key="index" class="sobre-bloco fade-in"
+            :class="{ visible: fadeInVisible }" :style="{ transitionDelay: `${index * 100}ms` }">
+            <div class="sobre-bloco-icone">
+              <i :class="bloco.icone"></i>
+            </div>
             <h3>{{ bloco.titulo }}</h3>
             <p v-html="bloco.descricao"></p>
           </div>
         </div>
-        <p class="sobre-cta fade-in" :class="{ visible: fadeInVisible }">🍻 Junte-se ao clube e descubra um mundo de sabores!</p>
       </div>
     </section>
 
-    <!-- CONTATO -->
+    <!-- CONTATO / CTA WHATSAPP (escuro) -->
     <section id="contato" class="contato">
       <div class="container">
-        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">Fale Conosco</h2>
-        <p class="texto-corrido fade-in" :class="{ visible: fadeInVisible }">Queremos ouvir você! Entre em contato pelo e-mail ou pelas nossas redes sociais...</p>
-        <div class="contato-info fade-in" :class="{ visible: fadeInVisible }">
+        <div class="contato-cta-box fade-in" :class="{ visible: fadeInVisible }">
+          <h2>Ficou com alguma dúvida?</h2>
+          <p>Nossa equipe está pronta para ajudar você a escolher o plano ideal e responder todas as suas perguntas
+            sobre nossos produtos</p>
+          <a href="https://api.whatsapp.com/send/?phone=5541999999999" target="_blank" class="btn-contato"
+            style="display:inline-flex;margin:0 auto;">
+            <i class="fa-brands fa-whatsapp"></i> Falar no WhatsApp
+          </a>
+        </div>
+
+        <div class="contato-info fade-in" :class="{ visible: fadeInVisible }" style="margin-top:var(--espacamento-lg);">
           <div class="contato-item-email">
             <i class="fas fa-envelope"></i>
             <div>
@@ -119,7 +175,6 @@
               <a href="mailto:contato@clubedogole.com.br">contato@clubedogole.com.br</a>
             </div>
           </div>
-
           <div class="contato-item">
             <i class="fas fa-phone"></i>
             <div>
@@ -145,6 +200,7 @@
         </div>
       </div>
     </section>
+
   </div>
 </template>
 
@@ -265,17 +321,17 @@ const formatPrice = (price) => {
 // Lifecycle
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
-  
+
   // Carregar produtos
   await produtosStore.fetchProdutos()
-  
+
   setTimeout(() => {
     handleScroll()
     fadeInVisible.value = true
   }, 100)
-  
+
   startCarouselAutoPlay()
-  
+
   const carouselElement = carouselContainer.value
   if (carouselElement) {
     carouselElement.addEventListener('mouseenter', stopCarouselAutoPlay)
@@ -286,7 +342,7 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   stopCarouselAutoPlay()
-  
+
   const carouselElement = carouselContainer.value
   if (carouselElement) {
     carouselElement.removeEventListener('mouseenter', stopCarouselAutoPlay)
