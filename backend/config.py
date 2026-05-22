@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expiry_days: int = 7
 
+    #database_url: str = "sqlite+aiosqlite:///./database/clube_do_gole.db"#
     database_url: str = "sqlite+aiosqlite:///./database/clube_do_gole.db"
 
     port: int = 8000
