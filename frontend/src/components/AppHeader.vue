@@ -2,20 +2,17 @@
   <header class="main-header" :class="{ 'header-scrolled': isScrolled }">
     <div class="header-left">
       <div class="logo">
-        <router-link to="/">
-          <img src="/img/logo.png" alt="Clube do Gole" class="logo-img-small">
-        </router-link>
+        <img src="/img/logo.png" alt="Clube do Gole" class="logo-img-small">
       </div>
       <nav class="nav-left">
         <ul>
-          <!-- CHECKOUT - MENU SIMPLIFICADO -->
+          <!-- CHECKOUT -->
           <template v-if="$route.name === 'checkout'">
             <li><router-link to="/">Início</router-link></li>
-            <li><router-link to="/#planos">Produtos</router-link></li>
             <li><router-link to="/carrinho">Carrinho</router-link></li>
           </template>
 
-          <!-- PÁGINAS ADMINISTRATIVAS -->
+          <!-- ADMIN -->
           <template v-else-if="isAdminRoute">
             <li><router-link to="/">Início</router-link></li>
             <li>
@@ -35,22 +32,13 @@
             </li>
           </template>
 
-          <!-- PÁGINAS NORMAIS -->
+          <!-- NORMAL -->
           <template v-else>
-            <template v-if="$route.name === 'home'">
-              <li><a href="#" @click.prevent="scrollTo('inicio')">Início</a></li>
-              <li><a href="#" @click.prevent="scrollTo('como-funciona')">Como Funciona</a></li>
-              <li><a href="#" @click.prevent="scrollTo('planos')">Planos</a></li>
-              <li><a href="#" @click.prevent="scrollTo('sobre')">Sobre</a></li>
-              <li><a href="#" @click.prevent="scrollTo('contato')">Contato</a></li>
-            </template>
-            <template v-else>
-              <li><router-link to="/#inicio">Início</router-link></li>
-              <li><router-link to="/#como-funciona">Como Funciona</router-link></li>
-              <li><router-link to="/#planos">Planos</router-link></li>
-              <li><router-link to="/#sobre">Sobre</router-link></li>
-              <li><router-link to="/#contato">Contato</router-link></li>
-            </template>
+            <li><a href="#" @click.prevent="scrollTo('inicio')">Início</a></li>
+            <li><a href="#" @click.prevent="scrollTo('como-funciona')">Como Funciona</a></li>
+            <li><a href="#" @click.prevent="scrollTo('planos')">Planos</a></li>
+            <li><a href="#" @click.prevent="scrollTo('sobre')">Sobre</a></li>
+            <li><a href="#" @click.prevent="scrollTo('contato')">Contato</a></li>
           </template>
         </ul>
       </nav>
@@ -58,11 +46,10 @@
 
     <div class="header-right">
       <router-link to="/carrinho" class="icon-btn">
-        <i class="fas fa-shopping-cart"></i> Carrinho 
+        <i class="fas fa-shopping-cart"></i> Carrinho
         <span class="cart-count">{{ cartCount }}</span>
       </router-link>
 
-      <!-- MENU DO USUÁRIO -->
       <div v-if="logado" class="user-menu-container" ref="userMenu">
         <div class="user-menu-trigger" @click="toggleUserMenu">
           <span class="icon-btn user-name">
@@ -74,13 +61,11 @@
           </button>
         </div>
         <div class="user-dropdown" v-show="isUserMenuOpen">
-          <!-- ADMIN -->
           <template v-if="isAdmin">
             <router-link to="/admin" class="dropdown-item">
               <i class="fas fa-cog"></i> Painel Administrativo
             </router-link>
           </template>
-          <!-- CLIENTE -->
           <template v-else>
             <router-link to="/configuracoes" class="dropdown-item">
               <i class="fas fa-cog"></i> Configurações
@@ -91,6 +76,7 @@
           </a>
         </div>
       </div>
+
       <router-link v-else to="/login" class="icon-btn">
         <i class="fas fa-user"></i> Login
       </router-link>
@@ -109,53 +95,46 @@ const route = useRoute()
 const authStore = useAuthStore()
 const carrinhoStore = useCarrinhoStore()
 
-// Estados
 const isScrolled = ref(false)
 const isUserMenuOpen = ref(false)
 const userMenu = ref(null)
 
-// Computed
 const logado = computed(() => authStore.logado)
 const isAdmin = computed(() => authStore.tipo === 'admin')
-const nomeExibicao = computed(() => {
-  if (authStore.nome) {
-    return authStore.nome.split(' ')[0]
-  }
-  return 'Usuário'
-})
+const nomeExibicao = computed(() => authStore.nome?.split(' ')[0] || 'Usuário')
 const cartCount = computed(() => carrinhoStore.count)
 
-// Verificar se é rota administrativa
 const isAdminRoute = computed(() => {
   const adminRoutes = ['usuario_adm', 'cupons', 'dashboard_vendas', 'produtos', 'editar_cupom', 'editar_produto']
   return adminRoutes.includes(route.name)
 })
 
-// Métodos
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 100
-}
+const handleScroll = () => { isScrolled.value = window.scrollY > 100 }
 
 const scrollTo = (sectionId) => {
   if (route.name !== 'home') {
-    router.push(`/#${sectionId}`)
+    router.push('/').then(() => {
+      setTimeout(() => {
+        const el = document.getElementById(sectionId)
+        if (el) {
+          const offset = document.querySelector('.main-header')?.offsetHeight || 72
+          window.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' })
+        }
+      }, 350)
+    })
   } else {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      const headerHeight = document.querySelector('.main-header').offsetHeight
-      window.scrollTo({ top: element.offsetTop - headerHeight, behavior: 'smooth' })
+    const el = document.getElementById(sectionId)
+    if (el) {
+      const offset = document.querySelector('.main-header')?.offsetHeight || 72
+      window.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' })
     }
   }
 }
 
-const toggleUserMenu = () => {
-  isUserMenuOpen.value = !isUserMenuOpen.value
-}
+const toggleUserMenu = () => { isUserMenuOpen.value = !isUserMenuOpen.value }
 
-const closeUserMenu = (event) => {
-  if (userMenu.value && !userMenu.value.contains(event.target)) {
-    isUserMenuOpen.value = false
-  }
+const closeUserMenu = (e) => {
+  if (userMenu.value && !userMenu.value.contains(e.target)) isUserMenuOpen.value = false
 }
 
 const logout = async () => {
@@ -164,13 +143,11 @@ const logout = async () => {
   isUserMenuOpen.value = false
 }
 
-// Lifecycle
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   document.addEventListener('click', closeUserMenu)
   handleScroll()
 })
-
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   document.removeEventListener('click', closeUserMenu)

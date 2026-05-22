@@ -22,6 +22,13 @@ export const useCarrinhoStore = defineStore('carrinho', () => {
 
   async function buscar() {
     try {
+      const token = localStorage.getItem('token')
+      if (!token) {          // ← adiciona isso
+        itens.value = []
+        total.value = 0
+        count.value = 0
+        return
+      }
       const { data } = await ver()
       itens.value = data.itens
       total.value = data.total

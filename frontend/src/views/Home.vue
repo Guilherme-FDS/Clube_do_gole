@@ -155,51 +155,36 @@
     </section>
 
     <!-- CONTATO / CTA WHATSAPP (escuro) -->
-    <section id="contato" class="contato">
-      <div class="container">
-        <div class="contato-cta-box fade-in" :class="{ visible: fadeInVisible }">
-          <h2>Ficou com alguma dúvida?</h2>
-          <p>Nossa equipe está pronta para ajudar você a escolher o plano ideal e responder todas as suas perguntas
-            sobre nossos produtos</p>
-          <a href="https://api.whatsapp.com/send/?phone=5541999999999" target="_blank" class="btn-contato"
-            style="display:inline-flex;margin:0 auto;">
-            <i class="fa-brands fa-whatsapp"></i> Falar no WhatsApp
-          </a>
-        </div>
+<section id="contato" class="contato">
+  <div class="container">
+    <div class="contato-cta-box fade-in" :class="{ visible: fadeInVisible }">
+      <span class="section-badge" style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">Fale Conosco</span>
+      <h2>Entre em <span style="color:var(--cor-dourado);">Contato</span></h2>
+      <p>Estamos aqui para ajudar. Entre em contato conosco através dos canais abaixo</p>
+      <a href="https://api.whatsapp.com/send/?phone=5541999999999" target="_blank" class="btn-contato" style="display:inline-flex;margin:0 auto;">
+        <i class="fa-brands fa-whatsapp"></i> Falar no WhatsApp
+      </a>
+    </div>
 
-        <div class="contato-info fade-in" :class="{ visible: fadeInVisible }" style="margin-top:var(--espacamento-lg);">
-          <div class="contato-item-email">
-            <i class="fas fa-envelope"></i>
-            <div>
-              <strong>Email:</strong>
-              <a href="mailto:contato@clubedogole.com.br">contato@clubedogole.com.br</a>
-            </div>
-          </div>
-          <div class="contato-item">
-            <i class="fas fa-phone"></i>
-            <div>
-              <strong>WhatsApp:</strong>
-              <span>(41) 99999-9999</span>
-            </div>
-          </div>
-          <div class="contato-item">
-            <i class="fas fa-map-marker-alt"></i>
-            <div>
-              <strong>Endereço:</strong>
-              <span>Maringá, Paraná - Brasil</span>
-            </div>
-          </div>
-          <div class="contato-item-horario">
-            <i class="fas fa-clock"></i>
-            <div>
-              <strong>Horário:</strong><br>
-              <span>Seg a Sex: 9h às 18h</span><br>
-              <span>Sáb: 9h às 13h</span>
-            </div>
-          </div>
-        </div>
+    <div class="contato-cards fade-in" :class="{ visible: fadeInVisible }">
+      <div class="contato-card">
+        <div class="contato-card-icone"><i class="fas fa-envelope"></i></div>
+        <h4>E-mail</h4>
+        <a href="mailto:contato@clubedogole.com.br">contato@clubedogole.com.br</a>
       </div>
-    </section>
+      <div class="contato-card">
+        <div class="contato-card-icone"><i class="fas fa-phone"></i></div>
+        <h4>WhatsApp</h4>
+        <span>(44) 99999-9999</span>
+      </div>
+      <div class="contato-card">
+        <div class="contato-card-icone"><i class="fas fa-map-marker-alt"></i></div>
+        <h4>Endereço</h4>
+        <span>Maringá, Paraná - Brasil</span>
+      </div>
+    </div>
+  </div>
+</section>
 
   </div>
 </template>
@@ -235,9 +220,9 @@ const passos = [
 ]
 
 const sobreBlocos = [
-  { titulo: 'Experiência Única', descricao: 'No <span>Clube do Gole</span>, transformamos a experiência de apreciar bebidas em momentos únicos.' },
-  { titulo: 'Seleção Premium', descricao: 'Selecionamos cuidadosamente cada rótulo para que você receba em casa produtos de alta qualidade.' },
-  { titulo: 'Descubra Novos Sabores', descricao: 'Explore novos sabores e viva experiências memoráveis a cada gole.' }
+  { icone: 'mdi mdi-medal-outline', titulo: 'Experiência Única', descricao: 'No <span>Clube do Gole</span>, transformamos a experiência de apreciar bebidas em momentos únicos.' },
+  { icone: 'mdi mdi-magnify', titulo: 'Seleção Premium', descricao: 'Selecionamos cuidadosamente cada rótulo para que você receba em casa produtos de alta qualidade.' },
+  { icone: 'mdi mdi-glass-cocktail', titulo: 'Descubra Novos Sabores', descricao: 'Explore novos sabores e viva experiências memoráveis a cada gole.' }
 ]
 
 // Computed

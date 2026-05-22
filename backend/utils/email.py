@@ -3,20 +3,24 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from config import get_settings
 
 logger = logging.getLogger("uvicorn")
-settings = get_settings()
 
-_conf = ConnectionConfig(
-    MAIL_USERNAME=settings.gmail_user,
-    MAIL_PASSWORD=settings.gmail_app_password,
-    MAIL_FROM=settings.gmail_user,
-    MAIL_PORT=587,
-    MAIL_SERVER="smtp.gmail.com",
-    MAIL_FROM_NAME="Clube do Golê",
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=False,
-)
+
+def _get_mail_config():
+    settings = get_settings()
+    if not settings.gmail_user or not settings.gmail_app_password:
+        return None
+    return ConnectionConfig(
+        MAIL_USERNAME=settings.gmail_user,
+        MAIL_PASSWORD=settings.gmail_app_password,
+        MAIL_FROM=settings.gmail_user,
+        MAIL_PORT=587,
+        MAIL_SERVER="smtp.gmail.com",
+        MAIL_FROM_NAME="Clube do Golê",
+        MAIL_STARTTLS=True,
+        MAIL_SSL_TLS=False,
+        USE_CREDENTIALS=True,
+        VALIDATE_CERTS=False,
+    )
 
 
 def _html_reset(nome: str, url: str, expire: int) -> str:
@@ -39,6 +43,11 @@ def _html_reset(nome: str, url: str, expire: int) -> str:
 
 
 async def send_reset_password_email(recipient_email: str, nome: str, token: str) -> None:
+    settings = get_settings()
+    conf = _get_mail_config()
+    if not conf:
+        logger.warning("Email não configurado — reset de senha desabilitado.")
+        return
     url = f"{settings.frontend_url}/reset-password?token={token}"
     try:
         message = MessageSchema(
@@ -47,6 +56,6 @@ async def send_reset_password_email(recipient_email: str, nome: str, token: str)
             body=_html_reset(nome, url, settings.reset_token_expire_minutes),
             subtype=MessageType.html,
         )
-        await FastMail(_conf).send_message(message)
+        await FastMail(conf).send_message(message)
     except Exception as e:
         logger.error(f"Erro ao enviar email de reset para {recipient_email}: {e}")

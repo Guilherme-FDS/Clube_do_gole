@@ -50,12 +50,29 @@ const form = ref({
 
 async function handleCadastro() {
   erro.value = ''
+
+  if (form.value.senha.length < 6) {
+    erro.value = 'A senha deve ter no mínimo 6 caracteres.'
+    return
+  }
+
   loading.value = true
   try {
     await cadastro(form.value)
     router.push('/login?cadastro=1')
   } catch (e) {
-    erro.value = e.response?.data?.error || 'Erro ao cadastrar'
+    const detail = e.response?.data?.detail
+    if (Array.isArray(detail)) {
+      const msgs = detail.map(d => {
+        if (d.loc?.includes('data_nascimento')) return 'Data de nascimento é obrigatória.'
+        if (d.loc?.includes('telefone')) return 'Telefone é obrigatório.'
+        if (d.loc?.includes('senha')) return 'A senha deve ter no mínimo 6 caracteres.'
+        return d.msg
+      })
+      erro.value = msgs.join(' ')
+    } else {
+      erro.value = detail || e.response?.data?.error || 'Erro ao cadastrar.'
+    }
   } finally {
     loading.value = false
   }
