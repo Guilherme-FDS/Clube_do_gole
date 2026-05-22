@@ -3,7 +3,7 @@
     <!-- HERO -->
     <section id="inicio" class="hero">
       <div class="hero-content">
-        <img src="/img/logo_mix_up.png" alt="Logo MixupCode" class="hero-logo" />
+        <!--img src="/img/logo_mix_up.png" alt="Logo MixupCode" class="hero-logo" /-->
         <h1>Bem-vindo à <span>MixupCode</span></h1>
         <p><strong>Soluções criativas e tecnológicas para o seu negócio.</strong></p>
         <a href="#portfolio" class="btn" @click.prevent="scrollTo('portfolio')">Ver portfólio</a>
