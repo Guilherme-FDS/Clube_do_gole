@@ -1,19 +1,14 @@
 import axios from 'axios'
-
 const api = axios.create({ 
-  baseURL: import.meta.env.VITE_API_URL || 'https://clube-do-gole-backend.onrender.com'
+  baseURL: import.meta.env.VITE_API_URL || 'https://clube-do-gole-backend.onrender.com/api'
 })
-
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
   if (token) config.headers.Authorization = `Bearer ${token}`
-
   const guestId = localStorage.getItem('guest_id')
   if (guestId) config.headers['X-Guest-Id'] = guestId
-
   return config
 })
-
 api.interceptors.response.use(
   res => res,
   err => {
@@ -24,5 +19,4 @@ api.interceptors.response.use(
     return Promise.reject(err)
   }
 )
-
 export default api
