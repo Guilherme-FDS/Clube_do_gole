@@ -97,17 +97,18 @@
     </footer>
 
     <!-- Ícone flutuante WhatsApp -->
+    <!--
     <a href="https://wa.me/5544984385699?text=Ol%C3%A1%20Mixup,%20gostaria%20de%20solicitar%20um%20projeto.%20Podemos%20conversar%3F"
        class="whatsapp-float" target="_blank" rel="noopener" title="Converse com a Mixup no WhatsApp">
       <img src="/img/whats.png" alt="WhatsApp" />
     </a>
+    -->
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// Dados da equipe
 const equipe = ref([
   { nome: 'Vinicius Rafael Petrim', cargo: 'Frontend', imagem: '/img/vinicius.jpg' },
   { nome: 'Jackson', cargo: 'Backend', imagem: '/img/jackson.jpeg' },
@@ -117,12 +118,10 @@ const equipe = ref([
   { nome: 'Alessandro', cargo: 'Comunicação', imagem: '/img/image.png' }
 ])
 
-// Estado do carrossel
 const currentIndex = ref(0)
 let autoPlayInterval = null
 const carouselContainer = ref(null)
 
-// Funções do carrossel
 const nextSlide = () => {
   currentIndex.value = (currentIndex.value + 1) % equipe.value.length
   resetAutoPlay()
@@ -151,21 +150,18 @@ const resetAutoPlay = () => {
   startAutoPlay()
 }
 
-// Scroll suave para seções
 const scrollTo = (sectionId) => {
   const element = document.getElementById(sectionId)
   if (element) {
-    const offset = 80 // altura do header fixo
+    const offset = 80
     const top = element.offsetTop - offset
     window.scrollTo({ top, behavior: 'smooth' })
   }
 }
 
-// Pausar autoplay ao passar mouse sobre o carrossel
 const handleMouseEnter = () => stopAutoPlay()
 const handleMouseLeave = () => startAutoPlay()
 
-// Lifecycle
 onMounted(() => {
   startAutoPlay()
   if (carouselContainer.value) {
@@ -184,7 +180,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ===== VARIÁVEIS LOCAIS (já existem no global, mas mantemos para consistência) ===== */
 .mixupcode-page {
   --gold: #c8a850;
   --black: #1a1a1a;
@@ -211,17 +206,12 @@ onUnmounted(() => {
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.6s ease-in-out;
-}
-
-/* Reset específico para a página (evita conflitos com global) */
-.mixupcode-page {
   background: var(--gray-light);
   color: var(--black);
   font-family: 'Poppins', sans-serif;
   line-height: 1.6;
 }
 
-/* Seções */
 .mixupcode-page section {
   scroll-margin-top: 80px;
   padding: var(--spacing-xxl) 10%;
@@ -248,25 +238,14 @@ onUnmounted(() => {
   letter-spacing: 2px;
 }
 
-/* Hero */
 .hero {
   background: var(--gray-light);
   padding: var(--spacing-xxl) var(--spacing-lg);
 }
-.hero-logo {
-  width: 200px;
-  margin-bottom: var(--spacing-lg);
-}
-.hero h1 {
-  font-size: 3rem;
-}
-.hero span {
-  color: var(--gold);
-}
-.hero p {
-  margin: var(--spacing-sm) 0 var(--spacing-lg);
-  color: #444;
-}
+.hero-logo { width: 200px; margin-bottom: var(--spacing-lg); }
+.hero h1 { font-size: 3rem; }
+.hero span { color: var(--gold); }
+.hero p { margin: var(--spacing-sm) 0 var(--spacing-lg); color: #444; }
 .btn {
   background: var(--gold);
   color: var(--white);
@@ -277,15 +256,9 @@ onUnmounted(() => {
   font-weight: 500;
   display: inline-block;
 }
-.btn:hover {
-  background: #b89642;
-  transform: translateY(-2px);
-}
+.btn:hover { background: #b89642; transform: translateY(-2px); }
 
-/* Sobre */
-.sobre {
-  background: var(--white);
-}
+.sobre { background: var(--white); }
 .sobre p {
   max-width: 900px;
   margin: 0 auto;
@@ -296,10 +269,7 @@ onUnmounted(() => {
   padding: 0 var(--spacing-sm);
 }
 
-/* Carrossel da equipe */
-.nossa-equipe {
-  background: var(--gray-light);
-}
+.nossa-equipe { background: var(--gray-light); }
 .carousel-container {
   position: relative;
   max-width: 1000px;
@@ -307,11 +277,7 @@ onUnmounted(() => {
   overflow: hidden;
   padding: 0 60px;
 }
-.carousel-wrapper {
-  width: 100%;
-  overflow: hidden;
-  border-radius: var(--border-radius-lg);
-}
+.carousel-wrapper { width: 100%; overflow: hidden; border-radius: var(--border-radius-lg); }
 .carousel {
   display: flex;
   transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -339,19 +305,9 @@ onUnmounted(() => {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
 }
-.carousel-item:hover img {
-  transform: scale(1.05);
-}
-.info h3 {
-  color: var(--gold);
-  font-size: 1.5rem;
-  margin-bottom: var(--spacing-xs);
-}
-.info p {
-  color: #555;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
+.carousel-item:hover img { transform: scale(1.05); }
+.info h3 { color: var(--gold); font-size: 1.5rem; margin-bottom: var(--spacing-xs); }
+.info p { color: #555; font-size: 1.1rem; font-weight: 500; }
 .prev, .next {
   background: var(--gold);
   color: var(--white);
@@ -371,17 +327,11 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
 }
-.prev:hover, .next:hover {
-  background: #b89642;
-  transform: translateY(-50%) scale(1.1);
-}
+.prev:hover, .next:hover { background: #b89642; transform: translateY(-50%) scale(1.1); }
 .prev { left: 10px; }
 .next { right: 10px; }
 
-/* Portfólio */
-.portfolio {
-  background: var(--white);
-}
+.portfolio { background: var(--white); }
 .portfolio-single {
   display: flex;
   justify-content: center;
@@ -399,25 +349,10 @@ onUnmounted(() => {
   transition: var(--transition-normal);
   width: 100%;
 }
-.portfolio-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-.portfolio-card h3 {
-  color: var(--gold);
-  font-size: 1.8rem;
-  margin-bottom: var(--spacing-sm);
-}
-.portfolio-card p {
-  color: #555;
-  margin-bottom: var(--spacing-md);
-  font-size: 1.1rem;
-}
-.portfolio-button {
-  display: block;
-  text-decoration: none;
-  margin-bottom: var(--spacing-md);
-}
+.portfolio-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
+.portfolio-card h3 { color: var(--gold); font-size: 1.8rem; margin-bottom: var(--spacing-sm); }
+.portfolio-card p { color: #555; margin-bottom: var(--spacing-md); font-size: 1.1rem; }
+.portfolio-button { display: block; text-decoration: none; margin-bottom: var(--spacing-md); }
 .portfolio-image {
   width: 100%;
   height: auto;
@@ -425,10 +360,7 @@ onUnmounted(() => {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: var(--transition-normal);
 }
-.portfolio-button:hover .portfolio-image {
-  transform: scale(1.02);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
+.portfolio-button:hover .portfolio-image { transform: scale(1.02); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
 .portfolio-description {
   color: #666;
   font-size: 1rem;
@@ -438,10 +370,7 @@ onUnmounted(() => {
   padding: 0 var(--spacing-sm);
 }
 
-/* Contato */
-.contato {
-  background: var(--gray-light);
-}
+.contato { background: var(--gray-light); }
 .contact-buttons {
   display: flex;
   justify-content: center;
@@ -463,12 +392,8 @@ onUnmounted(() => {
 .instagram { background: var(--instagram); }
 .linkedin { background: var(--linkedin); }
 .email { background: var(--email); }
-.contact-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
+.contact-button:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
 
-/* Footer */
 .footer {
   background: var(--black);
   color: var(--white);
@@ -478,7 +403,6 @@ onUnmounted(() => {
   margin-top: var(--spacing-lg);
 }
 
-/* WhatsApp flutuante */
 .whatsapp-float {
   position: fixed;
   bottom: 20px;
@@ -494,71 +418,27 @@ onUnmounted(() => {
   z-index: 999;
   transition: var(--transition-normal);
 }
-.whatsapp-float img {
-  width: 35px;
-  height: 35px;
-}
-.whatsapp-float:hover {
-  transform: scale(1.1);
-}
+.whatsapp-float img { width: 35px; height: 35px; }
+.whatsapp-float:hover { transform: scale(1.1); }
 
-/* Responsividade */
 @media (max-width: 768px) {
-  .mixupcode-page section {
-    padding: var(--spacing-xl) 5%;
-  }
-  .hero h1 {
-    font-size: 2rem;
-  }
-  .hero-logo {
-    width: 150px;
-  }
-  .carousel-container {
-    padding: 0 40px;
-  }
-  .carousel-item img {
-    width: 200px;
-    height: 200px;
-  }
-  .sobre p {
-    font-size: 1rem;
-    text-align: left;
-  }
-  .portfolio-single {
-    max-width: 90%;
-  }
-  .portfolio-card {
-    padding: var(--spacing-lg);
-  }
-  .contact-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-  .contact-button {
-    width: 200px;
-    justify-content: center;
-  }
+  .mixupcode-page section { padding: var(--spacing-xl) 5%; }
+  .hero h1 { font-size: 2rem; }
+  .hero-logo { width: 150px; }
+  .carousel-container { padding: 0 40px; }
+  .carousel-item img { width: 200px; height: 200px; }
+  .sobre p { font-size: 1rem; text-align: left; }
+  .portfolio-single { max-width: 90%; }
+  .portfolio-card { padding: var(--spacing-lg); }
+  .contact-buttons { flex-direction: column; align-items: center; }
+  .contact-button { width: 200px; justify-content: center; }
 }
 
 @media (max-width: 480px) {
-  .carousel-item img {
-    width: 150px;
-    height: 150px;
-  }
-  .prev, .next {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-    padding: 0.5rem;
-  }
-  .carousel-container {
-    padding: 0 30px;
-  }
-  .portfolio-card {
-    padding: var(--spacing-md);
-  }
-  .portfolio-card h3 {
-    font-size: 1.5rem;
-  }
+  .carousel-item img { width: 150px; height: 150px; }
+  .prev, .next { width: 40px; height: 40px; font-size: 1.2rem; padding: 0.5rem; }
+  .carousel-container { padding: 0 30px; }
+  .portfolio-card { padding: var(--spacing-md); }
+  .portfolio-card h3 { font-size: 1.5rem; }
 }
 </style>
