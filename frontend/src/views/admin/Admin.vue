@@ -47,72 +47,46 @@
     </main>
   </template>
   
-  <script setup>
-  import { ref, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { useAuthStore } from '@/stores/auth'
-  
-  const router = useRouter()
-  const authStore = useAuthStore()
-  
-  // Estados
-  const fadeInVisible = ref(false)
-  const stats = ref({
-    cuponsAtivos: 0
-  })
-  
-  // Estatísticas (opcional - pode ser carregada da API)
-  const carregarEstatisticas = async () => {
-    try {
-      // Opcional: buscar contagem de cupons ativos
-      const response = await fetch('/api/admin/stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        stats.value.cuponsAtivos = data.cupons_ativos || 0
-      }
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error)
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const fadeInVisible = ref(false)
+const stats = ref({ cuponsAtivos: 0 })
+
+const carregarEstatisticas = async () => {
+  // rota /api/admin/stats não implementada ainda
+}
+
+const handleCardClick = (e) => {
+  const card = e.currentTarget
+  const originalContent = card.innerHTML
+  card.innerHTML = `
+    <div class="card-loading">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Carregando...</span>
+    </div>
+  `
+  setTimeout(() => {
+    if (card.innerHTML !== originalContent) {
+      card.innerHTML = originalContent
     }
+  }, 3000)
+}
+
+onMounted(async () => {
+  if (!authStore.logado || authStore.tipo !== 'admin') {
+    router.push('/login?redirect=/admin')
+    return
   }
-  
-  // Feedback de clique no card
-  const handleCardClick = (e) => {
-    const card = e.currentTarget
-    const originalContent = card.innerHTML
-    
-    card.innerHTML = `
-      <div class="card-loading">
-        <i class="fas fa-spinner fa-spin"></i>
-        <span>Carregando...</span>
-      </div>
-    `
-    
-    // Restaurar após timeout (caso o redirecionamento falhe)
-    setTimeout(() => {
-      if (card.innerHTML !== originalContent) {
-        card.innerHTML = originalContent
-      }
-    }, 3000)
-  }
-  
-  // Verificar autenticação e permissão
-  onMounted(async () => {
-    if (!authStore.logado || authStore.tipo !== 'admin') {
-      router.push('/login?redirect=/admin')
-      return
-    }
-    
-    await carregarEstatisticas()
-    
-    setTimeout(() => {
-      fadeInVisible.value = true
-    }, 100)
-  })
-  </script>
+  await carregarEstatisticas()
+  setTimeout(() => { fadeInVisible.value = true }, 100)
+})
+</script>
   
   <style scoped>
   /* ===== ESTILOS EXCLUSIVOS DO PAINEL ADMINISTRATIVO ===== */

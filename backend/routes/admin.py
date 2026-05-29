@@ -48,6 +48,13 @@ async def deletar_produto(produto_id: int, _: dict = Depends(admin_required), db
 async def listar_cupons(_: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
     return await cupom_repo.listar(db)
 
+@router.get("/cupons/{cupom_id}", response_model=CupomOut)
+async def detalhe_cupom(cupom_id: int, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    c = await cupom_repo.buscar_por_id(db, cupom_id)
+    if not c:
+        raise HTTPException(status_code=404, detail="Cupom não encontrado.")
+    return c
+
 @router.post("/cupons", response_model=CupomOut, status_code=201)
 async def criar_cupom(body: CupomIn, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
     dados = body.model_dump()

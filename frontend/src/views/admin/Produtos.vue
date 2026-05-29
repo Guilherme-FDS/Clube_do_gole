@@ -271,7 +271,7 @@ const salvarProduto = async () => {
   try {
     const dados = {
       nome: form.value.nome,
-      tipo: form.value.tipo,
+      tipo: form.value.tipo.toLowerCase(),
       descricao: form.value.descricao,
       preco: parseFloat(form.value.preco),
       estoque: parseInt(form.value.estoque),
@@ -628,7 +628,7 @@ tbody tr:hover {
 }
 
 .btn-modal-salvar {
-  background: var(--gradiente-botao-dourado-claro-escuro);
+  background: var(--gradiente-botao);
   color: var(--cor-fundo);
 }
 

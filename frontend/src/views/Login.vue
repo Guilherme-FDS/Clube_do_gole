@@ -27,7 +27,7 @@
               </div>
 
               <button type="submit" class="btn-submit" :class="{ loading: carregando }" :disabled="carregando">
-                <span class="btn-text">Entrar no dashboard</span>
+                <span class="btn-text">Entrar</span>
                 <div class="btn-loader"></div>
               </button>
             </form>

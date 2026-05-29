@@ -27,75 +27,68 @@
                 <i class="fas fa-spinner fa-spin"></i> Carregando...
               </td>
             </tr>
-            <tr v-else-if="cupons.length === 0">
-              <td colspan="6" class="empty-state">
-                <i class="fas fa-tags"></i>
-                <p>Nenhum cupom cadastrado.</p>
-              </td>
-            </tr>
-            <tr v-else v-for="cupom in cupons" :key="cupom.id" class="fade-in">
-              <td><strong>{{ cupom.codigo }}</strong></td>
-              <td>{{ cupom.desconto_percentual }}%</td>
-              <td>{{ cupom.usos_maximos }}</td>
-              <td>
-                <span :class="['uso-indicator', cupom.usos_restantes > 0 ? 'uso-disponivel' : 'uso-esgotado']">
-                  {{ cupom.usos_restantes }}
-                </span>
-              </td>
-              <td>
-                <span :class="['status-badge', `status-${cupom.status}`]">{{ cupom.status | capitalize }}</span>
-              </td>
-              <td class="acoes">
-                <!-- Botão Ativar/Inativar -->
-                <button v-if="cupom.status === 'ativo'" @click="alterarStatus(cupom.id, 'inativo')" class="btn-acao btn-inativar">
-                  <i class="fas fa-pause"></i> Inativar
-                </button>
-                <button v-else @click="alterarStatus(cupom.id, 'ativo')" class="btn-acao btn-ativar">
-                  <i class="fas fa-play"></i> Ativar
-                </button>
-
-                <!-- Botão Editar -->
-                <router-link :to="`/admin/cupons/editar/${cupom.id}`" class="btn-acao btn-editar">
-                  <i class="fas fa-edit"></i> Editar
-                </router-link>
-
-                <!-- Botão Excluir -->
-                <button @click="excluirCupom(cupom.id)" class="btn-acao btn-excluir">
-                  <i class="fas fa-trash"></i> Excluir
-                </button>
-              </td>
-            </tr>
+            <template v-else>
+              <tr v-if="cupons.length === 0">
+                <td colspan="6" class="empty-state">
+                  <i class="fas fa-tags"></i>
+                  <p>Nenhum cupom cadastrado.</p>
+                </td>
+              </tr>
+              <tr v-for="cupom in cupons" :key="cupom.id">
+                <td><strong>{{ cupom.codigo }}</strong></td>
+                <td>{{ cupom.desconto_percentual }}%</td>
+                <td>{{ cupom.usos_maximos }}</td>
+                <td>
+                  <span :class="['uso-indicator', cupom.usos_restantes > 0 ? 'uso-disponivel' : 'uso-esgotado']">
+                    {{ cupom.usos_restantes }}
+                  </span>
+                </td>
+                <td>
+                  <span :class="['status-badge', `status-${cupom.status}`]">{{ cupom.status }}</span>
+                </td>
+                <td class="acoes">
+                  <button v-if="cupom.status === 'ativo'" @click="alterarStatus(cupom.id, 'inativo')" class="btn-acao btn-inativar">
+                    <i class="fas fa-pause"></i> Inativar
+                  </button>
+                  <button v-else @click="alterarStatus(cupom.id, 'ativo')" class="btn-acao btn-ativar">
+                    <i class="fas fa-play"></i> Ativar
+                  </button>
+                  <router-link :to="`/admin/cupons/editar/${cupom.id}`" class="btn-acao btn-editar">
+                    <i class="fas fa-edit"></i> Editar
+                  </router-link>
+                  <button @click="excluirCupom(cupom.id)" class="btn-acao btn-excluir">
+                    <i class="fas fa-trash"></i> Excluir
+                  </button>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- MODAL DE ADIÇÃO -->
     <div v-if="modalAberto" class="modal" @click.self="fecharModal">
       <div class="modal-content">
         <h2 class="titulo-md"><i class="fas fa-tag"></i> Adicionar Novo Cupom</h2>
         <form @submit.prevent="salvarCupom" id="formCupom">
           <div class="form-group">
             <label for="codigoCupom">Código do Cupom:</label>
-            <input type="text" id="codigoCupom" v-model="form.codigo" placeholder="Ex: CLUBE10" 
+            <input type="text" id="codigoCupom" v-model="form.codigo" placeholder="Ex: CLUBE10"
                    required maxlength="20" @input="form.codigo = form.codigo.toUpperCase().replace(/[^A-Z0-9]/g, '')"
                    class="input-cupom">
           </div>
-
           <div class="form-group">
             <label for="descontoCupom">Desconto (%):</label>
-            <input type="number" id="descontoCupom" v-model.number="form.desconto_percentual" 
+            <input type="number" id="descontoCupom" v-model.number="form.desconto_percentual"
                    placeholder="Ex: 10 para 10% de desconto" min="1" max="100" required
                    class="input-cupom">
           </div>
-
           <div class="form-group">
             <label for="usosCupom">Usos Máximos:</label>
-            <input type="number" id="usosCupom" v-model.number="form.usos_maximos" 
+            <input type="number" id="usosCupom" v-model.number="form.usos_maximos"
                    placeholder="Ex: 100" min="1" required
                    class="input-cupom">
           </div>
-
           <div class="form-group">
             <label for="statusCupom">Status Inicial:</label>
             <select id="statusCupom" v-model="form.status" required class="input-cupom">
@@ -103,13 +96,11 @@
               <option value="inativo">Inativo</option>
             </select>
           </div>
-
           <div v-if="erros.length" class="erros-container">
             <div v-for="erro in erros" :key="erro" class="erro-mensagem">
               <i class="fas fa-exclamation-circle"></i> {{ erro }}
             </div>
           </div>
-
           <div class="modal-buttons">
             <button type="button" class="btn-modal btn-modal-cancelar" @click="fecharModal">Cancelar</button>
             <button type="submit" class="btn-modal btn-modal-salvar" :disabled="salvando">
@@ -123,21 +114,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCuponsAdminStore } from '@/stores/admin/cupons'
 
 const router = useRouter()
 const cuponsStore = useCuponsAdminStore()
 
-// Estados
-const cupons = ref([])
+const cupons = computed(() => cuponsStore.cupons)
 const carregando = ref(false)
 const modalAberto = ref(false)
 const salvando = ref(false)
 const erros = ref([])
 
-// Formulário
 const form = ref({
   codigo: '',
   desconto_percentual: '',
@@ -145,11 +134,10 @@ const form = ref({
   status: 'ativo'
 })
 
-// Funções
 const carregarCupons = async () => {
   carregando.value = true
   try {
-    cupons.value = await cuponsStore.fetchCupons()
+    await cuponsStore.fetchCupons()
   } catch (error) {
     console.error('Erro ao carregar cupons:', error)
     mostrarNotificacao('Erro ao carregar cupons', 'error')
@@ -183,7 +171,6 @@ const resetForm = () => {
 
 const validarFormulario = () => {
   erros.value = []
-  
   if (!form.value.codigo || form.value.codigo.length < 3) {
     erros.value.push('Código deve ter pelo menos 3 caracteres')
   }
@@ -196,13 +183,11 @@ const validarFormulario = () => {
   if (!form.value.usos_maximos || form.value.usos_maximos < 1) {
     erros.value.push('Usos máximos deve ser pelo menos 1')
   }
-  
   return erros.value.length === 0
 }
 
 const salvarCupom = async () => {
   if (!validarFormulario()) return
-  
   salvando.value = true
   try {
     const dados = {
@@ -211,7 +196,6 @@ const salvarCupom = async () => {
       usos_maximos: form.value.usos_maximos,
       status: form.value.status
     }
-    
     await cuponsStore.adicionarCupom(dados)
     mostrarNotificacao('Cupom adicionado com sucesso!', 'success')
     fecharModal()
@@ -227,7 +211,6 @@ const salvarCupom = async () => {
 const alterarStatus = async (id, novoStatus) => {
   const acao = novoStatus === 'ativo' ? 'ativar' : 'inativar'
   if (!confirm(`Tem certeza que deseja ${acao} este cupom?`)) return
-  
   try {
     await cuponsStore.alterarStatus(id, novoStatus)
     mostrarNotificacao(`Cupom ${acao}do com sucesso!`, 'success')
@@ -240,7 +223,6 @@ const alterarStatus = async (id, novoStatus) => {
 
 const excluirCupom = async (id) => {
   if (!confirm('Tem certeza que deseja excluir este cupom?')) return
-  
   try {
     await cuponsStore.excluirCupom(id)
     mostrarNotificacao('Cupom excluído com sucesso!', 'success')
@@ -254,16 +236,11 @@ const excluirCupom = async (id) => {
 const mostrarNotificacao = (message, type = 'success') => {
   const existing = document.querySelector('.admin-notification')
   if (existing) existing.remove()
-  
   const notification = document.createElement('div')
   notification.className = `admin-notification admin-notification-${type}`
-  
   const icons = { success: 'check', error: 'exclamation', info: 'info', warning: 'exclamation-triangle' }
-  
   notification.innerHTML = `<i class="fas fa-${icons[type]}"></i><span>${message}</span>`
-  
   document.body.appendChild(notification)
-  
   setTimeout(() => notification.style.opacity = '1', 10)
   setTimeout(() => {
     notification.style.opacity = '0'
@@ -271,14 +248,12 @@ const mostrarNotificacao = (message, type = 'success') => {
   }, 5000)
 }
 
-// Tecla ESC fecha modal
 const handleKeydown = (event) => {
   if (event.key === 'Escape' && modalAberto.value) {
     fecharModal()
   }
 }
 
-// Lifecycle
 onMounted(() => {
   carregarCupons()
   document.addEventListener('keydown', handleKeydown)

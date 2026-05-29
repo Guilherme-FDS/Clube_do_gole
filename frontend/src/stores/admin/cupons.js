@@ -32,7 +32,7 @@ export const useCuponsAdminStore = defineStore('adminCupons', () => {
 
   async function alterarStatus(id, novoStatus) {
     try {
-      const response = await api.put(`/admin/cupons/${id}/status`, { status: novoStatus })
+      const response = await api.patch(`/admin/cupons/${id}/status`, { status: novoStatus })
       return response.data
     } catch (error) {
       console.error('Erro ao alterar status:', error)

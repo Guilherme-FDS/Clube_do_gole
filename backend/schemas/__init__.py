@@ -195,20 +195,26 @@ class FinalizarIn(BaseModel):
 
 # ── Vendas ─────────────────────────────────────────────────────────────────────
 
-class PedidoOut(BaseModel):
-    id: int
+class ItemVendaOut(BaseModel):
     id_produto: Optional[int] = None
     nome_produto: str
     quantidade: int
     plano: str
+    valor_unitario: Decimal
+    valor_total: Decimal
+    imagem: Optional[str] = None
+    desconto_recorrencia: float = 0.0
+
+
+class PedidoOut(BaseModel):
+    id: int
     data: datetime
     valor_total: Decimal
     valor_sem_desconto: Decimal
     desconto_aplicado: Decimal
     cupom_aplicado: Optional[str] = None
-    economia: Decimal
-
-    model_config = {"from_attributes": True}
+    economia: float
+    itens: list[ItemVendaOut]
 
 
 # ── Configurações ──────────────────────────────────────────────────────────────

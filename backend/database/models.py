@@ -1,3 +1,4 @@
+# database/models.py
 from datetime import datetime, date
 from decimal import Decimal
 from typing import Optional
@@ -77,7 +78,7 @@ class Produto(Base):
     atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
     itens_carrinho: Mapped[list["ItemCarrinho"]] = relationship(back_populates="produto")
-    vendas: Mapped[list["Venda"]] = relationship(back_populates="produto")
+    itens_venda: Mapped[list["ItemVenda"]] = relationship(back_populates="produto")
 
 
 class Cupom(Base):
@@ -123,18 +124,34 @@ class Venda(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_usuario: Mapped[Optional[int]] = mapped_column(ForeignKey("usuarios_clientes.id", ondelete="SET NULL"), nullable=True, index=True)
-    id_produto: Mapped[Optional[int]] = mapped_column(ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True, index=True)
-    quantidade: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     valor_original: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     valor_desconto: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     valor_total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
-    plano: Mapped[str] = mapped_column(String(20), nullable=False, default="mensal")
     desconto_aplicado: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
     cupom_aplicado: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     data: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
 
     cliente: Mapped[Optional["UsuarioCliente"]] = relationship(back_populates="pedidos")
-    produto: Mapped[Optional["Produto"]] = relationship(back_populates="vendas")
+    itens: Mapped[list["ItemVenda"]] = relationship(back_populates="venda", cascade="all, delete-orphan")
+
+
+class ItemVenda(Base):
+    __tablename__ = "itens_venda"
+    __table_args__ = (
+        CheckConstraint("plano IN ('mensal', 'semestral', 'anual')", name="ck_itens_venda_plano"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id_venda: Mapped[int] = mapped_column(ForeignKey("vendas.id", ondelete="CASCADE"), nullable=False, index=True)
+    id_produto: Mapped[Optional[int]] = mapped_column(ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True)
+    nome_produto: Mapped[str] = mapped_column(String(200), nullable=False)
+    plano: Mapped[str] = mapped_column(String(20), nullable=False, default="mensal")
+    quantidade: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    valor_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
+    valor_total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
+
+    venda: Mapped["Venda"] = relationship(back_populates="itens")
+    produto: Mapped[Optional["Produto"]] = relationship(back_populates="itens_venda")
 
 
 class DescontoPlan(Base):
