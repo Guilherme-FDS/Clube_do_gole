@@ -27,24 +27,44 @@ class UsuarioCliente(Base):
     __tablename__ = "usuarios_clientes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    cpf: Mapped[str] = mapped_column(String(14), nullable=False, unique=True)
+    cpf: Mapped[Optional[str]] = mapped_column(String(14), nullable=True, unique=True)
     nome: Mapped[str] = mapped_column(String(100), nullable=False)
     sobrenome: Mapped[str] = mapped_column(String(100), nullable=False)
     data_nascimento: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True)
-    senha: Mapped[str] = mapped_column(String(255), nullable=False)
+    senha: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     telefone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    provider: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    provider_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+    atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
     enderecos: Mapped[list["Endereco"]] = relationship(back_populates="cliente", cascade="all, delete-orphan")
     pedidos: Mapped[list["Venda"]] = relationship(back_populates="cliente")
+    sessoes: Mapped[list["SessaoUsuario"]] = relationship(back_populates="usuario", cascade="all, delete-orphan")
+
+
+class SessaoUsuario(Base):
+    __tablename__ = "sessoes_usuario"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id_usuario: Mapped[int] = mapped_column(ForeignKey("usuarios_clientes.id", ondelete="CASCADE"), nullable=False, index=True)
+    token_jti: Mapped[str] = mapped_column(String(128), nullable=False, unique=True, index=True)
+    dispositivo: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    ip: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+    expira_em: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    revogado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    usuario: Mapped["UsuarioCliente"] = relationship(back_populates="sessoes")
 
 
 class Endereco(Base):
     __tablename__ = "enderecos"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    id_cliente: Mapped[int] = mapped_column(ForeignKey("usuarios_clientes.id", ondelete="CASCADE"), nullable=False)
+    id_cliente: Mapped[int] = mapped_column(ForeignKey("usuarios_clientes.id", ondelete="CASCADE"), nullable=False, index=True)
     tipo: Mapped[str] = mapped_column(String(30), nullable=False, default="residencial")
     cep: Mapped[str] = mapped_column(String(10), nullable=False)
     endereco: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -62,13 +82,10 @@ class Endereco(Base):
 
 class Produto(Base):
     __tablename__ = "produtos"
-    __table_args__ = (
-        CheckConstraint("tipo IN ('gold', 'premium')", name="ck_produtos_tipo"),
-    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(200), nullable=False)
-    tipo: Mapped[str] = mapped_column(String(20), nullable=False)
+    tipo: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     descricao: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     preco: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     imagem: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -94,6 +111,9 @@ class Cupom(Base):
     usos_restantes: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     status: Mapped[str] = mapped_column(String(10), nullable=False, default="ativo")
     criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+    atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+
+    vendas: Mapped[list["Venda"]] = relationship(back_populates="cupom")
 
 
 class ItemCarrinho(Base):
@@ -121,17 +141,28 @@ class ItemCarrinho(Base):
 
 class Venda(Base):
     __tablename__ = "vendas"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('pendente', 'pago', 'cancelado', 'estornado')",
+            name="ck_vendas_status"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_usuario: Mapped[Optional[int]] = mapped_column(ForeignKey("usuarios_clientes.id", ondelete="SET NULL"), nullable=True, index=True)
+    id_cupom: Mapped[Optional[int]] = mapped_column(ForeignKey("cupons.id", ondelete="SET NULL"), nullable=True)
+    id_endereco_entrega: Mapped[Optional[int]] = mapped_column(ForeignKey("enderecos.id", ondelete="SET NULL"), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pago", index=True)
     valor_original: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     valor_desconto: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     valor_total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     desconto_aplicado: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
     cupom_aplicado: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    data: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+    data: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), index=True)
 
     cliente: Mapped[Optional["UsuarioCliente"]] = relationship(back_populates="pedidos")
+    cupom: Mapped[Optional["Cupom"]] = relationship(back_populates="vendas")
+    endereco_entrega: Mapped[Optional["Endereco"]] = relationship()
     itens: Mapped[list["ItemVenda"]] = relationship(back_populates="venda", cascade="all, delete-orphan")
 
 
@@ -163,6 +194,7 @@ class DescontoPlan(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     plano: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
     desconto: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+    atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
 
 class PasswordResetToken(Base):

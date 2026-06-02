@@ -1,3 +1,4 @@
+# schemas/__init__.py
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated, Optional
@@ -8,8 +9,8 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 Plano = Annotated[str, Field(pattern="^(mensal|semestral|anual)$")]
-TipoProduto = Annotated[str, Field(pattern="^(gold|premium)$")]
 StatusCupom = Annotated[str, Field(pattern="^(ativo|inativo)$")]
+StatusVenda = Annotated[str, Field(pattern="^(pendente|pago|cancelado|estornado)$")]
 
 
 # ── Auth ───────────────────────────────────────────────────────────────────────
@@ -30,14 +31,22 @@ class CadastroIn(BaseModel):
     telefone: str = Field(min_length=8, max_length=20)
 
 
+class OAuthCallbackIn(BaseModel):
+    code: str = Field(min_length=1)
+    provider: str = Field(pattern="^(google|facebook)$")
+    guest_carrinho: list[dict] = Field(default_factory=list)
+
+
 class UsuarioOut(BaseModel):
     id: int
     nome: str
     sobrenome: str
     email: str
-    cpf: str
+    cpf: Optional[str] = None
     telefone: Optional[str] = None
     data_nascimento: Optional[date] = None
+    provider: Optional[str] = None
+    ativo: bool
     criado_em: datetime
 
     model_config = {"from_attributes": True}
@@ -96,7 +105,7 @@ class EnderecoOut(BaseModel):
 
 class ProdutoIn(BaseModel):
     nome: str = Field(min_length=1, max_length=200)
-    tipo: TipoProduto
+    tipo: Optional[str] = Field(default=None, max_length=50)
     descricao: Optional[str] = None
     preco: Decimal = Field(ge=0, decimal_places=2)
     imagem: Optional[str] = None
@@ -107,7 +116,7 @@ class ProdutoIn(BaseModel):
 class ProdutoOut(BaseModel):
     id: int
     nome: str
-    tipo: str
+    tipo: Optional[str] = None
     descricao: Optional[str] = None
     preco: Decimal
     imagem: Optional[str] = None
@@ -208,6 +217,7 @@ class ItemVendaOut(BaseModel):
 
 class PedidoOut(BaseModel):
     id: int
+    status: str
     data: datetime
     valor_total: Decimal
     valor_sem_desconto: Decimal
@@ -239,9 +249,11 @@ class ClienteAdminOut(BaseModel):
     nome: str
     sobrenome: str
     email: str
-    cpf: str
+    cpf: Optional[str] = None
     telefone: Optional[str] = None
     data_nascimento: Optional[date] = None
+    provider: Optional[str] = None
+    ativo: bool
     criado_em: datetime
 
     model_config = {"from_attributes": True}
