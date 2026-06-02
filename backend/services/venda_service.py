@@ -1,6 +1,8 @@
+# services/venda_service.py
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
-from repositories import venda_repo, carrinho_repo, produto_repo, cupom_repo
+from repositories import venda_repo, carrinho_repo, produto_repo, cupom_repo, pagamento_repo
+from services.assinatura_service import criar_assinatura
 from config import get_settings
 
 settings = get_settings()
@@ -28,20 +30,20 @@ async def finalizar_compra(
         mult           = settings.multiplicadores_plano.get(plano, 1)
         desc_plano     = Decimal(str(settings.descontos_plano.get(plano, 0)))
 
-        valor_original     = valor_unitario * mult * quantidade
-        valor_apos_plano   = valor_original * (1 - desc_plano)
-        valor_final        = max(Decimal("0"), valor_apos_plano * (1 - Decimal(str(desconto_cupom)) / 100))
+        valor_original   = valor_unitario * mult * quantidade
+        valor_apos_plano = valor_original * (1 - desc_plano)
+        valor_final      = max(Decimal("0"), valor_apos_plano * (1 - Decimal(str(desconto_cupom)) / 100))
 
         valor_original_total += valor_original
         valor_final_total    += valor_final
 
         itens_venda.append({
-            "id_produto":    item.id_produto,
-            "nome_produto":  item.nome_produto,
-            "plano":         plano,
-            "quantidade":    quantidade,
+            "id_produto":     item.id_produto,
+            "nome_produto":   item.nome_produto,
+            "plano":          plano,
+            "quantidade":     quantidade,
             "valor_unitario": round(valor_unitario * mult, 2),
-            "valor_total":   round(valor_final, 2),
+            "valor_total":    round(valor_final, 2),
         })
 
         await produto_repo.decrementar_estoque(db, item.id_produto, quantidade)
@@ -51,14 +53,31 @@ async def finalizar_compra(
         if valor_original_total else Decimal("0")
     )
 
-    await venda_repo.criar(db, {
-        "id_usuario":       usuario_id,
-        "valor_original":   round(valor_original_total, 2),
-        "valor_desconto":   round(valor_original_total - valor_final_total, 2),
-        "valor_total":      round(valor_final_total, 2),
+    venda = await venda_repo.criar(db, {
+        "id_usuario":        usuario_id,
+        "status":            "pago",
+        "valor_original":    round(valor_original_total, 2),
+        "valor_desconto":    round(valor_original_total - valor_final_total, 2),
+        "valor_total":       round(valor_final_total, 2),
         "desconto_aplicado": round(desconto_total, 2),
-        "cupom_aplicado":   codigo_cupom or None,
+        "cupom_aplicado":    codigo_cupom or None,
     }, itens_venda)
+
+    await pagamento_repo.criar(db, {
+        "id_venda": venda.id,
+        "metodo":   "outro",
+        "status":   "aprovado",
+        "valor":    round(valor_final_total, 2),
+    })
+
+    for item in itens_venda:
+        await criar_assinatura(
+            db,
+            id_cliente=usuario_id,
+            id_venda=venda.id,
+            id_produto=item["id_produto"],
+            plano=item["plano"],
+        )
 
     await carrinho_repo.finalizar_itens(db, usuario_id, ids_itens)
 
@@ -75,21 +94,21 @@ async def pedidos_do_usuario(db: AsyncSession, usuario_id: int) -> list[dict]:
         valor_original = float(v.valor_original or 0)
         valor_total    = float(v.valor_total or 0)
         result.append({
-            "id":                v.id,
-            "data":              v.data.isoformat(),
-            "valor_total":       valor_total,
+            "id":                 v.id,
+            "data":               v.data.isoformat(),
+            "valor_total":        valor_total,
             "valor_sem_desconto": valor_original,
-            "desconto_aplicado": float(v.desconto_aplicado or 0),
-            "cupom_aplicado":    v.cupom_aplicado or "",
-            "economia":          max(0, valor_original - valor_total),
+            "desconto_aplicado":  float(v.desconto_aplicado or 0),
+            "cupom_aplicado":     v.cupom_aplicado or "",
+            "economia":           max(0, valor_original - valor_total),
             "itens": [
                 {
-                    "id_produto":   i.id_produto,
-                    "nome_produto": i.produto.nome if i.produto else "Produto não encontrado",
-                    "imagem":       i.produto.imagem if i.produto else None,
-                    "quantidade":   i.quantidade,
-                    "plano":        i.plano,
-                    "valor_total":  float(i.valor_total),
+                    "id_produto":           i.id_produto,
+                    "nome_produto":         i.produto.nome if i.produto else "Produto não encontrado",
+                    "imagem":               i.produto.imagem if i.produto else None,
+                    "quantidade":           i.quantidade,
+                    "plano":                i.plano,
+                    "valor_total":          float(i.valor_total),
                     "desconto_recorrencia": settings.descontos_plano.get(i.plano, 0) * 100,
                 }
                 for i in v.itens
