@@ -60,3 +60,6 @@ def _serializar(a) -> dict:
         "proximo_ciclo": a.proximo_ciclo.isoformat() if a.proximo_ciclo else None,
         "criado_em": a.criado_em.isoformat(),
     }
+
+async def atualizar_status(db: AsyncSession, id_assinatura: int, status: str) -> None:
+    await assinatura_repo.atualizar_status(db, id_assinatura, status)

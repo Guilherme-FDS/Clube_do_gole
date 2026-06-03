@@ -237,7 +237,11 @@ const carregarDados = async () => {
       clientes_unicos: 0,
       ticket_medio: 0
     }
-    produtosMaisVendidos.value = data?.produtos_mais_vendidos ?? {}
+    produtosMaisVendidos.value = Object.fromEntries(
+      (data?.produtos_mais_vendidos ?? []).map(p => [
+        p.nome, { quantidade: p.quantidade, faturamento: p.faturamento }
+      ])
+    )
     vendasPorMes.value = data?.vendas_por_mes ?? {}
     ultimasVendas.value = data?.ultimas_vendas ?? []
     resumoPorTipo.value = data?.resumo_por_tipo ?? {}
