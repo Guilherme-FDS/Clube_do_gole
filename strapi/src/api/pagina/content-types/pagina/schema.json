@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "paginas",
+  "info": {
+    "singularName": "pagina",
+    "pluralName": "paginas",
+    "displayName": "Pagina"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "titulo"
+    },
+    "conteudo": {
+      "type": "blocks"
+    }
+  }
+}

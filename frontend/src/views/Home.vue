@@ -33,7 +33,7 @@
       </div>
     </section>
 
-    <!-- CARROSSEL (sem seção alternada, neutro) -->
+    <!-- CARROSSEL -->
     <section class="carousel-modern">
       <button class="seta esquerda" @click="prevSlide">❮</button>
       <div class="carousel-container" ref="carouselContainer">
@@ -48,8 +48,8 @@
       </div>
       <button class="seta direita" @click="nextSlide">❯</button>
       <div class="indicadores">
-        <div v-for="(slide, index) in slides" :key="index" class="indicador" :class="{ active: currentIndex === index }"
-          @click="goToSlide(index)"></div>
+        <div v-for="(slide, index) in slides" :key="index" class="indicador"
+          :class="{ active: currentIndex === index }" @click="goToSlide(index)"></div>
       </div>
     </section>
 
@@ -64,8 +64,8 @@
           Em apenas 4 passos, você começa sua jornada de descobertas no mundo dos destilados premium
         </p>
         <div class="passos-container">
-          <div v-for="(passo, index) in passos" :key="index" class="passo fade-in" :class="{ visible: fadeInVisible }"
-            :style="{ transitionDelay: `${index * 100}ms` }">
+          <div v-for="(passo, index) in passos" :key="index" class="passo fade-in"
+            :class="{ visible: fadeInVisible }" :style="{ transitionDelay: `${index * 100}ms` }">
             <i :class="passo.icone + ' icone-passo'"></i>
             <h3>{{ passo.titulo }}</h3>
             <p>{{ passo.descricao }}</p>
@@ -83,8 +83,8 @@
     <!-- NOSSOS PLANOS (escuro) -->
     <section id="planos" class="nossos-planos">
       <div class="container" style="text-align:center;">
-        <span class="section-badge" style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">Nossas
-          Assinaturas</span>
+        <span class="section-badge"
+          style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">Nossas Assinaturas</span>
         <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
           Nossos <span class="dourado">Planos</span>
         </h2>
@@ -105,8 +105,7 @@
             </div>
           </div>
         </div>
-        <p v-else class="texto-centro fade-in" :class="{ visible: fadeInVisible }">Nenhum produto Gold cadastrado ainda.
-        </p>
+        <p v-else class="texto-centro fade-in" :class="{ visible: fadeInVisible }">Nenhum produto Gold cadastrado ainda.</p>
 
         <h3 class="categoria-titulo fade-in mt-5" :class="{ visible: fadeInVisible }">Box Premium</h3>
         <div v-if="produtosPremium.length" class="produtos-container">
@@ -124,8 +123,7 @@
             </div>
           </div>
         </div>
-        <p v-else class="texto-centro fade-in" :class="{ visible: fadeInVisible }">Nenhum produto Premium cadastrado
-          ainda.</p>
+        <p v-else class="texto-centro fade-in" :class="{ visible: fadeInVisible }">Nenhum produto Premium cadastrado ainda.</p>
       </div>
     </section>
 
@@ -154,37 +152,38 @@
       </div>
     </section>
 
-    <!-- CONTATO / CTA WHATSAPP (escuro) -->
-<section id="contato" class="contato">
-  <div class="container">
-    <div class="contato-cta-box fade-in" :class="{ visible: fadeInVisible }">
-      <span class="section-badge" style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">Fale Conosco</span>
-      <h2>Entre em <span style="color:var(--cor-dourado);">Contato</span></h2>
-      <p>Estamos aqui para ajudar. Entre em contato conosco através dos canais abaixo</p>
-      <a href="https://api.whatsapp.com/send/?phone=5541999999999" target="_blank" class="btn-contato" style="display:inline-flex;margin:0 auto;">
-        <i class="fa-brands fa-whatsapp"></i> Falar no WhatsApp
-      </a>
-    </div>
-
-    <div class="contato-cards fade-in" :class="{ visible: fadeInVisible }">
-      <div class="contato-card">
-        <div class="contato-card-icone"><i class="fas fa-envelope"></i></div>
-        <h4>E-mail</h4>
-        <a href="mailto:contato@clubedogole.com.br">contato@clubedogole.com.br</a>
+    <!-- CONTATO (escuro) -->
+    <section id="contato" class="contato">
+      <div class="container">
+        <div class="contato-cta-box fade-in" :class="{ visible: fadeInVisible }">
+          <span class="section-badge"
+            style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">Fale Conosco</span>
+          <h2>Entre em <span style="color:var(--cor-dourado);">Contato</span></h2>
+          <p>Estamos aqui para ajudar. Entre em contato conosco através dos canais abaixo</p>
+          <a href="https://api.whatsapp.com/send/?phone=5541999999999" target="_blank" class="btn-contato"
+            style="display:inline-flex;margin:0 auto;">
+            <i class="fa-brands fa-whatsapp"></i> Falar no WhatsApp
+          </a>
+        </div>
+        <div class="contato-cards fade-in" :class="{ visible: fadeInVisible }">
+          <div class="contato-card">
+            <div class="contato-card-icone"><i class="fas fa-envelope"></i></div>
+            <h4>E-mail</h4>
+            <a href="mailto:contato@clubedogole.com.br">contato@clubedogole.com.br</a>
+          </div>
+          <div class="contato-card">
+            <div class="contato-card-icone"><i class="fas fa-phone"></i></div>
+            <h4>WhatsApp</h4>
+            <span>(44) 99999-9999</span>
+          </div>
+          <div class="contato-card">
+            <div class="contato-card-icone"><i class="fas fa-map-marker-alt"></i></div>
+            <h4>Endereço</h4>
+            <span>Maringá, Paraná - Brasil</span>
+          </div>
+        </div>
       </div>
-      <div class="contato-card">
-        <div class="contato-card-icone"><i class="fas fa-phone"></i></div>
-        <h4>WhatsApp</h4>
-        <span>(44) 99999-9999</span>
-      </div>
-      <div class="contato-card">
-        <div class="contato-card-icone"><i class="fas fa-map-marker-alt"></i></div>
-        <h4>Endereço</h4>
-        <span>Maringá, Paraná - Brasil</span>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
   </div>
 </template>
@@ -192,26 +191,25 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useProdutosStore } from '@/stores/produtos'
+import { getBanners } from '@/services/strapi'
 
-// Store
 const produtosStore = useProdutosStore()
 
-// Estados locais
 const fadeInVisible = ref(false)
 const carouselContainer = ref(null)
 const currentIndex = ref(0)
 let carouselInterval = null
 let isCarouselAnimating = false
 
-// Dados do carrossel
-const slides = ref([
+const slidesLocal = [
   { image: '/img/carrossel1.png', alt: 'Imagem 1', link: null },
   { image: '/img/carrossel2.png', alt: 'Imagem 2', link: null },
   { image: '/img/carrossel3.png', alt: 'Imagem 3', link: '#planos', overlayText: 'Clique para ver nossos planos' },
   { image: '/img/carrossel4.png', alt: 'Imagem 4', link: '#planos', overlayText: 'Clique para ver nossos planos' }
-])
+]
 
-// Dados estáticos
+const slides = ref([])
+
 const passos = [
   { icone: 'fa-solid fa-wine-bottle', titulo: 'Escolha seu plano ideal', descricao: 'Selecione a assinatura que mais combina com você.' },
   { icone: 'fa-solid fa-calendar-days', titulo: 'Defina a frequência', descricao: 'Escolha mensal, trimestral ou semestral.' },
@@ -225,18 +223,14 @@ const sobreBlocos = [
   { icone: 'mdi mdi-glass-cocktail', titulo: 'Descubra Novos Sabores', descricao: 'Explore novos sabores e viva experiências memoráveis a cada gole.' }
 ]
 
-// Computed
 const produtosGold = computed(() => produtosStore.produtosGold)
 const produtosPremium = computed(() => produtosStore.produtosPremium)
 
-// Métodos
 const handleScroll = () => {
   const fadeElements = document.querySelectorAll('.fade-in')
   fadeElements.forEach(el => {
     const rect = el.getBoundingClientRect()
-    if (rect.top <= window.innerHeight - 100) {
-      el.classList.add('visible')
-    }
+    if (rect.top <= window.innerHeight - 100) el.classList.add('visible')
   })
 }
 
@@ -285,10 +279,7 @@ const startCarouselAutoPlay = () => {
 }
 
 const stopCarouselAutoPlay = () => {
-  if (carouselInterval) {
-    clearInterval(carouselInterval)
-    carouselInterval = null
-  }
+  if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null }
 }
 
 const resetCarouselInterval = () => {
@@ -296,19 +287,32 @@ const resetCarouselInterval = () => {
   startCarouselAutoPlay()
 }
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(parseFloat(price))
-}
+const formatPrice = (price) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(price))
 
-// Lifecycle
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
 
-  // Carregar produtos
   await produtosStore.fetchProdutos()
+
+  try {
+    const { data } = await getBanners()
+    const banners = data?.data || []
+    if (banners.length) {
+      slides.value = banners.map(b => ({
+        image: b.imagem?.url
+          ? `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}${b.imagem.url}`
+          : '/img/sem_imagem.png',
+        alt: b.titulo || '',
+        link: b.link || null,
+        overlayText: b.titulo || ''
+      }))
+    } else {
+      slides.value = slidesLocal
+    }
+  } catch {
+    slides.value = slidesLocal
+  }
 
   setTimeout(() => {
     handleScroll()
@@ -327,7 +331,6 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   stopCarouselAutoPlay()
-
   const carouselElement = carouselContainer.value
   if (carouselElement) {
     carouselElement.removeEventListener('mouseenter', stopCarouselAutoPlay)

@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "faqs",
+  "info": {
+    "singularName": "faq",
+    "pluralName": "faqs",
+    "displayName": "Faq"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "pergunta": {
+      "type": "string"
+    },
+    "resposta": {
+      "type": "blocks"
+    },
+    "ordem": {
+      "type": "integer"
+    },
+    "ativo": {
+      "type": "boolean"
+    }
+  }
+}

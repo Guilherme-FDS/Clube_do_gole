@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "posts",
+  "info": {
+    "singularName": "post",
+    "pluralName": "posts",
+    "displayName": "Post"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "titulo"
+    },
+    "resumo": {
+      "type": "text"
+    },
+    "conteudo": {
+      "type": "blocks"
+    },
+    "capa": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "publicado_em": {
+      "type": "date"
+    }
+  }
+}
