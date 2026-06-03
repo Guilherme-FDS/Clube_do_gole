@@ -29,6 +29,8 @@ const routes = [
   { path: '/admin/cupons/editar/:id',   name: 'AdminEditarCupom',   component: () => import('@/views/admin/Editarcupom.vue'),    meta: { admin: true } },
   { path: '/admin/vendas/:id',          name: 'AdminDetalhesVenda', component: () => import('@/views/admin/Detalhesvenda.vue'),  meta: { admin: true } },
   { path: '/admin/assinaturas',         name: 'AdminAssinaturas',   component: () => import('@/views/admin/Assinaturas.vue'),    meta: { admin: true } },
+  { path: '/admin/pagamentos',          name: 'AdminPagamentos',    component: () => import('@/views/admin/Pagamentos.vue'),     meta: { admin: true } },
+  { path: '/admin/estoque',             name: 'AdminEstoque',       component: () => import('@/views/admin/Estoque.vue'),        meta: { admin: true } },
 
   // 404 - Redirecionar para home
   { path: '/:pathMatch(.*)*', redirect: '/' }
