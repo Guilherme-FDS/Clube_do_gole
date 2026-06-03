@@ -1,260 +1,265 @@
 <template>
-  <div class="container configuracoes-page">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-nav">
-      <router-link to="/">Início</router-link>
-      <span>/</span>
-      <span>Configurações</span>
-    </nav>
+  <div class="configuracoes-page">
+    <div class="container">
+      <nav class="breadcrumb-nav">
+        <router-link to="/">Início</router-link>
+        <span>/</span>
+        <span>Configurações</span>
+      </nav>
 
-    <div class="configuracoes-layout">
-      <!-- Sidebar Menu -->
-      <aside class="configuracoes-sidebar">
-        <div class="user-profile-summary">
-          <div class="user-avatar">
-            <i class="fas fa-user-circle"></i>
-          </div>
-          <div class="user-info">
-            <h3>{{ usuario.nome }} {{ usuario.sobrenome }}</h3>
-            <p>{{ usuario.email }}</p>
-          </div>
-        </div>
+      <div v-if="carregando" class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i> Carregando...
+      </div>
 
-        <nav class="configuracoes-menu">
-          <a href="#" class="menu-item" :class="{ active: abaAtiva === 'perfil' }" @click.prevent="mudarAba('perfil')">
-            <i class="fas fa-user"></i> Perfil
-          </a>
-          <a href="#" class="menu-item" :class="{ active: abaAtiva === 'enderecos' }" @click.prevent="mudarAba('enderecos')">
-            <i class="fas fa-map-marker-alt"></i> Endereços
-          </a>
-          <a href="#" class="menu-item" :class="{ active: abaAtiva === 'seguranca' }" @click.prevent="mudarAba('seguranca')">
-            <i class="fas fa-shield-alt"></i> Segurança
-          </a>
-          <a href="#" class="menu-item" :class="{ active: abaAtiva === 'pedidos' }" @click.prevent="mudarAba('pedidos')">
-            <i class="fas fa-shopping-bag"></i> Meus Pedidos
-          </a>
-        </nav>
-      </aside>
-
-      <!-- Conteúdo Principal -->
-      <div class="configuracoes-content">
-        <!-- Aba Perfil -->
-        <div v-show="abaAtiva === 'perfil'" class="tab-content">
-          <div class="tab-header">
-            <h2>Meu Perfil</h2>
-            <p>Gerencie suas informações pessoais</p>
-          </div>
-          <form @submit.prevent="salvarPerfil" class="perfil-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="nome">Nome *</label>
-                <input type="text" id="nome" v-model="usuario.nome" required>
-              </div>
-              <div class="form-group">
-                <label for="sobrenome">Sobrenome *</label>
-                <input type="text" id="sobrenome" v-model="usuario.sobrenome" required>
-              </div>
-            </div>
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="email">Email *</label>
-                <input type="email" id="email" v-model="usuario.email" required>
-              </div>
-              <div class="form-group">
-                <label for="telefone">Telefone *</label>
-                <input type="tel" id="telefone" v-model="usuario.telefone" @input="mascararTelefone" required>
-              </div>
-            </div>
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="cpf">CPF</label>
-                <input type="text" id="cpf" v-model="usuario.cpf" readonly class="readonly">
-              </div>
-              <div class="form-group">
-                <label for="data_nascimento">Data de Nascimento</label>
-                <input type="date" id="data_nascimento" v-model="usuario.data_nascimento">
-              </div>
-            </div>
-            <div class="form-actions">
-              <button type="button" class="btn-secondary" @click="resetarFormPerfil">Cancelar</button>
-              <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Salvar Alterações</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Aba Endereços -->
-        <div v-show="abaAtiva === 'enderecos'" class="tab-content">
-          <div class="tab-header">
-            <h2>Meus Endereços</h2>
-            <p>Gerencie seus endereços de entrega</p>
-          </div>
-          <div class="enderecos-container">
-            <!-- Endereço Principal -->
-            <div v-if="enderecoPrincipal" class="endereco-card principal" :data-endereco-id="enderecoPrincipal.id">
-              <div class="endereco-header">
-                <h3>Endereço Principal</h3>
-                <span class="badge-principal">Principal</span>
-              </div>
-              <div class="endereco-info">
-                <p><strong>{{ usuario.nome }} {{ usuario.sobrenome }}</strong></p>
-                <p>{{ enderecoPrincipal.endereco }}, {{ enderecoPrincipal.numero }}</p>
-                <p v-if="enderecoPrincipal.complemento">Complemento: {{ enderecoPrincipal.complemento }}</p>
-                <p>{{ enderecoPrincipal.bairro }} - {{ enderecoPrincipal.cidade }}/{{ enderecoPrincipal.estado }}</p>
-                <p>CEP: {{ enderecoPrincipal.cep }}</p>
-              </div>
-              <div class="endereco-actions">
-                <button class="btn-edit" @click="editarEndereco(enderecoPrincipal.id)"><i class="fas fa-edit"></i> Editar</button>
-                <button v-if="outrosEnderecos.length" class="btn-delete" @click="excluirEndereco(enderecoPrincipal.id)"><i class="fas fa-trash"></i> Excluir</button>
-              </div>
-            </div>
-
-            <!-- Outros Endereços -->
-            <div v-for="(end, idx) in outrosEnderecos" :key="end.id" class="endereco-card" :data-endereco-id="end.id">
-              <div class="endereco-header">
-                <h3>Endereço {{ idx + 1 }}</h3>
-              </div>
-              <div class="endereco-info">
-                <p><strong>{{ usuario.nome }} {{ usuario.sobrenome }}</strong></p>
-                <p>{{ end.endereco }}, {{ end.numero }}</p>
-                <p v-if="end.complemento">Complemento: {{ end.complemento }}</p>
-                <p>{{ end.bairro }} - {{ end.cidade }}/{{ end.estado }}</p>
-                <p>CEP: {{ end.cep }}</p>
-              </div>
-              <div class="endereco-actions">
-                <button class="btn-edit" @click="editarEndereco(end.id)"><i class="fas fa-edit"></i> Editar</button>
-                <button class="btn-set-primary" @click="definirPrincipal(end.id)"><i class="fas fa-star"></i> Tornar Principal</button>
-                <button class="btn-delete" @click="excluirEndereco(end.id)"><i class="fas fa-trash"></i> Excluir</button>
-              </div>
-            </div>
-
-            <!-- Botão Adicionar Novo Endereço -->
-            <div class="add-endereco-card" @click="abrirModalEndereco()">
-              <div class="add-endereco-content">
-                <i class="fas fa-plus-circle"></i>
-                <h3>Adicionar Novo Endereço</h3>
-                <p>Clique para cadastrar um novo endereço de entrega</p>
-              </div>
+      <div v-else class="configuracoes-layout">
+        <!-- SIDEBAR -->
+        <aside class="configuracoes-sidebar">
+          <div class="user-profile-summary">
+            <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+            <div class="user-info">
+              <h3>{{ usuario.nome }} {{ usuario.sobrenome }}</h3>
+              <p>{{ usuario.email }}</p>
             </div>
           </div>
-        </div>
+          <nav class="configuracoes-menu">
+            <a href="#" class="menu-item" :class="{ active: aba === 'perfil' }" @click.prevent="aba = 'perfil'">
+              <i class="fas fa-user"></i> Perfil
+            </a>
+            <a href="#" class="menu-item" :class="{ active: aba === 'enderecos' }" @click.prevent="aba = 'enderecos'">
+              <i class="fas fa-map-marker-alt"></i> Endereços
+            </a>
+            <a href="#" class="menu-item" :class="{ active: aba === 'seguranca' }" @click.prevent="aba = 'seguranca'">
+              <i class="fas fa-shield-alt"></i> Segurança
+            </a>
+            <a href="#" class="menu-item" :class="{ active: aba === 'pedidos' }" @click.prevent="aba = 'pedidos'">
+              <i class="fas fa-shopping-bag"></i> Meus Pedidos
+            </a>
+          </nav>
+        </aside>
 
-        <!-- Aba Segurança -->
-        <div v-show="abaAtiva === 'seguranca'" class="tab-content">
-          <div class="tab-header">
-            <h2>Segurança</h2>
-            <p>Gerencie a segurança da sua conta</p>
-          </div>
-          <div class="seguranca-card">
-            <h3>Alterar Senha</h3>
-            <form @submit.prevent="alterarSenha">
-              <div class="form-group">
-                <label for="senha_atual">Senha Atual</label>
-                <input type="password" id="senha_atual" v-model="senhaForm.senha_atual" required>
+        <!-- CONTEÚDO -->
+        <div class="configuracoes-content">
+
+          <!-- ABA PERFIL -->
+          <div v-show="aba === 'perfil'" class="tab-content">
+            <div class="tab-header">
+              <h2>Meu Perfil</h2>
+              <p>Gerencie suas informações pessoais</p>
+            </div>
+            <form @submit.prevent="salvarPerfil">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Nome *</label>
+                  <input type="text" v-model="usuario.nome" required>
+                </div>
+                <div class="form-group">
+                  <label>Sobrenome *</label>
+                  <input type="text" v-model="usuario.sobrenome" required>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="nova_senha">Nova Senha</label>
-                <input type="password" id="nova_senha" v-model="senhaForm.nova_senha" required>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Email *</label>
+                  <input type="email" v-model="usuario.email" required>
+                </div>
+                <div class="form-group">
+                  <label>Telefone *</label>
+                  <input type="tel" v-model="usuario.telefone" required>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="confirmar_senha">Confirmar Nova Senha</label>
-                <input type="password" id="confirmar_senha" v-model="senhaForm.confirmar_senha" required>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>CPF</label>
+                  <input type="text" v-model="usuario.cpf" readonly class="readonly">
+                </div>
+                <div class="form-group">
+                  <label>Data de Nascimento</label>
+                  <input type="date" v-model="usuario.data_nascimento">
+                </div>
               </div>
-              <button type="submit" class="btn-primary"><i class="fas fa-key"></i> Alterar Senha</button>
+              <p v-if="msgPerfil" class="msg" :class="msgPerfilTipo">{{ msgPerfil }}</p>
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" @click="carregarDados">Cancelar</button>
+                <button type="submit" class="btn-primary" :disabled="salvandoPerfil">
+                  <i class="fas fa-save"></i> {{ salvandoPerfil ? 'Salvando...' : 'Salvar Alterações' }}
+                </button>
+              </div>
             </form>
           </div>
-        </div>
 
-        <!-- Aba Pedidos -->
-        <div v-show="abaAtiva === 'pedidos'" class="tab-content">
-          <div class="tab-header">
-            <h2>Meus Pedidos</h2>
-            <p>Acompanhe seus pedidos e histórico de compras</p>
-          </div>
-          <div v-if="pedidos.length" class="pedidos-container">
-            <div v-for="pedido in pedidos" :key="pedido.id_compra" class="pedido-card">
-              <!-- ... conteúdo do pedido, similar ao original, mas otimizado -->
-              <div class="pedido-header">
-                <div class="pedido-info">
-                  <h3>Pedido #{{ pedido.id_compra.slice(0,8) }}...</h3>
-                  <span class="pedido-data">{{ pedido.data }}</span>
+          <!-- ABA ENDEREÇOS -->
+          <div v-show="aba === 'enderecos'" class="tab-content">
+            <div class="tab-header">
+              <h2>Meus Endereços</h2>
+              <p>Gerencie seus endereços de entrega</p>
+            </div>
+            <div class="enderecos-container">
+              <div v-for="end in enderecos" :key="end.id" class="endereco-card"
+                :class="{ principal: end.principal }">
+                <div class="endereco-header">
+                  <h3>{{ end.tipo || 'Endereço' }}</h3>
+                  <span v-if="end.principal" class="badge-principal">Principal</span>
                 </div>
-                <div class="pedido-status"><span class="status-entregue">Entregue</span></div>
-              </div>
-              <div class="pedido-detalhes">
-                <div class="produto-info">
-                  <div class="produto-imagem" v-if="pedido.imagem_produto">
-                    <img :src="pedido.imagem_produto" :alt="pedido.nome_produto" @error="hideImage">
-                  </div>
-                  <div class="produto-detalhes">
-                    <h4>{{ pedido.nome_produto }}</h4>
-                    <p>Quantidade: {{ pedido.quantidade }}</p>
-                    <p class="plano-info"><strong>Plano:</strong> <span :class="['plano-tag', pedido.plano]">{{ pedido.plano?.charAt(0).toUpperCase() + pedido.plano?.slice(1) }}</span></p>
-                  </div>
+                <div class="endereco-info">
+                  <p>{{ end.endereco }}, {{ end.numero }}
+                    <span v-if="end.complemento"> — {{ end.complemento }}</span>
+                  </p>
+                  <p>{{ end.bairro }} — {{ end.cidade }}/{{ end.estado }}</p>
+                  <p>CEP: {{ end.cep }}</p>
                 </div>
-                <div class="pedido-valores">
-                  <div class="valor-item"><span class="valor-label">Valor Original:</span><span class="valor-original">{{ formatarMoeda(pedido.valor_sem_desconto) }}</span></div>
-                  <div class="valor-item"><span class="valor-label">Valor Pago:</span><span class="valor-desconto">{{ formatarMoeda(pedido.valor_com_desconto) }}</span></div>
-                  <div v-if="pedido.desconto_aplicado > 0" class="valor-item"><span class="valor-label">Desconto Total:</span><span class="desconto-total">{{ pedido.desconto_aplicado }}%</span></div>
-                  <div v-if="pedido.cupom_aplicado" class="valor-item"><span class="valor-label">Cupom Utilizado:</span><span class="cupom-info">{{ pedido.cupom_aplicado }}</span></div>
-                  <div v-if="pedido.valor_sem_desconto > pedido.valor_com_desconto" class="valor-item economia"><span class="valor-label">Você economizou:</span><span class="valor-economia">{{ formatarMoeda(pedido.valor_sem_desconto - pedido.valor_com_desconto) }}</span></div>
+                <div class="endereco-actions">
+                  <button class="btn-edit" @click="abrirModal(end)"><i class="fas fa-edit"></i> Editar</button>
+                  <button v-if="!end.principal" class="btn-set-primary" @click="setPrincipal(end.id)">
+                    <i class="fas fa-star"></i> Tornar Principal
+                  </button>
+                  <button class="btn-delete" @click="removerEndereco(end.id)"><i class="fas fa-trash"></i></button>
                 </div>
               </div>
-              <div class="pedido-actions">
-                <router-link :to="`/produto/${pedido.id_produto}`" class="btn-secondary"><i class="fas fa-redo"></i> Comprar Novamente</router-link>
-                <button class="btn-primary" @click="verDetalhesPedido(pedido.id_compra)"><i class="fas fa-eye"></i> Ver Detalhes</button>
+
+              <div class="add-endereco-card" @click="abrirModal()">
+                <div class="add-endereco-content">
+                  <i class="fas fa-plus-circle"></i>
+                  <h3>Adicionar Novo Endereço</h3>
+                </div>
               </div>
             </div>
           </div>
-          <div v-else class="pedidos-vazios">
-            <div class="vazio-content">
+
+          <!-- ABA SEGURANÇA -->
+          <div v-show="aba === 'seguranca'" class="tab-content">
+            <div class="tab-header">
+              <h2>Segurança</h2>
+              <p>Gerencie a segurança da sua conta</p>
+            </div>
+            <div class="seguranca-card">
+              <h3>Alterar Senha</h3>
+              <form @submit.prevent="alterarSenha">
+                <div class="form-group">
+                  <label>Senha Atual</label>
+                  <input type="password" v-model="senhaForm.senha_atual" required>
+                </div>
+                <div class="form-group">
+                  <label>Nova Senha</label>
+                  <input type="password" v-model="senhaForm.nova_senha" required>
+                </div>
+                <div class="form-group">
+                  <label>Confirmar Nova Senha</label>
+                  <input type="password" v-model="senhaForm.confirmar_senha" required>
+                </div>
+                <p v-if="msgSenha" class="msg" :class="msgSenhaTipo">{{ msgSenha }}</p>
+                <button type="submit" class="btn-primary" :disabled="salvandoSenha">
+                  <i class="fas fa-key"></i> {{ salvandoSenha ? 'Salvando...' : 'Alterar Senha' }}
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- ABA PEDIDOS -->
+          <div v-show="aba === 'pedidos'" class="tab-content">
+            <div class="tab-header">
+              <h2>Meus Pedidos</h2>
+              <p>Histórico de compras</p>
+            </div>
+            <div v-if="pedidos.length" class="pedidos-lista">
+              <div v-for="pedido in pedidos" :key="pedido.id" class="pedido-card">
+                <div class="pedido-header" @click="togglePedido(pedido.id)">
+                  <div class="pedido-header-info">
+                    <span class="pedido-id">#{{ pedido.id }}</span>
+                    <span class="badge-status" :class="pedido.status">{{ pedido.status }}</span>
+                  </div>
+                  <div class="pedido-header-right">
+                    <span class="pedido-data">{{ formatarData(pedido.data) }}</span>
+                    <span class="pedido-total">{{ formatarMoeda(pedido.valor_total) }}</span>
+                    <i class="fas" :class="pedidoAberto === pedido.id ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                  </div>
+                </div>
+
+                <div v-show="pedidoAberto === pedido.id" class="pedido-detalhes">
+                  <div v-if="pedido.cupom_aplicado" class="cupom-info">
+                    <i class="fas fa-tag"></i>
+                    Cupom <strong>{{ pedido.cupom_aplicado }}</strong> —
+                    economia de {{ formatarMoeda(pedido.economia) }}
+                  </div>
+                  <div class="itens-lista">
+                    <div v-for="item in pedido.itens" :key="item.id_produto" class="item-pedido">
+                      <img :src="item.imagem || '/img/sem_imagem.png'" :alt="item.nome_produto" class="item-img">
+                      <div class="item-info">
+                        <strong>{{ item.nome_produto }}</strong>
+                        <span class="item-plano">Plano {{ item.plano }}</span>
+                        <span class="item-qtd">{{ item.quantidade }}x {{ formatarMoeda(item.valor_unitario) }}</span>
+                      </div>
+                      <span class="item-total">{{ formatarMoeda(item.valor_total) }}</span>
+                      <router-link v-if="item.id_produto" :to="`/produto/${item.id_produto}`"
+                        class="btn-recomprar" title="Comprar novamente">
+                        <i class="fas fa-redo"></i>
+                      </router-link>
+                    </div>
+                  </div>
+                  <div class="pedido-resumo">
+                    <div v-if="pedido.desconto_aplicado > 0" class="resumo-linha desconto">
+                      <span>Desconto</span>
+                      <span>- {{ formatarMoeda(pedido.desconto_aplicado) }}</span>
+                    </div>
+                    <div class="resumo-linha total">
+                      <span>Total pago</span>
+                      <span>{{ formatarMoeda(pedido.valor_total) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="pedidos-vazio">
               <i class="fas fa-shopping-bag"></i>
-              <h3>Nenhum pedido encontrado</h3>
-              <p>Você ainda não realizou nenhuma compra. Que tal explorar nossos produtos?</p>
-              <router-link to="/#planos" class="btn-primary"><i class="fas fa-shopping-cart"></i> Fazer Compras</router-link>
+              <p>Você ainda não fez nenhum pedido.</p>
+              <router-link to="/#planos" class="btn-modern">Conhecer Planos</router-link>
             </div>
           </div>
+
         </div>
       </div>
     </div>
 
-    <!-- Modal Endereço -->
-    <div v-if="modalEnderecoAberto" class="modal" @click.self="fecharModalEndereco">
+    <!-- MODAL ENDEREÇO -->
+    <div v-if="modalAberto" class="modal" @click.self="fecharModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>{{ editandoEndereco ? 'Editar Endereço' : 'Adicionar Novo Endereço' }}</h3>
-          <button class="modal-close" @click="fecharModalEndereco"><i class="fas fa-times"></i></button>
+          <h3>{{ editandoId ? 'Editar Endereço' : 'Novo Endereço' }}</h3>
+          <button class="modal-close" @click="fecharModal"><i class="fas fa-times"></i></button>
         </div>
         <form class="endereco-form" @submit.prevent="salvarEndereco">
           <div class="form-group">
-            <label for="cep">CEP *</label>
-            <input type="text" id="cep" v-model="enderecoForm.cep" @blur="buscarCep" required maxlength="9">
+            <label>CEP *</label>
+            <input type="text" v-model="endForm.cep" @blur="buscarCep" required maxlength="9">
           </div>
           <div class="form-grid">
-            <div class="form-group"><label for="endereco">Endereço *</label><input type="text" id="endereco" v-model="enderecoForm.endereco" required></div>
-            <div class="form-group"><label for="numero">Número *</label><input type="text" id="numero" v-model="enderecoForm.numero" required></div>
+            <div class="form-group"><label>Endereço *</label><input type="text" v-model="endForm.endereco" required></div>
+            <div class="form-group"><label>Número *</label><input type="text" v-model="endForm.numero" required></div>
           </div>
-          <div class="form-group"><label for="complemento">Complemento</label><input type="text" id="complemento" v-model="enderecoForm.complemento" placeholder="Apartamento, bloco, etc."></div>
+          <div class="form-group"><label>Complemento</label><input type="text" v-model="endForm.complemento"></div>
           <div class="form-grid">
-            <div class="form-group"><label for="bairro">Bairro *</label><input type="text" id="bairro" v-model="enderecoForm.bairro" required></div>
-            <div class="form-group"><label for="cidade">Cidade *</label><input type="text" id="cidade" v-model="enderecoForm.cidade" required></div>
+            <div class="form-group"><label>Bairro *</label><input type="text" v-model="endForm.bairro" required></div>
+            <div class="form-group"><label>Cidade *</label><input type="text" v-model="endForm.cidade" required></div>
           </div>
           <div class="form-grid">
             <div class="form-group">
-              <label for="estado">Estado *</label>
-              <select v-model="enderecoForm.estado" required>
+              <label>Estado *</label>
+              <select v-model="endForm.estado" required>
                 <option value="">Selecione</option>
-                <option v-for="uf in ufList" :key="uf.sigla" :value="uf.sigla">{{ uf.nome }}</option>
+                <option v-for="uf in ufList" :key="uf" :value="uf">{{ uf }}</option>
               </select>
             </div>
-            <div class="form-group"><label for="pais">País *</label><input type="text" v-model="enderecoForm.pais" required></div>
+            <div class="form-group"><label>País *</label><input type="text" v-model="endForm.pais" required></div>
           </div>
           <div class="form-group checkbox-group">
-            <input type="checkbox" id="endereco_principal" v-model="enderecoForm.principal">
-            <label for="endereco_principal">Tornar este endereço principal</label>
+            <input type="checkbox" id="principal" v-model="endForm.principal">
+            <label for="principal">Tornar endereço principal</label>
           </div>
+          <p v-if="msgEndereco" class="msg" :class="msgEnderecoTipo">{{ msgEndereco }}</p>
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" @click="fecharModalEndereco">Cancelar</button>
-            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> {{ editandoEndereco ? 'Atualizar Endereço' : 'Salvar Endereço' }}</button>
+            <button type="button" class="btn-secondary" @click="fecharModal">Cancelar</button>
+            <button type="submit" class="btn-primary" :disabled="salvandoEnd">
+              <i class="fas fa-save"></i> {{ salvandoEnd ? 'Salvando...' : (editandoId ? 'Atualizar' : 'Salvar') }}
+            </button>
           </div>
         </form>
       </div>
@@ -266,504 +271,438 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
 import { formatarMoeda } from '@/utils/formatters'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Dados do usuário (mock, substituir por API)
-const usuario = reactive({
-  id: null,
-  nome: '',
-  sobrenome: '',
-  email: '',
-  telefone: '',
-  cpf: '',
-  data_nascimento: ''
-})
+const carregando   = ref(true)
+const aba          = ref('perfil')
+const pedidoAberto = ref(null)
 
-// Endereços
-const enderecoPrincipal = ref(null)
-const outrosEnderecos = ref([])
+const usuario = reactive({ nome: '', sobrenome: '', email: '', telefone: '', cpf: '', data_nascimento: '' })
 const enderecos = ref([])
+const pedidos   = ref([])
 
-// Pedidos
-const pedidos = ref([])
+const salvandoPerfil = ref(false)
+const msgPerfil      = ref('')
+const msgPerfilTipo  = ref('success')
 
-// Controle de abas
-const abaAtiva = ref('perfil')
+const senhaForm = reactive({ senha_atual: '', nova_senha: '', confirmar_senha: '' })
+const salvandoSenha = ref(false)
+const msgSenha      = ref('')
+const msgSenhaTipo  = ref('success')
 
-// Formulário de senha
-const senhaForm = reactive({
-  senha_atual: '',
-  nova_senha: '',
-  confirmar_senha: ''
+const modalAberto  = ref(false)
+const editandoId   = ref(null)
+const salvandoEnd  = ref(false)
+const msgEndereco  = ref('')
+const msgEnderecoTipo = ref('success')
+const endForm = reactive({
+  cep: '', endereco: '', numero: '', complemento: '',
+  bairro: '', cidade: '', estado: '', pais: 'Brasil', principal: false, tipo: 'residencial'
 })
 
-// Modal endereço
-const modalEnderecoAberto = ref(false)
-const editandoEndereco = ref(false)
-const enderecoForm = reactive({
-  id: null,
-  cep: '',
-  endereco: '',
-  numero: '',
-  complemento: '',
-  bairro: '',
-  cidade: '',
-  estado: '',
-  pais: 'Brasil',
-  principal: false
-})
+const ufList = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
 
-// Lista de estados brasileiros
-const ufList = [
-  { sigla: 'AC', nome: 'Acre' }, { sigla: 'AL', nome: 'Alagoas' }, { sigla: 'AP', nome: 'Amapá' },
-  { sigla: 'AM', nome: 'Amazonas' }, { sigla: 'BA', nome: 'Bahia' }, { sigla: 'CE', nome: 'Ceará' },
-  { sigla: 'DF', nome: 'Distrito Federal' }, { sigla: 'ES', nome: 'Espírito Santo' }, { sigla: 'GO', nome: 'Goiás' },
-  { sigla: 'MA', nome: 'Maranhão' }, { sigla: 'MT', nome: 'Mato Grosso' }, { sigla: 'MS', nome: 'Mato Grosso do Sul' },
-  { sigla: 'MG', nome: 'Minas Gerais' }, { sigla: 'PA', nome: 'Pará' }, { sigla: 'PB', nome: 'Paraíba' },
-  { sigla: 'PR', nome: 'Paraná' }, { sigla: 'PE', nome: 'Pernambuco' }, { sigla: 'PI', nome: 'Piauí' },
-  { sigla: 'RJ', nome: 'Rio de Janeiro' }, { sigla: 'RN', nome: 'Rio Grande do Norte' }, { sigla: 'RS', nome: 'Rio Grande do Sul' },
-  { sigla: 'RO', nome: 'Rondônia' }, { sigla: 'RR', nome: 'Roraima' }, { sigla: 'SC', nome: 'Santa Catarina' },
-  { sigla: 'SP', nome: 'São Paulo' }, { sigla: 'SE', nome: 'Sergipe' }, { sigla: 'TO', nome: 'Tocantins' }
-]
+const formatarData = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : ''
 
-// Funções de utilidade
-function mostrarMensagem(texto, tipo = 'success') {
-  // Implementar notificação (ex.: toast)
-  alert(`${tipo.toUpperCase()}: ${texto}`)
+function togglePedido(id) {
+  pedidoAberto.value = pedidoAberto.value === id ? null : id
 }
 
-function mascararTelefone(e) {
-  let value = e.target.value.replace(/\D/g, '')
-  if (value.length <= 11) {
-    if (value.length <= 2) value = value.replace(/(\d{0,2})/, '($1')
-    else if (value.length <= 6) value = value.replace(/(\d{2})(\d{0,4})/, '($1) $2')
-    else value = value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
-    e.target.value = value
-  }
-}
-
-// Carregar dados da API
 async function carregarDados() {
+  carregando.value = true
   try {
-    // Perfil
-    const perfilResp = await fetch('/api/perfil')
-    const perfilData = await perfilResp.json()
-    Object.assign(usuario, perfilData)
-
-    // Endereços
-    const endResp = await fetch('/api/enderecos')
-    const endData = await endResp.json()
-    enderecos.value = endData.enderecos || []
-    enderecoPrincipal.value = enderecos.value.find(e => e.principal === 'sim') || null
-    outrosEnderecos.value = enderecos.value.filter(e => e.principal !== 'sim')
-
-    // Pedidos
-    const pedResp = await fetch('/api/pedidos')
-    const pedData = await pedResp.json()
-    pedidos.value = pedData.pedidos || []
-  } catch (err) {
-    console.error(err)
-    mostrarMensagem('Erro ao carregar dados', 'error')
+    const { data } = await api.get('/configuracoes/perfil')
+    Object.assign(usuario, data.usuario)
+    enderecos.value = data.enderecos || []
+    pedidos.value   = data.pedidos   || []
+  } catch {
+    console.error('Erro ao carregar dados.')
+  } finally {
+    carregando.value = false
   }
 }
 
-// Salvar perfil
 async function salvarPerfil() {
+  salvandoPerfil.value = true
+  msgPerfil.value = ''
   try {
-    const response = await fetch('/atualizar_perfil', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(usuario)
+    await api.put('/configuracoes/perfil', {
+      nome: usuario.nome,
+      sobrenome: usuario.sobrenome,
+      email: usuario.email,
+      telefone: usuario.telefone,
+      data_nascimento: usuario.data_nascimento || null,
     })
-    const data = await response.json()
-    if (data.success) {
-      mostrarMensagem('Perfil atualizado com sucesso!', 'success')
-    } else {
-      mostrarMensagem(data.message, 'error')
-    }
-  } catch (error) {
-    mostrarMensagem('Erro ao salvar perfil', 'error')
+    msgPerfil.value = 'Perfil atualizado com sucesso!'
+    msgPerfilTipo.value = 'msg-success'
+  } catch (err) {
+    msgPerfil.value = err.response?.data?.detail || 'Erro ao salvar perfil.'
+    msgPerfilTipo.value = 'msg-error'
+  } finally {
+    salvandoPerfil.value = false
   }
 }
 
-function resetarFormPerfil() {
-  carregarDados() // recarrega os dados originais
-}
-
-// Alterar senha
 async function alterarSenha() {
+  msgSenha.value = ''
   if (senhaForm.nova_senha !== senhaForm.confirmar_senha) {
-    mostrarMensagem('As senhas não coincidem', 'error')
+    msgSenha.value = 'As senhas não coincidem.'
+    msgSenhaTipo.value = 'msg-error'
     return
   }
+  salvandoSenha.value = true
   try {
-    const response = await fetch('/alterar_senha', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ senha_atual: senhaForm.senha_atual, nova_senha: senhaForm.nova_senha })
+    await api.put('/configuracoes/senha', {
+      senha_atual: senhaForm.senha_atual,
+      nova_senha: senhaForm.nova_senha,
     })
-    const data = await response.json()
-    if (data.success) {
-      mostrarMensagem('Senha alterada com sucesso', 'success')
-      senhaForm.senha_atual = ''
-      senhaForm.nova_senha = ''
-      senhaForm.confirmar_senha = ''
-    } else {
-      mostrarMensagem(data.message, 'error')
-    }
-  } catch (error) {
-    mostrarMensagem('Erro ao alterar senha', 'error')
+    msgSenha.value = 'Senha alterada com sucesso!'
+    msgSenhaTipo.value = 'msg-success'
+    senhaForm.senha_atual = ''
+    senhaForm.nova_senha = ''
+    senhaForm.confirmar_senha = ''
+  } catch (err) {
+    msgSenha.value = err.response?.data?.detail || 'Erro ao alterar senha.'
+    msgSenhaTipo.value = 'msg-error'
+  } finally {
+    salvandoSenha.value = false
   }
 }
 
-// Endereços
-function abrirModalEndereco(endereco = null) {
-  if (endereco) {
-    editandoEndereco.value = true
-    Object.assign(enderecoForm, endereco)
-    enderecoForm.principal = endereco.principal === 'sim'
+function abrirModal(end = null) {
+  msgEndereco.value = ''
+  if (end) {
+    editandoId.value = end.id
+    Object.assign(endForm, end)
   } else {
-    editandoEndereco.value = false
-    enderecoForm.id = null
-    enderecoForm.cep = ''
-    enderecoForm.endereco = ''
-    enderecoForm.numero = ''
-    enderecoForm.complemento = ''
-    enderecoForm.bairro = ''
-    enderecoForm.cidade = ''
-    enderecoForm.estado = ''
-    enderecoForm.pais = 'Brasil'
-    enderecoForm.principal = false
+    editandoId.value = null
+    Object.assign(endForm, { cep: '', endereco: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '', pais: 'Brasil', principal: false, tipo: 'residencial' })
   }
-  modalEnderecoAberto.value = true
+  modalAberto.value = true
 }
 
-function fecharModalEndereco() {
-  modalEnderecoAberto.value = false
-}
+function fecharModal() { modalAberto.value = false }
 
 async function salvarEndereco() {
-  const url = enderecoForm.id ? `/editar_endereco/${enderecoForm.id}` : '/adicionar_endereco'
-  const payload = { ...enderecoForm, principal: enderecoForm.principal ? 'sim' : 'nao' }
+  salvandoEnd.value = true
+  msgEndereco.value = ''
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    const data = await response.json()
-    if (data.success) {
-      mostrarMensagem('Endereço salvo com sucesso', 'success')
-      fecharModalEndereco()
-      await carregarDados() // recarrega a lista
+    if (editandoId.value) {
+      await api.put(`/configuracoes/enderecos/${editandoId.value}`, { ...endForm })
     } else {
-      mostrarMensagem(data.message, 'error')
+      await api.post('/configuracoes/enderecos', { ...endForm })
     }
-  } catch (error) {
-    mostrarMensagem('Erro ao salvar endereço', 'error')
+    fecharModal()
+    await carregarDados()
+  } catch (err) {
+    msgEndereco.value = err.response?.data?.detail || 'Erro ao salvar endereço.'
+    msgEnderecoTipo.value = 'msg-error'
+  } finally {
+    salvandoEnd.value = false
   }
 }
 
-async function excluirEndereco(id) {
-  if (!confirm('Tem certeza que deseja excluir este endereço?')) return
+async function removerEndereco(id) {
+  if (!confirm('Excluir este endereço?')) return
   try {
-    const response = await fetch(`/excluir_endereco/${id}`, { method: 'POST' })
-    const data = await response.json()
-    if (data.success) {
-      mostrarMensagem('Endereço excluído', 'success')
-      await carregarDados()
-    } else {
-      mostrarMensagem(data.message, 'error')
-    }
-  } catch (error) {
-    mostrarMensagem('Erro ao excluir endereço', 'error')
+    await api.delete(`/configuracoes/enderecos/${id}`)
+    await carregarDados()
+  } catch (err) {
+    alert(err.response?.data?.detail || 'Erro ao excluir endereço.')
   }
 }
 
-async function definirPrincipal(id) {
+async function setPrincipal(id) {
   try {
-    const response = await fetch(`/definir_endereco_principal/${id}`, { method: 'POST' })
-    const data = await response.json()
-    if (data.success) {
-      mostrarMensagem('Endereço definido como principal', 'success')
-      await carregarDados()
-    } else {
-      mostrarMensagem(data.message, 'error')
-    }
-  } catch (error) {
-    mostrarMensagem('Erro ao definir endereço principal', 'error')
+    await api.patch(`/configuracoes/enderecos/${id}/principal`)
+    await carregarDados()
+  } catch (err) {
+    alert(err.response?.data?.detail || 'Erro ao definir endereço principal.')
   }
 }
 
-function editarEndereco(id) {
-  const end = enderecos.value.find(e => e.id == id)
-  if (end) abrirModalEndereco(end)
-}
-
-// Buscar CEP via ViaCEP
 async function buscarCep() {
-  const cep = enderecoForm.cep.replace(/\D/g, '')
+  const cep = endForm.cep.replace(/\D/g, '')
   if (cep.length !== 8) return
   try {
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
-    const data = await response.json()
-    if (!data.erro) {
-      enderecoForm.endereco = data.logradouro || ''
-      enderecoForm.bairro = data.bairro || ''
-      enderecoForm.cidade = data.localidade || ''
-      enderecoForm.estado = data.uf || ''
-    } else {
-      mostrarMensagem('CEP não encontrado', 'error')
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    const d = await r.json()
+    if (!d.erro) {
+      endForm.endereco = d.logradouro || ''
+      endForm.bairro   = d.bairro     || ''
+      endForm.cidade   = d.localidade || ''
+      endForm.estado   = d.uf         || ''
     }
-  } catch (error) {
-    mostrarMensagem('Erro ao buscar CEP', 'error')
-  }
+  } catch {}
 }
 
-// Navegação entre abas
-function mudarAba(aba) {
-  abaAtiva.value = aba
-  // Opcional: salvar no localStorage ou query param para persistir
-}
-
-// Ver detalhes do pedido (exemplo)
-function verDetalhesPedido(id) {
-  router.push(`/admin/vendas/${id}`)
-}
-
-// Lifecycle
 onMounted(async () => {
-  // Verifica se o usuário está logado
-  if (!authStore.logado) {
-    router.push('/login?redirect=configuracoes')
-    return
-  }
+  if (!authStore.logado) { router.push('/login?redirect=/configuracoes'); return }
   await carregarDados()
 })
 </script>
 
 <style scoped>
-/* ===== ESTILOS EXCLUSIVOS DA PÁGINA DE CONFIGURAÇÕES ===== */
-/* (Os estilos globais já fornecem botões, formulários básicos, cores, etc.) */
+.configuracoes-page {
+  padding-top: 100px;
+  padding-bottom: var(--espacamento-xl);
+  min-height: 100vh;
+}
+.breadcrumb-nav {
+  margin-bottom: var(--espacamento-md);
+  font-size: 0.875rem;
+  color: var(--cor-texto-secundario);
+  display: flex; gap: 0.5rem; align-items: center;
+}
+.breadcrumb-nav a { color: var(--cor-dourado); text-decoration: none; }
+
+.loading-spinner { text-align: center; padding: var(--espacamento-xl); color: var(--cor-dourado); font-size: 1.2rem; }
 
 .configuracoes-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 260px 1fr;
   gap: var(--espacamento-lg);
-  margin-top: var(--espacamento-lg);
+  align-items: start;
 }
-
-.breadcrumb-nav {
-  margin-bottom: var(--espacamento-sm);
-  font-size: 0.9rem;
-  color: var(--cor-texto-secundario);
-}
-.breadcrumb-nav a { color: var(--cor-dourado); text-decoration: none; }
 
 .configuracoes-sidebar {
   background: var(--cor-fundo-secundario);
   border-radius: var(--borda-radius-lg);
   padding: var(--espacamento-md);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  position: sticky;
-  top: 100px;
-  height: fit-content;
+  border: 1px solid rgba(201,168,76,0.2);
+  position: sticky; top: 90px;
 }
-
 .user-profile-summary {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  display: flex; align-items: center; gap: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  border-bottom: 1px solid rgba(201,168,76,0.2);
   margin-bottom: 1rem;
 }
 .user-avatar i { font-size: 3rem; color: var(--cor-dourado); }
-.user-info h3 { color: var(--cor-texto); margin-bottom: 0.25rem; }
-.user-info p { color: var(--cor-texto-secundario); font-size: 0.85rem; }
+.user-info h3 { color: var(--cor-texto); font-size: 1rem; margin-bottom: 0.2rem; }
+.user-info p  { color: var(--cor-texto-secundario); font-size: 0.8125rem; }
 
-.configuracoes-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+.configuracoes-menu { display: flex; flex-direction: column; gap: 0.375rem; }
 .menu-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem;
   border-radius: var(--borda-radius-md);
-  transition: all 0.3s;
   color: var(--cor-texto-secundario);
   text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
 }
-.menu-item:hover, .menu-item.active {
-  background: var(--cor-dourado);
-  color: var(--cor-fundo);
-}
+.menu-item:hover { background: rgba(201,168,76,0.08); color: var(--cor-dourado); }
+.menu-item.active { background: var(--gradiente-botao); color: var(--cor-fundo); font-weight: 600; }
 
 .configuracoes-content {
   background: var(--cor-fundo-secundario);
   border-radius: var(--borda-radius-lg);
   padding: var(--espacamento-lg);
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  border: 1px solid rgba(201,168,76,0.2);
 }
 
 .tab-header {
   margin-bottom: var(--espacamento-lg);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
   padding-bottom: var(--espacamento-sm);
+  border-bottom: 1px solid rgba(201,168,76,0.15);
 }
-.tab-header h2 { color: var(--cor-dourado); margin-bottom: 0.25rem; }
+.tab-header h2 { color: var(--cor-dourado); font-family: var(--fonte-principal); font-size: 1.5rem; margin-bottom: 0.25rem; }
+.tab-header p  { color: var(--cor-texto-secundario); font-size: 0.875rem; }
 
 .form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: grid; grid-template-columns: 1fr 1fr;
   gap: var(--espacamento-sm);
   margin-bottom: var(--espacamento-md);
 }
-.form-group input.readonly {
-  background: rgba(255,255,255,0.05);
-  cursor: not-allowed;
-}
-
-.enderecos-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espacamento-md);
-}
-.endereco-card {
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: var(--espacamento-sm); }
+.form-group label { font-size: 0.875rem; font-weight: 500; color: var(--cor-texto-secundario); }
+.form-group input, .form-group select {
+  padding: 0.625rem 0.875rem;
   background: var(--cor-fundo);
-  border-radius: var(--borda-radius-md);
-  padding: var(--espacamento-md);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-}
-.endereco-card.principal {
-  border-color: var(--cor-dourado);
-  background: rgba(255, 215, 0, 0.05);
-}
-.endereco-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--espacamento-sm);
-}
-.endereco-info p { margin: 0.25rem 0; color: var(--cor-texto-secundario); }
-.endereco-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-.btn-edit, .btn-delete, .btn-set-primary {
-  padding: 0.4rem 0.8rem;
+  border: 1px solid rgba(201,168,76,0.25);
   border-radius: var(--borda-radius-sm);
-  font-size: 0.85rem;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: all 0.3s;
+  color: var(--cor-texto);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
 }
-.btn-edit { background: #2196F3; color: white; }
-.btn-delete { background: #f44336; color: white; }
-.btn-set-primary { background: #4caf50; color: white; }
-.btn-edit:hover, .btn-delete:hover, .btn-set-primary:hover { transform: translateY(-2px); filter: brightness(0.9); }
+.form-group input:focus, .form-group select:focus { border-color: var(--cor-dourado); }
+.form-group input.readonly { opacity: 0.5; cursor: not-allowed; }
+.checkbox-group { flex-direction: row !important; align-items: center; gap: 0.5rem !important; }
+.checkbox-group label { margin: 0; font-size: 0.9rem; color: var(--cor-texto); }
+
+.form-actions { display: flex; gap: var(--espacamento-sm); justify-content: flex-end; margin-top: var(--espacamento-md); }
+
+.msg { font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--borda-radius-sm); margin-bottom: var(--espacamento-sm); }
+.msg-success { background: rgba(76,175,80,.15); color: #4CAF50; border: 1px solid #4CAF50; }
+.msg-error   { background: rgba(244,67,54,.15); color: #f44336; border: 1px solid #f44336; }
+
+.btn-primary {
+  background: var(--gradiente-botao); color: var(--cor-fundo);
+  border: none; padding: 0.625rem 1.5rem;
+  border-radius: var(--borda-radius-sm); font-weight: 600; font-size: 0.9rem;
+  cursor: pointer; transition: all 0.25s; display: inline-flex; align-items: center; gap: 0.5rem;
+}
+.btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,.3); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-secondary {
+  background: transparent; color: var(--cor-texto);
+  border: 1px solid rgba(201,168,76,0.4);
+  padding: 0.625rem 1.5rem; border-radius: var(--borda-radius-sm);
+  font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;
+}
+.btn-secondary:hover { border-color: var(--cor-dourado); color: var(--cor-dourado); }
+
+/* ENDEREÇOS */
+.enderecos-container { display: flex; flex-direction: column; gap: var(--espacamento-md); }
+.endereco-card {
+  background: var(--cor-fundo); border-radius: var(--borda-radius-md);
+  padding: var(--espacamento-md); border: 1px solid rgba(201,168,76,0.15);
+  transition: border-color 0.2s;
+}
+.endereco-card.principal { border-color: var(--cor-dourado); background: rgba(201,168,76,0.04); }
+.endereco-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.endereco-header h3 { color: var(--cor-texto); font-size: 1rem; font-weight: 600; }
+.badge-principal {
+  background: var(--gradiente-botao); color: var(--cor-fundo);
+  padding: 0.2rem 0.6rem; border-radius: var(--borda-radius-lg); font-size: 0.75rem; font-weight: 700;
+}
+.endereco-info p { color: var(--cor-texto-secundario); font-size: 0.875rem; margin: 0.2rem 0; }
+.endereco-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.btn-edit, .btn-delete, .btn-set-primary {
+  padding: 0.35rem 0.75rem; border-radius: var(--borda-radius-sm);
+  font-size: 0.8rem; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  transition: all 0.2s; font-weight: 500;
+}
+.btn-edit       { background: rgba(33,150,243,.2); color: #64B5F6; border: 1px solid #2196F3; }
+.btn-delete     { background: rgba(244,67,54,.2);  color: #f44336; border: 1px solid #f44336; }
+.btn-set-primary{ background: rgba(76,175,80,.2);  color: #4CAF50; border: 1px solid #4CAF50; }
+.btn-edit:hover, .btn-delete:hover, .btn-set-primary:hover { transform: translateY(-2px); filter: brightness(1.15); }
 
 .add-endereco-card {
-  border: 2px dashed rgba(255, 215, 0, 0.3);
-  border-radius: var(--borda-radius-md);
-  padding: var(--espacamento-lg);
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
+  border: 2px dashed rgba(201,168,76,0.3); border-radius: var(--borda-radius-md);
+  padding: var(--espacamento-lg); text-align: center; cursor: pointer; transition: all 0.2s;
 }
-.add-endereco-card:hover { border-color: var(--cor-dourado); background: rgba(255,215,0,0.05); }
-.add-endereco-content i { font-size: 2.5rem; color: var(--cor-dourado); margin-bottom: 0.5rem; }
+.add-endereco-card:hover { border-color: var(--cor-dourado); background: rgba(201,168,76,0.04); }
+.add-endereco-content i { font-size: 2rem; color: var(--cor-dourado); margin-bottom: 0.5rem; display: block; }
+.add-endereco-content h3 { color: var(--cor-texto-secundario); font-size: 1rem; }
 
+/* SEGURANÇA */
 .seguranca-card {
-  max-width: 500px;
-  background: var(--cor-fundo);
-  padding: var(--espacamento-lg);
-  border-radius: var(--borda-radius-md);
+  max-width: 480px;
+  background: var(--cor-fundo); padding: var(--espacamento-lg);
+  border-radius: var(--borda-radius-md); border: 1px solid rgba(201,168,76,0.15);
 }
+.seguranca-card h3 { color: var(--cor-dourado); margin-bottom: var(--espacamento-md); font-family: var(--fonte-principal); }
 
+/* PEDIDOS */
+.pedidos-lista { display: flex; flex-direction: column; gap: 0.75rem; }
 .pedido-card {
-  background: var(--cor-fundo);
-  border-radius: var(--borda-radius-md);
-  padding: var(--espacamento-md);
-  margin-bottom: var(--espacamento-md);
+  background: var(--cor-fundo); border-radius: var(--borda-radius-md);
+  border: 1px solid rgba(201,168,76,0.15); overflow: hidden;
+  transition: border-color 0.2s;
 }
+.pedido-card:hover { border-color: rgba(201,168,76,0.35); }
 .pedido-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem var(--espacamento-md); cursor: pointer; flex-wrap: wrap; gap: 0.5rem;
 }
-.pedido-detalhes {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
+.pedido-header:hover { background: rgba(201,168,76,0.04); }
+.pedido-header-info { display: flex; align-items: center; gap: 0.75rem; }
+.pedido-id { font-family: monospace; font-weight: 700; color: var(--cor-dourado); }
+.badge-status {
+  padding: 0.2rem 0.6rem; border-radius: var(--borda-radius-lg);
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; border: 1px solid;
 }
-.produto-info { display: flex; gap: 1rem; align-items: flex-start; }
-.produto-imagem { width: 60px; height: 60px; border-radius: 8px; overflow: hidden; }
-.produto-imagem img { width: 100%; height: 100%; object-fit: cover; }
-.pedido-valores { min-width: 200px; }
-.valor-item { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
-.pedido-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+.badge-status.pago      { background: rgba(76,175,80,.2);  color: #4CAF50; border-color: #4CAF50; }
+.badge-status.pendente  { background: rgba(255,193,7,.2);  color: #FFC107; border-color: #FFC107; }
+.badge-status.cancelado { background: rgba(244,67,54,.2);  color: #f44336; border-color: #f44336; }
+.badge-status.estornado { background: rgba(33,150,243,.2); color: #2196F3; border-color: #2196F3; }
+.pedido-header-right { display: flex; align-items: center; gap: 1rem; }
+.pedido-data  { color: var(--cor-texto-secundario); font-size: 0.875rem; }
+.pedido-total { font-weight: 700; color: var(--cor-dourado); }
+.pedido-header-right .fas { color: var(--cor-texto-secundario); font-size: 0.8rem; }
 
-.status-entregue { background: #4caf50; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; }
+.pedido-detalhes { border-top: 1px solid rgba(201,168,76,0.1); padding: var(--espacamento-md); }
+.cupom-info {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--borda-radius-sm); padding: 0.5rem 0.875rem;
+  font-size: 0.875rem; color: var(--cor-texto-secundario); margin-bottom: var(--espacamento-sm);
+}
+.cupom-info .fas, .cupom-info strong { color: var(--cor-dourado); }
+.itens-lista { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: var(--espacamento-sm); }
+.item-pedido {
+  display: flex; align-items: center; gap: 0.75rem;
+  background: var(--cor-fundo-secundario); border-radius: var(--borda-radius-sm);
+  padding: 0.625rem 0.875rem; border: 1px solid rgba(255,255,255,0.04);
+}
+.item-img { width: 48px; height: 48px; object-fit: cover; border-radius: var(--borda-radius-sm); flex-shrink: 0; }
+.item-info { flex: 1; display: flex; flex-direction: column; gap: 0.15rem; }
+.item-info strong { color: var(--cor-texto); font-size: 0.9rem; }
+.item-plano { color: var(--cor-dourado); font-size: 0.75rem; text-transform: capitalize; }
+.item-qtd   { color: var(--cor-texto-secundario); font-size: 0.8rem; }
+.item-total { font-weight: 700; color: var(--cor-dourado); white-space: nowrap; font-size: 0.9rem; }
+.btn-recomprar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3);
+  color: var(--cor-dourado); display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-size: 0.75rem; transition: all 0.2s; flex-shrink: 0;
+}
+.btn-recomprar:hover { background: rgba(201,168,76,0.25); transform: scale(1.1); }
+.pedido-resumo {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 0.625rem; display: flex; flex-direction: column;
+  gap: 0.3rem; align-items: flex-end;
+}
+.resumo-linha { display: flex; gap: 2rem; font-size: 0.875rem; }
+.resumo-linha.desconto { color: #4CAF50; }
+.resumo-linha.total    { font-weight: 700; color: var(--cor-dourado); font-size: 0.9375rem; }
 
-.pedidos-vazios { text-align: center; padding: 3rem; }
-.pedidos-vazios i { font-size: 4rem; color: var(--cor-dourado); opacity: 0.5; margin-bottom: 1rem; }
+.pedidos-vazio {
+  text-align: center; padding: var(--espacamento-xl);
+  display: flex; flex-direction: column; align-items: center; gap: var(--espacamento-md);
+}
+.pedidos-vazio .fas { font-size: 3.5rem; color: var(--cor-dourado); opacity: 0.35; }
+.pedidos-vazio p    { color: var(--cor-texto-secundario); }
 
+/* MODAL */
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 2000;
 }
 .modal-content {
-  background: var(--cor-fundo-secundario);
-  max-width: 600px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  border-radius: var(--borda-radius-lg);
-  border: 1px solid var(--cor-dourado);
+  background: var(--cor-fundo-secundario); border: 1px solid rgba(201,168,76,0.3);
+  border-radius: var(--borda-radius-lg); width: 90%; max-width: 560px;
+  max-height: 90vh; overflow-y: auto;
 }
 .modal-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(255,215,0,0.2);
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(201,168,76,0.15);
 }
-.modal-close { background: none; border: none; color: var(--cor-texto); font-size: 1.2rem; cursor: pointer; }
+.modal-header h3 { color: var(--cor-dourado); font-family: var(--fonte-principal); }
+.modal-close { background: none; border: none; color: var(--cor-texto-secundario); font-size: 1.1rem; cursor: pointer; transition: color 0.2s; }
+.modal-close:hover { color: var(--cor-texto); }
 .endereco-form { padding: 1.5rem; }
 .modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255,215,0,0.2);
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+  margin-top: 1.25rem; padding-top: 1rem;
+  border-top: 1px solid rgba(201,168,76,0.15);
 }
 
 @media (max-width: 768px) {
   .configuracoes-layout { grid-template-columns: 1fr; }
   .configuracoes-sidebar { position: static; }
   .form-grid { grid-template-columns: 1fr; }
-  .pedido-detalhes { flex-direction: column; }
+  .pedido-header { flex-direction: column; align-items: flex-start; }
+  .pedido-header-right { width: 100%; justify-content: space-between; }
 }
 </style>

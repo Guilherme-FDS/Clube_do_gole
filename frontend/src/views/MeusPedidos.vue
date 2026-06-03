@@ -7,35 +7,63 @@
     </div>
 
     <div v-else-if="pedidos.length" class="pedidos-lista">
-      <div v-for="pedido in pedidos" :key="pedido.id_compra" class="pedido-card fade-in" :class="{ visible: fadeInVisible }">
-        <div class="pedido-info">
-          <h3 class="produto-nome">{{ pedido.nome_produto }}</h3>
-          <p><span class="label">Quantidade:</span> {{ pedido.quantidade }}</p>
-          <p><span class="label">Total:</span> {{ formatarMoeda(pedido.valor_total) }}</p>
-          <p><span class="label">Data:</span> {{ formatarData(pedido.data) }}</p>
-          <p v-if="pedido.plano" class="plano-destaque">
-            <span class="label">Plano:</span> {{ pedido.plano | capitalize }}
-          </p>
-          <!-- Se houver cupom aplicado -->
-          <p v-if="pedido.cupom_aplicado"><span class="label">Cupom:</span> {{ pedido.cupom_aplicado }}</p>
+      <div v-for="pedido in pedidos" :key="pedido.id" class="pedido-card fade-in"
+        :class="{ visible: fadeInVisible }">
+
+        <div class="pedido-header" @click="toggleDetalhes(pedido.id)">
+          <div class="pedido-header-info">
+            <span class="pedido-id">#{{ pedido.id }}</span>
+            <span class="badge-status" :class="pedido.status">{{ pedido.status }}</span>
+          </div>
+          <div class="pedido-header-valores">
+            <span class="pedido-data">{{ formatarData(pedido.data) }}</span>
+            <span class="pedido-total">{{ formatarMoeda(pedido.valor_total) }}</span>
+            <i class="fas" :class="aberto === pedido.id ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          </div>
         </div>
-        <div class="pedido-actions">
-          <router-link :to="`/produto/${pedido.id_produto}`" class="btn-secondary">
-            <i class="fas fa-redo"></i> Comprar novamente
-          </router-link>
-          <button class="btn-primary" @click="verDetalhes(pedido.id_compra)" v-if="pedido.id_compra">
-            <i class="fas fa-eye"></i> Ver detalhes
-          </button>
+
+        <div v-show="aberto === pedido.id" class="pedido-detalhes">
+          <div v-if="pedido.cupom_aplicado" class="cupom-info">
+            <i class="fas fa-tag"></i>
+            Cupom <strong>{{ pedido.cupom_aplicado }}</strong> —
+            economia de {{ formatarMoeda(pedido.economia) }}
+          </div>
+
+          <div class="itens-lista">
+            <div v-for="item in pedido.itens" :key="item.id_produto" class="item-pedido">
+              <img :src="item.imagem || '/img/sem_imagem.png'" :alt="item.nome_produto" class="item-img">
+              <div class="item-info">
+                <strong class="item-nome">{{ item.nome_produto }}</strong>
+                <span class="item-plano">Plano {{ item.plano }}</span>
+                <span class="item-qtd">{{ item.quantidade }}x {{ formatarMoeda(item.valor_unitario) }}</span>
+              </div>
+              <span class="item-total">{{ formatarMoeda(item.valor_total) }}</span>
+              <router-link v-if="item.id_produto" :to="`/produto/${item.id_produto}`"
+                class="btn-recomprar" title="Comprar novamente">
+                <i class="fas fa-redo"></i>
+              </router-link>
+            </div>
+          </div>
+
+          <div class="pedido-resumo">
+            <div v-if="pedido.desconto_aplicado > 0" class="resumo-linha desconto">
+              <span>Desconto</span>
+              <span>- {{ formatarMoeda(pedido.desconto_aplicado) }}</span>
+            </div>
+            <div class="resumo-linha total">
+              <span>Total pago</span>
+              <span>{{ formatarMoeda(pedido.valor_total) }}</span>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
 
     <div v-else class="pedidos-vazio texto-centro">
       <i class="fas fa-shopping-bag"></i>
       <p class="texto-corrido">Você ainda não fez nenhum pedido.</p>
-      <div class="texto-centro">
-        <router-link to="/#planos" class="btn-modern">Conhecer Planos</router-link>
-      </div>
+      <router-link to="/#planos" class="btn-modern">Conhecer Planos</router-link>
     </div>
   </div>
 </template>
@@ -44,61 +72,44 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Estado
 const pedidos = ref([])
 const carregando = ref(false)
 const fadeInVisible = ref(false)
+const aberto = ref(null)
 
-// Formatação
-const formatarMoeda = (valor) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(valor || 0)
-}
+const formatarMoeda = (valor) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0)
 
 const formatarData = (dataStr) => {
   if (!dataStr) return ''
-  const data = new Date(dataStr)
-  return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return new Date(dataStr).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-// Carregar pedidos da API
+function toggleDetalhes(id) {
+  aberto.value = aberto.value === id ? null : id
+}
+
 async function carregarPedidos() {
   carregando.value = true
   try {
-    const response = await fetch('/api/meus-pedidos', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    if (!response.ok) throw new Error('Erro ao buscar pedidos')
-    const data = await response.json()
-    pedidos.value = data.pedidos || data.vendas || [] // adapta conforme retorno da API
-  } catch (error) {
-    console.error('Erro ao carregar pedidos:', error)
-    // Exibir notificação de erro (opcional)
+    const { data } = await api.get('/configuracoes/perfil')
+    pedidos.value = data.pedidos || []
+  } catch {
+    console.error('Erro ao carregar pedidos.')
   } finally {
     carregando.value = false
-    // Animar cards após carregar
     setTimeout(() => { fadeInVisible.value = true }, 100)
   }
 }
 
-// Navegar para detalhes do pedido (se disponível)
-function verDetalhes(idCompra) {
-  router.push(`/pedido/${idCompra}`)
-}
-
-// Verificar autenticação ao montar
 onMounted(async () => {
   if (!authStore.logado) {
-    router.push('/login?redirect=meus-pedidos')
+    router.push('/login?redirect=/meus-pedidos')
     return
   }
   await carregarPedidos()
@@ -106,161 +117,134 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ===== ESTILOS EXCLUSIVOS PARA MEUS PEDIDOS ===== */
 .meus-pedidos {
   margin-top: 120px;
   min-height: 60vh;
-  padding: 0 var(--espacamento-sm);
+  padding-bottom: var(--espacamento-xl);
 }
+.meus-pedidos .titulo-lg { text-align: center; margin-bottom: var(--espacamento-lg); }
 
 .pedidos-lista {
   display: flex;
   flex-direction: column;
   gap: var(--espacamento-md);
-  margin-top: var(--espacamento-lg);
+  max-width: 860px;
+  margin: 0 auto;
 }
 
 .pedido-card {
   background: var(--cor-fundo-secundario);
   border-radius: var(--borda-radius-lg);
-  padding: var(--espacamento-md);
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  border: 1px solid rgba(201,168,76,0.2);
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.pedido-card:hover { border-color: rgba(201,168,76,0.4); box-shadow: var(--sombra-destaque); }
+
+.pedido-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--espacamento-sm);
-  transition: all 0.3s ease;
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.pedido-card.fade-in {
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.pedido-card.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.pedido-card:hover {
-  border-color: var(--cor-dourado);
-  transform: translateY(-4px);
-  box-shadow: var(--sombra-destaque);
-}
-
-.pedido-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.pedido-info h3 {
-  font-size: 1.3rem;
-  color: var(--cor-dourado);
-  margin-bottom: 0.25rem;
-}
-
-.pedido-info p {
-  margin: 0;
-  color: var(--cor-texto-secundario);
-  font-size: 0.95rem;
-}
-
-.pedido-info .label {
-  font-weight: 600;
-  color: var(--cor-texto);
-}
-
-.plano-destaque {
-  background: rgba(255, 215, 0, 0.1);
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--borda-radius-sm);
-  display: inline-block;
-  width: fit-content;
-}
-
-.pedido-actions {
-  display: flex;
-  gap: var(--espacamento-sm);
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.btn-secondary {
-  background: var(--cor-fundo);
-  border: 1px solid var(--cor-dourado);
-  color: var(--cor-texto);
-  padding: 0.6rem 1.2rem;
-  border-radius: var(--borda-radius-md);
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.btn-secondary:hover {
-  background: var(--cor-dourado);
-  color: var(--cor-fundo);
-  transform: translateY(-2px);
-}
-
-.btn-primary {
-  background: var(--gradiente-botao-dourado-claro-escuro);
-  color: var(--cor-fundo);
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: var(--borda-radius-md);
-  font-weight: 600;
+  padding: 1.25rem var(--espacamento-md);
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--sombra-destaque);
+.pedido-header:hover { background: rgba(201,168,76,0.04); }
+
+.pedido-header-info { display: flex; align-items: center; gap: 0.75rem; }
+.pedido-id { font-family: monospace; font-weight: 700; color: var(--cor-dourado); font-size: 1rem; }
+
+.badge-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--borda-radius-lg);
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; border: 1px solid;
 }
+.badge-status.pago      { background: rgba(76,175,80,.2);  color: #4CAF50; border-color: #4CAF50; }
+.badge-status.pendente  { background: rgba(255,193,7,.2);  color: #FFC107; border-color: #FFC107; }
+.badge-status.cancelado { background: rgba(244,67,54,.2);  color: #f44336; border-color: #f44336; }
+.badge-status.estornado { background: rgba(33,150,243,.2); color: #2196F3; border-color: #2196F3; }
+
+.pedido-header-valores { display: flex; align-items: center; gap: 1.25rem; }
+.pedido-data  { color: var(--cor-texto-secundario); font-size: 0.875rem; }
+.pedido-total { font-weight: 700; color: var(--cor-dourado); font-size: 1.1rem; }
+.pedido-header-valores .fas { color: var(--cor-texto-secundario); font-size: 0.875rem; }
+
+.pedido-detalhes {
+  border-top: 1px solid rgba(201,168,76,0.15);
+  padding: var(--espacamento-md);
+}
+
+.cupom-info {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--borda-radius-sm);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: var(--cor-texto-secundario);
+  margin-bottom: var(--espacamento-md);
+}
+.cupom-info .fas { color: var(--cor-dourado); }
+.cupom-info strong { color: var(--cor-dourado); }
+
+.itens-lista { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: var(--espacamento-md); }
+.item-pedido {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--cor-fundo);
+  border-radius: var(--borda-radius-sm);
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.item-img {
+  width: 56px; height: 56px;
+  object-fit: cover; border-radius: var(--borda-radius-sm);
+  flex-shrink: 0;
+}
+.item-info { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+.item-nome { color: var(--cor-texto); font-size: 0.9375rem; font-weight: 600; }
+.item-plano { color: var(--cor-dourado); font-size: 0.8rem; text-transform: capitalize; }
+.item-qtd  { color: var(--cor-texto-secundario); font-size: 0.8125rem; }
+.item-total { font-weight: 700; color: var(--cor-dourado); white-space: nowrap; }
+.btn-recomprar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--cor-dourado);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-size: 0.8rem;
+  transition: all 0.2s ease; flex-shrink: 0;
+}
+.btn-recomprar:hover { background: rgba(201,168,76,0.25); transform: scale(1.1); }
+
+.pedido-resumo {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 0.75rem;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  align-items: flex-end;
+}
+.resumo-linha { display: flex; gap: 2rem; font-size: 0.9rem; }
+.resumo-linha.desconto { color: #4CAF50; }
+.resumo-linha.total { font-weight: 700; font-size: 1rem; color: var(--cor-dourado); }
 
 .pedidos-vazio {
   margin-top: var(--espacamento-xl);
+  display: flex; flex-direction: column; align-items: center; gap: var(--espacamento-md);
 }
-.pedidos-vazio i {
-  font-size: 4rem;
-  color: var(--cor-dourado);
-  opacity: 0.5;
-  margin-bottom: var(--espacamento-sm);
-  display: inline-block;
-}
+.pedidos-vazio .fas { font-size: 4rem; color: var(--cor-dourado); opacity: 0.4; }
+.pedidos-vazio .texto-corrido { color: var(--cor-texto-secundario); }
 
 .loading-spinner {
-  text-align: center;
-  padding: var(--espacamento-xl);
-  font-size: 1.2rem;
-  color: var(--cor-dourado);
+  text-align: center; padding: var(--espacamento-xl);
+  font-size: 1.2rem; color: var(--cor-dourado);
 }
 
-.texto-centro {
-  text-align: center;
-}
+.fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
 
-/* Responsividade */
 @media (max-width: 768px) {
-  .pedido-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .pedido-actions {
-    justify-content: center;
-  }
-  .pedido-info {
-    text-align: center;
-  }
-  .plano-destaque {
-    margin: 0 auto;
-  }
+  .pedido-header { flex-direction: column; align-items: flex-start; }
+  .pedido-header-valores { width: 100%; justify-content: space-between; }
+  .item-pedido { flex-wrap: wrap; }
 }
 </style>
