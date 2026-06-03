@@ -7,6 +7,9 @@ const routes = [
   { path: '/produto/:id',  name: 'ProdutoDetalhe',component: () => import('@/views/ProdutosDetalhe.vue') },
   { path: '/mixupcode',    name: 'MixUpCode',     component: () => import('@/views/Mixupcode.vue') },
   { path: '/carrinho',     name: 'Carrinho',      component: () => import('@/views/Carrinho.vue') },
+  { path: '/faq',          name: 'FAQ',           component: () => import('@/views/FAQ.vue') },
+  { path: '/blog',         name: 'Blog',          component: () => import('@/views/Blog.vue') },
+  { path: '/blog/:slug',   name: 'BlogPost',      component: () => import('@/views/BlogPost.vue') },
 
   // Guest only
   { path: '/login',                    name: 'Login',           component: () => import('@/views/Login.vue'),           meta: { guestOnly: true } },
