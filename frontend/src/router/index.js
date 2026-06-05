@@ -3,25 +3,31 @@ import { useAuthStore } from '@/stores/auth'
 
 const routes = [
   // Públicas
-  { path: '/',             name: 'Home',          component: () => import('@/views/Home.vue') },
-  { path: '/produto/:id',  name: 'ProdutoDetalhe',component: () => import('@/views/ProdutosDetalhe.vue') },
-  { path: '/mixupcode',    name: 'MixUpCode',     component: () => import('@/views/Mixupcode.vue') },
-  { path: '/carrinho',     name: 'Carrinho',      component: () => import('@/views/Carrinho.vue') },
-  { path: '/faq',          name: 'FAQ',           component: () => import('@/views/FAQ.vue') },
-  { path: '/blog',         name: 'Blog',          component: () => import('@/views/Blog.vue') },
-  { path: '/blog/:slug',   name: 'BlogPost',      component: () => import('@/views/BlogPost.vue') },
+  { path: '/',                  name: 'Home',             component: () => import('@/views/Home.vue') },
+  { path: '/produto/:id',       name: 'ProdutoDetalhe',   component: () => import('@/views/ProdutosDetalhe.vue') },
+  { path: '/mixupcode',         name: 'MixUpCode',        component: () => import('@/views/Mixupcode.vue') },
+  { path: '/carrinho',          name: 'Carrinho',         component: () => import('@/views/Carrinho.vue') },
+  { path: '/faq',               name: 'FAQ',              component: () => import('@/views/FAQ.vue') },
+  { path: '/blog',              name: 'Blog',             component: () => import('@/views/Blog.vue') },
+  { path: '/blog/:slug',        name: 'BlogPost',         component: () => import('@/views/BlogPost.vue') },
+
+  // Institucionais
+  { path: '/sobre',             name: 'Sobre',            component: () => import('@/views/Sobre.vue') },
+  { path: '/contato',           name: 'Contato',          component: () => import('@/views/Contato.vue') },
+  { path: '/corporativo',       name: 'Corporativo',      component: () => import('@/views/Corporativo.vue') },
+  { path: '/envio-devolucoes',  name: 'EnvioDevolucoes',  component: () => import('@/views/EnvioDevolucoes.vue') },
+  { path: '/politica-reembolso',name: 'PoliticaReembolso',component: () => import('@/views/PoliticaReembolso.vue') },
 
   // Guest only
   { path: '/login',                    name: 'Login',           component: () => import('@/views/Login.vue'),           meta: { guestOnly: true } },
-  { path: '/cadastro',                 name: 'Cadastro',        component: () => import('@/views/Cadastro.vue'),        meta: { guestOnly: true } },
   { path: '/auth/google/callback',     name: 'GoogleCallback',  component: () => import('@/views/OAuthCallback.vue'),   meta: { guestOnly: true } },
   { path: '/auth/facebook/callback',   name: 'FacebookCallback',component: () => import('@/views/OAuthCallback.vue'),   meta: { guestOnly: true } },
   { path: '/reset-password',           name: 'ResetPassword',   component: () => import('@/views/ResetPassword.vue'),   meta: { guestOnly: true } },
 
   // Auth required
-  { path: '/checkout',      name: 'Checkout',      component: () => import('@/views/Checkout.vue'),      meta: { auth: true } },
-  { path: '/meus-pedidos',  name: 'MeusPedidos',   component: () => import('@/views/MeusPedidos.vue'),   meta: { auth: true } },
-  { path: '/configuracoes', name: 'Configuracoes', component: () => import('@/views/Configuracoes.vue'), meta: { auth: true } },
+  { path: '/checkout',       name: 'Checkout',      component: () => import('@/views/Checkout.vue'),      meta: { auth: true } },
+  { path: '/meus-pedidos',   name: 'MeusPedidos',   component: () => import('@/views/MeusPedidos.vue'),   meta: { auth: true } },
+  { path: '/configuracoes',  name: 'Configuracoes', component: () => import('@/views/Configuracoes.vue'), meta: { auth: true } },
 
   // Admin
   { path: '/admin',                     name: 'Admin',              component: () => import('@/views/admin/Admin.vue'),          meta: { admin: true } },
@@ -35,30 +41,30 @@ const routes = [
   { path: '/admin/pagamentos',          name: 'AdminPagamentos',    component: () => import('@/views/admin/Pagamentos.vue'),     meta: { admin: true } },
   { path: '/admin/estoque',             name: 'AdminEstoque',       component: () => import('@/views/admin/Estoque.vue'),        meta: { admin: true } },
 
-  // 404 - Redirecionar para home
+  // 404
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior: () => ({ top: 0 })
+  scrollBehavior: (to) => {
+    if (to.hash) return { el: to.hash, top: 80, behavior: 'smooth' }
+    return { top: 0 }
+  }
 })
 
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
 
-  // Admin check
   if (to.meta.admin && auth.tipo !== 'admin') {
     return next(auth.logado ? '/' : '/login')
   }
 
-  // Auth required check
   if (to.meta.auth && !auth.logado) {
     return next(`/login?redirect=${to.path}`)
   }
 
-  // Guest only check (usuário logado não pode acessar login/cadastro)
   if (to.meta.guestOnly && auth.logado) {
     return next(auth.tipo === 'admin' ? '/admin' : '/')
   }

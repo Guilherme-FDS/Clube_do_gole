@@ -138,7 +138,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { cadastro as apiCadastro, esqueceuSenha, getGoogleAuthUrl, getFacebookAuthUrl } from '@/services/auth'
@@ -224,6 +224,12 @@ async function handleEsqueceuSenha() {
   }
 }
 
+onMounted(() => {
+  if (route.query.modo === 'cadastro') {
+    modoCadastro.value = true
+  }
+})
+
 async function handleCadastro() {
   if (!nomeCadastro.value || !sobrenomeCadastro.value || !cpfCadastro.value ||
       !emailCadastro.value || !senhaCadastro.value || !telefoneCadastro.value || !nascimentoCadastro.value) {
@@ -242,10 +248,10 @@ async function handleCadastro() {
       telefone: telefoneCadastro.value.replace(/\D/g, ''),
       data_nascimento: nascimentoCadastro.value,
     })
-    mostrarMensagem('Cadastro realizado! Faça login.', 'success')
-    email.value = emailCadastro.value
-    senha.value = ''
-    modoCadastro.value = false
+    mostrarMensagem('Cadastro realizado! Fazendo login...', 'success')
+    await authStore.entrar(emailCadastro.value, senhaCadastro.value)
+    const redirect = route.query.redirect || '/'
+    router.push(redirect)
   } catch (e) {
     mostrarMensagem(tratarErroLogin(e), 'error')
   } finally {

@@ -37,6 +37,8 @@
             <li><a href="#" @click.prevent="scrollTo('inicio')">Início</a></li>
             <li><a href="#" @click.prevent="scrollTo('como-funciona')">Como Funciona</a></li>
             <li><a href="#" @click.prevent="scrollTo('planos')">Planos</a></li>
+            <li><router-link to="/faq">FAQ</router-link></li>
+            <li><router-link to="/blog">Blog</router-link></li>
             <li><a href="#" @click.prevent="scrollTo('sobre')">Sobre</a></li>
             <li><a href="#" @click.prevent="scrollTo('contato')">Contato</a></li>
           </template>
