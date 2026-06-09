@@ -20,11 +20,50 @@
     "hero_cta_texto": {
       "type": "string"
     },
+    "hero_cta_secundario": {
+      "type": "string"
+    },
+    "hero_bg_cor": {
+      "type": "string"
+    },
+    "hero_badge_texto": {
+      "type": "string"
+    },
+    "hero_stat_1_numero": {
+      "type": "string"
+    },
+    "hero_stat_1_label": {
+      "type": "string"
+    },
+    "hero_stat_2_numero": {
+      "type": "string"
+    },
+    "hero_stat_2_label": {
+      "type": "string"
+    },
+    "hero_stat_3_numero": {
+      "type": "string"
+    },
+    "hero_stat_3_label": {
+      "type": "string"
+    },
+    "hero_bg_imagem": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
     "sobre_titulo": {
       "type": "string"
     },
     "sobre_texto": {
       "type": "text"
+    },
+    "entregas_titulo": {
+      "type": "string"
+    },
+    "entregas_texto": {
+      "type": "richtext"
     }
   }
 }
