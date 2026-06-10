@@ -703,7 +703,7 @@ export interface PluginContentReleasesRelease
     publishedAt: Schema.Attribute.DateTime;
     releasedAt: Schema.Attribute.DateTime;
     scheduledAt: Schema.Attribute.DateTime;
-    status: Schema.Attribute.Enumeration
+    status: Schema.Attribute.Enumeration<
       ['ready', 'blocked', 'failed', 'done', 'empty']
     > &
       Schema.Attribute.Required;
@@ -791,7 +791,7 @@ export interface PluginI18NLocale extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String &
-      Schema.Attribute.SetMinMax
+      Schema.Attribute.SetMinMax<
         {
           max: 50;
           min: 1;
