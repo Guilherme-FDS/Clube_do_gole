@@ -351,7 +351,7 @@ const irParaPlano = () => {
   if (authStore.logado) {
     router.push('/produto/1')
   } else {
-    router.push('/login?modo=cadastro&redirect=/produto/1')
+    router.push('/login?redirect=/produto/1')
   }
 }
 
