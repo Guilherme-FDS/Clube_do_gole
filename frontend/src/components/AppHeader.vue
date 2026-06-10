@@ -40,7 +40,26 @@
             <li><router-link to="/faq">FAQ</router-link></li>
             <li><router-link to="/blog">Blog</router-link></li>
             <li><a href="#" @click.prevent="scrollTo('sobre')">Sobre</a></li>
-            <li><a href="#" @click.prevent="scrollTo('contato')">Contato</a></li>
+            <li><router-link to="/corporativo" class="nav-b2b-link">Presentes Corporativos</router-link></li>
+
+            <!-- Dropdown Institucional -->
+            <li class="nav-institucional-container" ref="institucionalMenu">
+              <button class="nav-institucional-btn" @click="toggleInstitucional">
+                <i class="fas fa-bars"></i> Institucional
+                <i class="fas fa-chevron-down institucional-arrow" :class="{ 'rotated': isInstitucionalOpen }"></i>
+              </button>
+              <div class="institucional-dropdown" v-show="isInstitucionalOpen">
+                <router-link to="/sobre" class="dropdown-item" @click="isInstitucionalOpen = false">
+                  <i class="fas fa-heart"></i> Nossa História
+                </router-link>
+                <router-link to="/sobre#missao" class="dropdown-item" @click="isInstitucionalOpen = false">
+                  <i class="fas fa-star"></i> Missão e Valores
+                </router-link>
+                <router-link to="/contato" class="dropdown-item" @click="isInstitucionalOpen = false">
+                  <i class="fas fa-newspaper"></i> Imprensa
+                </router-link>
+              </div>
+            </li>
           </template>
         </ul>
       </nav>
@@ -99,7 +118,9 @@ const carrinhoStore = useCarrinhoStore()
 
 const isScrolled = ref(false)
 const isUserMenuOpen = ref(false)
+const isInstitucionalOpen = ref(false)
 const userMenu = ref(null)
+const institucionalMenu = ref(null)
 
 const logado = computed(() => authStore.logado)
 const isAdmin = computed(() => authStore.tipo === 'admin')
@@ -134,9 +155,11 @@ const scrollTo = (sectionId) => {
 }
 
 const toggleUserMenu = () => { isUserMenuOpen.value = !isUserMenuOpen.value }
+const toggleInstitucional = () => { isInstitucionalOpen.value = !isInstitucionalOpen.value }
 
-const closeUserMenu = (e) => {
+const closeMenus = (e) => {
   if (userMenu.value && !userMenu.value.contains(e.target)) isUserMenuOpen.value = false
+  if (institucionalMenu.value && !institucionalMenu.value.contains(e.target)) isInstitucionalOpen.value = false
 }
 
 const logout = async () => {
@@ -147,11 +170,84 @@ const logout = async () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
-  document.addEventListener('click', closeUserMenu)
+  document.addEventListener('click', closeMenus)
   handleScroll()
 })
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  document.removeEventListener('click', closeUserMenu)
+  document.removeEventListener('click', closeMenus)
 })
 </script>
+
+<style scoped>
+.nav-b2b-link {
+  color: var(--cor-dourado, #C9A84C) !important;
+  font-weight: 600;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  padding: 4px 10px !important;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.nav-b2b-link:hover {
+  background: rgba(201, 168, 76, 0.1);
+  border-color: var(--cor-dourado, #C9A84C);
+}
+
+.nav-institucional-container {
+  position: relative;
+}
+
+.nav-institucional-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.nav-institucional-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.institucional-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+}
+.institucional-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.institucional-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: #1a1a1a;
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 6px;
+  min-width: 180px;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.institucional-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: background 0.15s;
+}
+.institucional-dropdown .dropdown-item:hover {
+  background: rgba(201, 168, 76, 0.1);
+  color: var(--cor-dourado, #C9A84C);
+}
+</style>
