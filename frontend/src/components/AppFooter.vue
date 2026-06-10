@@ -14,7 +14,7 @@
           </div>
         </router-link>
         <p class="footer-descricao">Curadoria exclusiva de destilados raros entregues na sua porta todo mês.</p>
-        <div class="footer-redes" style="margin-top:1.25rem;">
+        <div class="footer-redes">
           <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
             <i class="fa-brands fa-instagram"></i>
           </a>
@@ -96,10 +96,6 @@
         <a href="#">Política de Privacidade</a>
         <a href="#">Política de Cookies</a>
       </div>
-      <p class="footer-copyright">
-        Criado com amor pela
-        <router-link to="/mixupcode" class="mixupcode-link">MixUpCode</router-link>
-      </p>
     </div>
 
   </footer>
@@ -109,20 +105,30 @@
 </script>
 
 <style scoped>
-.footer-divisor-topo {
-  border-top: 1px dashed rgba(201,168,76,0.2);
-  margin-bottom: var(--espacamento-lg);
+.main-footer {
+  padding-top: var(--espacamento-md);
+  padding-bottom: 0;
 }
+
+.footer-divisor-topo {
+  border-top: 1px solid rgba(201,168,76,0.2);
+  margin-bottom: var(--espacamento-md);
+}
+
 .footer-divisor {
-  border-top: 1px dashed rgba(201,168,76,0.15);
-  margin: var(--espacamento-md) auto;
+  border-top: 1px solid rgba(201,168,76,0.15);
+  margin: var(--espacamento-sm) auto 0;
   max-width: 1200px;
   padding: 0 var(--espacamento-sm);
 }
 
 .footer-logo {
   display: flex; align-items: center; gap: 0.625rem;
-  text-decoration: none; margin-bottom: 0.875rem;
+  text-decoration: none; margin-bottom: 0.75rem;
+}
+
+.footer-redes {
+  margin-top: 1rem;
 }
 
 .footer-link-desabilitado {
@@ -135,7 +141,7 @@
 .footer-pagamentos {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--espacamento-md) var(--espacamento-sm);
+  padding: var(--espacamento-sm) var(--espacamento-sm);
   display: flex;
   align-items: center;
   gap: 1.25rem;
@@ -163,7 +169,7 @@
 .footer-bottom {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--espacamento-sm) var(--espacamento-sm) var(--espacamento-md);
+  padding: var(--espacamento-sm) var(--espacamento-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
