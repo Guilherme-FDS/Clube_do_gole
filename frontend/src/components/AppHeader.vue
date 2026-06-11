@@ -193,14 +193,21 @@ onUnmounted(() => {
 .nav-institucional-btn {
   background: none;
   border: none;
-  color: inherit;
+  color: rgba(255,255,255,0.65);
   cursor: pointer;
-  font-size: inherit;
-  padding: 0;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: inherit;
+  padding: 0 0.875rem;
+  height: 60px;
   display: flex;
   align-items: center;
   gap: 5px;
-  font-family: inherit;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+.nav-institucional-btn:hover {
+  color: #fff;
 }
 
 .institucional-arrow {
@@ -213,14 +220,14 @@ onUnmounted(() => {
 
 .institucional-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 4px);
   left: 0;
   background: #1a1a1a;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 6px;
   min-width: 160px;
-  z-index: 1000;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   overflow: hidden;
 }
 
