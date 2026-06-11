@@ -29,3 +29,5 @@ export const getPagina = (slug) =>
   get('/paginas', { filters: { slug } })
 
 export default strapi
+export const getEntregasAnteriores = () =>
+  get('/entrega-anteriores', { filters: { ativo: true }, sort: 'ordem:asc', populate: '*' })
