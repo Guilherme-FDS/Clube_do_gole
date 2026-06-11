@@ -102,8 +102,8 @@ onUnmounted(() => clearInterval(autoplay))
 <style scoped>
 .entregas-anteriores {
   padding: var(--espacamento-xl) 0;
-  background: var(--cor-secao-clara);
-  color: var(--cor-texto-claro-bg);
+  background: var(--cor-secao-escura);
+  color: var(--cor-texto);
 }
 
 .entregas-header {
@@ -112,12 +112,12 @@ onUnmounted(() => clearInterval(autoplay))
 }
 
 .entregas-header .section-badge {
-  border-color: var(--cor-dourado-escuro);
-  color: var(--cor-dourado-escuro);
+  border-color: var(--cor-dourado);
+  color: var(--cor-dourado);
 }
 
 .entregas-header .titulo-lg {
-  color: var(--cor-texto-claro-bg);
+  color: var(--cor-texto);
 }
 
 .entregas-grid {
@@ -191,9 +191,9 @@ onUnmounted(() => clearInterval(autoplay))
 }
 
 .carrossel-seta {
-  background: rgba(27,26,25,0.12);
-  border: 1px solid rgba(27,26,25,0.2);
-  color: #1B1A19;
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--cor-dourado);
   width: 34px; height: 34px;
   border-radius: 50%;
   cursor: pointer;
@@ -203,7 +203,8 @@ onUnmounted(() => clearInterval(autoplay))
   flex-shrink: 0;
 }
 .carrossel-seta:hover {
-  background: rgba(27,26,25,0.2);
+  background: rgba(201,168,76,0.25);
+  border-color: var(--cor-dourado);
 }
 
 .carrossel-dots {
@@ -215,7 +216,7 @@ onUnmounted(() => clearInterval(autoplay))
 .carrossel-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: rgba(27,26,25,0.2);
+  background: rgba(255,255,255,0.2);
   border: none; cursor: pointer;
   transition: all 0.2s; padding: 0;
 }
@@ -238,7 +239,7 @@ onUnmounted(() => clearInterval(autoplay))
 }
 
 .entregas-badge-label {
-  color: var(--cor-dourado-escuro, #9E7A2E);
+  color: var(--cor-dourado);
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -246,12 +247,12 @@ onUnmounted(() => clearInterval(autoplay))
 }
 
 .entregas-descricao {
-  color: var(--cor-texto-secundario-claro-bg);
+  color: var(--cor-texto-secundario);
   line-height: 1.8;
   font-size: 1rem;
 }
 .entregas-descricao p { margin-bottom: 0.75rem; }
-.entregas-descricao strong { color: var(--cor-dourado-escuro); }
+.entregas-descricao strong { color: var(--cor-dourado); }
 
 .entregas-features {
   list-style: none; padding: 0; margin: 0;
@@ -259,10 +260,10 @@ onUnmounted(() => clearInterval(autoplay))
 }
 .entregas-features li {
   display: flex; align-items: center; gap: 0.625rem;
-  font-size: 0.9rem; color: var(--cor-texto-claro-bg);
+  font-size: 0.9rem; color: rgba(255,255,255,0.8);
 }
 .entregas-features li i {
-  color: var(--cor-dourado-escuro, #9E7A2E);
+  color: var(--cor-dourado);
   font-size: 0.875rem; flex-shrink: 0;
 }
 
