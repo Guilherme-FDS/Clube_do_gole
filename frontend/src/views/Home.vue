@@ -75,6 +75,13 @@
       </div>
     </section>
 
+    <!-- ENTREGAS ANTERIORES -->
+    <EntregasAnteriores
+      :entregas="entregasAnteriores"
+      :titulo="entregasTitulo"
+      :textoMarkdown="entregasTexto"
+    />
+
     <!-- PLANOS -->
     <section id="planos" class="nossos-planos">
       <div class="container" style="text-align:center;">
@@ -340,7 +347,8 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { getBanners, getHome, getDepoimentos, getFaqs, getPosts } from '@/services/strapi'
+import { getBanners, getHome, getDepoimentos, getFaqs, getPosts, getEntregasAnteriores } from '@/services/strapi'
+import EntregasAnteriores from '@/components/EntregasAnteriores.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
@@ -372,7 +380,9 @@ const depoimentos = ref([])
 const faqs = ref([])
 const faqAberto = ref(null)
 const postDestaque = ref([])
-
+const entregasAnteriores = ref([])
+const entregasTitulo = ref('')
+const entregasTexto = ref('')
 const contatoForm = ref({ nome: '', email: '', assunto: '', mensagem: '' })
 const contatoEnviando = ref(false)
 const contatoSucesso = ref(false)
@@ -478,6 +488,8 @@ onMounted(async () => {
       if (h.hero_cta_texto) heroCta.value = h.hero_cta_texto
       if (h.sobre_titulo) sobreTitulo.value = h.sobre_titulo
       if (h.sobre_texto) sobreTexto.value = h.sobre_texto
+      if (h.entregas_titulo) entregasTitulo.value = h.entregas_titulo
+      if (h.entregas_texto) entregasTexto.value = h.entregas_texto
     }
   } catch {}
 
@@ -496,6 +508,11 @@ onMounted(async () => {
     postDestaque.value = data?.data || []
   } catch {}
 
+  try {
+    const { data } = await getEntregasAnteriores()
+    entregasAnteriores.value = data?.data || []
+  } catch {}
+  
   try {
     const { data } = await getBanners()
     const banners = data?.data || []

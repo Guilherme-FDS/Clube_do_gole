@@ -1,0 +1,332 @@
+<template>
+  <section class="entregas-anteriores" id="entregas-anteriores">
+    <div class="container">
+      <div class="entregas-header">
+        <span class="section-badge">Entregas Exclusivas</span>
+        <h2 class="titulo-lg">
+          {{ titulo || 'O que já <span class="dourado">entregamos</span>' }}
+        </h2>
+      </div>
+
+      <div class="entregas-grid">
+        <!-- CARROSSEL -->
+        <div class="entregas-carrossel">
+          <div class="carrossel-wrapper">
+            <button class="carrossel-seta esq" @click="prev" aria-label="Anterior">&#10094;</button>
+
+            <div class="carrossel-viewport">
+              <div
+                class="carrossel-track"
+                :style="{ transform: `translateX(-${atual * 100}%)` }"
+              >
+                <div
+                  class="carrossel-item"
+                  v-for="(entrega, i) in entregas"
+                  :key="i"
+                >
+                  <div class="carrossel-img-wrap">
+                    <img
+                      :src="getImagem(entrega)"
+                      :alt="entrega.attributes?.titulo || entrega.titulo"
+                      class="carrossel-img"
+                    />
+                    <div class="carrossel-overlay">
+                      <span class="carrossel-mes">{{ entrega.attributes?.mes_referencia || entrega.mes_referencia }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button class="carrossel-seta dir" @click="next" aria-label="Próximo">&#10095;</button>
+          </div>
+
+          <!-- Bolinhas -->
+          <div class="carrossel-dots">
+            <button
+              v-for="(_, i) in entregas"
+              :key="i"
+              class="carrossel-dot"
+              :class="{ ativo: atual === i }"
+              @click="atual = i"
+              :aria-label="`Slide ${i + 1}`"
+            ></button>
+          </div>
+        </div>
+
+        <!-- TEXTO DIREITO -->
+        <div class="entregas-texto">
+          <div class="entregas-badge-wrap">
+            <span class="entregas-icone">🥃</span>
+            <span class="entregas-badge-label">Curadoria Exclusiva</span>
+          </div>
+          <div v-if="textoHtml" v-html="textoHtml" class="entregas-descricao"></div>
+          <div v-else class="entregas-descricao">
+            <p>Cada mês, nossa equipe de especialistas percorre o mundo em busca de rótulos que a maioria nunca terá acesso.</p>
+            <p>Destilados raros, premiados e com história — selecionados por quem entende, entregues para quem aprecia.</p>
+            <p>Você não escolhe o que vai receber. E é exatamente isso que torna cada entrega uma <strong>experiência única.</strong></p>
+          </div>
+          <ul class="entregas-features">
+            <li><i class="fas fa-check-circle"></i> Rótulos não disponíveis em prateleiras comuns</li>
+            <li><i class="fas fa-check-circle"></i> Cartão de degustação incluso em cada entrega</li>
+            <li><i class="fas fa-check-circle"></i> Embalagem colecionável exclusiva</li>
+            <li><i class="fas fa-check-circle"></i> Curadoria por especialistas globais</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+
+const props = defineProps({
+  entregas: {
+    type: Array,
+    default: () => []
+  },
+  titulo: {
+    type: String,
+    default: ''
+  },
+  textoMarkdown: {
+    type: String,
+    default: ''
+  }
+})
+
+const strapiUrl = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'
+const atual = ref(0)
+let autoplay = null
+
+const getImagem = (entrega) => {
+  const img = entrega.attributes?.imagem?.data?.attributes || entrega.imagem?.data?.attributes
+  if (img?.url) {
+    return img.url.startsWith('http') ? img.url : `${strapiUrl}${img.url}`
+  }
+  return '/img/logo.png'
+}
+
+const textoHtml = computed(() => {
+  if (!props.textoMarkdown) return ''
+  return props.textoMarkdown
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^/, '<p>')
+    .replace(/$/, '</p>')
+})
+
+const prev = () => {
+  atual.value = atual.value === 0 ? props.entregas.length - 1 : atual.value - 1
+  resetAutoplay()
+}
+
+const next = () => {
+  atual.value = (atual.value + 1) % props.entregas.length
+  resetAutoplay()
+}
+
+const resetAutoplay = () => {
+  clearInterval(autoplay)
+  autoplay = setInterval(next, 4000)
+}
+
+onMounted(() => {
+  if (props.entregas.length > 1) {
+    autoplay = setInterval(next, 4000)
+  }
+})
+
+onUnmounted(() => clearInterval(autoplay))
+</script>
+
+<style scoped>
+.entregas-anteriores {
+  padding: var(--espacamento-xl) 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(201,168,76,0.03) 50%, transparent 100%);
+}
+
+.entregas-header {
+  text-align: center;
+  margin-bottom: var(--espacamento-lg);
+}
+
+.entregas-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* CARROSSEL */
+.entregas-carrossel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.carrossel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.carrossel-viewport {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  aspect-ratio: 4/3;
+}
+
+.carrossel-track {
+  display: flex;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+}
+
+.carrossel-item {
+  min-width: 100%;
+  height: 100%;
+}
+
+.carrossel-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carrossel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carrossel-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  padding: 1rem;
+}
+
+.carrossel-mes {
+  color: var(--cor-dourado, #C9A84C);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.carrossel-seta {
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--cor-dourado, #C9A84C);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.carrossel-seta:hover {
+  background: rgba(201,168,76,0.25);
+  border-color: var(--cor-dourado, #C9A84C);
+}
+
+.carrossel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.carrossel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+.carrossel-dot.ativo {
+  background: var(--cor-dourado, #C9A84C);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* TEXTO */
+.entregas-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.entregas-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.entregas-icone {
+  font-size: 1.5rem;
+}
+
+.entregas-badge-label {
+  color: var(--cor-dourado, #C9A84C);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.entregas-descricao {
+  color: var(--cor-texto-secundario, rgba(255,255,255,0.7));
+  line-height: 1.8;
+  font-size: 1rem;
+}
+.entregas-descricao p { margin-bottom: 0.75rem; }
+.entregas-descricao strong { color: var(--cor-dourado, #C9A84C); }
+
+.entregas-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.entregas-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.8);
+}
+.entregas-features li i {
+  color: var(--cor-dourado, #C9A84C);
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .entregas-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .carrossel-viewport {
+    aspect-ratio: 16/9;
+  }
+}
+</style>
