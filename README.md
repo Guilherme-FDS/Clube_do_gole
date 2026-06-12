@@ -1,135 +1,146 @@
 # Clube do Gole
 
-Plataforma web de um clube de assinatura de bebidas, com sistema completo de navegação, produtos, carrinho, checkout e área administrativa.
+Plataforma de e-commerce de assinatura de bebidas premium — catálogo de produtos com planos de recorrência (mensal, semestral, anual), carrinho, checkout, assinaturas e painel administrativo completo.
 
 ---
 
-## 🌐 Acesse o projeto online
+## Stack
 
-👉 https://clube-do-gole.onrender.com
+### Backend
+- **Python 3.10** + **FastAPI**
+- **SQLAlchemy 2.0** (async) + SQLite (dev) / PostgreSQL (prod)
+- **Pydantic v2** para validação de schemas
+- Autenticação **JWT** (PyJWT + bcrypt) com controle de sessões
+- Alembic para migrations
 
----
-
-## Sobre o projeto
-
-O **Clube do Gole** é um sistema web inspirado em um modelo real de negócio de assinatura de bebidas, onde o usuário pode navegar por produtos, montar pedidos e interagir com diferentes áreas da aplicação.
-
-O projeto simula uma operação completa de e-commerce com foco em experiência do usuário e organização de dados.
-
----
-
-## 🔐 Acesso ao sistema
-
-### Área administrativa
-
-Para acessar o painel administrativo, utilize:
-
-- **Email:** admin@clubedogole.com.br  
-- **Senha:** 1234  
-
-### Usuário comum
-
-Para acessar como usuário comum, basta realizar o cadastro e login normalmente pela aplicação.
+### Frontend
+- **Vue.js 3** (Composition API) + **Vite**
+- **Pinia** para gerenciamento de estado
+- **Vue Router** com guards de autenticação/admin
+- **Axios** com interceptors de token
+- Identidade visual: Cormorant Garamond + DM Sans
 
 ---
 
-## 🎟️ Cupons para teste
+## Arquitetura
 
-Utilize os cupons abaixo no checkout:
+```
+Clube_do_gole
+├── backend
+│   ├── app.py               # entrada FastAPI
+│   ├── routes/              # endpoints (auth, produtos, carrinho, admin...)
+│   ├── services/            # regras de negócio
+│   ├── repositories/        # acesso a dados (SQLAlchemy)
+│   ├── schemas/             # modelos Pydantic
+│   ├── database/            # engine, models, seed
+│   └── utils/               # JWT, email, helpers
+└── frontend
+    └── src
+        ├── views/           # páginas (Home, Produto, Carrinho, Checkout...)
+        │   └── admin/       # painel administrativo (ERP)
+        ├── components/      # componentes reutilizáveis
+        ├── stores/          # Pinia stores
+        ├── services/        # camada de API (Axios)
+        └── router/          # rotas + guards
+```
 
-- **GOLE15** → Desconto promocional  
-- **CLUBE10** → Desconto especial  
+---
+
+## Funcionalidades
+
+### Loja
+- Catálogo de produtos com planos de assinatura e preços por recorrência
+- Carrinho com seleção de itens, quantidade e exclusão
+- Checkout com endereços (CRUD + busca por CEP), cupons de desconto e formas de pagamento
+- Cadastro/login de clientes (JWT) e recuperação de senha
+- Histórico de pedidos e assinaturas do cliente
+
+### Painel Administrativo (ERP)
+- Dashboard de vendas: faturamento, ticket médio, produtos mais vendidos
+- Gestão de produtos e planos de assinatura (preço base, desconto por recorrência)
+- Gestão de cupons (usos, validade, status)
+- Controle de estoque por movimentações (entrada, saída, ajuste)
+- Acompanhamento de assinaturas (ativar, pausar, cancelar)
+- Histórico de pagamentos
 
 ---
 
 ## Modelo de negócio
 
-O sistema foi baseado em um plano real de assinatura, com:
+Clube de assinatura com planos de recorrência:
 
-- Planos mensais de bebidas
-- Linha intermediária e premium
-- Experiência personalizada para o usuário
-- Possibilidade de expansão para e-commerce completo
+| Plano | Ciclo | Desconto |
+|---|---|---|
+| Mensal | 30 dias | — |
+| Semestral | 180 dias | configurável |
+| Anual | 365 dias | configurável |
 
----
-
-## Tecnologias utilizadas
-
-- Python (Flask)
-- HTML5
-- CSS3
-- JavaScript
-- CSV (simulação de banco de dados)
+Cada produto possui planos independentes com preço e desconto próprios, calculados pelo backend.
 
 ---
 
-## Estrutura do projeto
+## Como executar
 
+### Pré-requisitos
+- Python 3.10+
+- Node.js 18+
+
+### 1. Clonar o repositório
 ```bash
-Clube_do_gole
-├── app.py
-├── routes
-│   └── views.py
-├── templates
-├── static
-│   ├── css
-│   ├── js
-│   ├── img
-│   └── data
-├── requirements.txt
-└── Procfile
-
-Funcionalidades
-Sistema de navegação entre páginas (Flask)
-Listagem de produtos
-Carrinho de compras
-Checkout
-Área de login
-Painel administrativo
-Gestão de produtos
-Sistema de cupons
-Dashboard de vendas
-Leitura de dados via arquivos CSV
-Como executar o projeto
-1. Clonar o repositório
 git clone https://github.com/Guilherme-FDS/Clube_do_gole.git
 cd Clube_do_gole
-2. Criar ambiente virtual
-python -m venv venv
-source venv/bin/activate  # Linux
-3. Instalar dependências
-pip install -r requirements.txt
-4. Rodar o projeto
-python app.py
+```
 
-Acesse no navegador:
+### 2. Backend
+```bash
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # Linux/Mac
 
-http://localhost:5000
-Objetivo do projeto
+pip install -r backend/requirements.txt
+cd backend
+python -m uvicorn app:app --reload --port 8000
+```
 
-Este projeto foi desenvolvido para praticar:
+API disponível em `http://localhost:8000` — docs interativas em `http://localhost:8000/docs`.
 
-Estruturação de aplicações com Flask
-Separação entre frontend e backend
-Organização de rotas
-Simulação de banco de dados com CSV
-Construção de sistemas completos tipo ERP / e-commerce
-Diferenciais
-Projeto baseado em um modelo real de negócio
-Estrutura próxima de aplicações profissionais
-Backend funcional com Flask
-Simulação de dados reais
-Possibilidade de evolução para banco de dados real (PostgreSQL)
-Próximos passos
-Integração com banco de dados (PostgreSQL)
-Sistema de autenticação seguro
-API REST
-Integração com pagamentos
-Deploy em nuvem
-Status do projeto
+### 3. Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Aplicação disponível em `http://localhost:5173`.
+
+---
+
+## Variáveis de ambiente
+
+Backend (`backend/.env`):
+```
+DATABASE_URL=sqlite+aiosqlite:///./database/clube_do_gole.db
+SECRET_KEY=<sua-chave>
+```
+
+Frontend (`frontend/.env.local`):
+```
+VITE_API_URL=http://localhost:8000/api
+```
+
+---
+
+## Status do projeto
 
 Em evolução 🚀
 
-Autor
+**Próximos passos:**
+- Integração com gateway de pagamento (Stripe)
+- Deploy em produção com PostgreSQL
+- Cobrança recorrente automática das assinaturas
 
-Guilherme Silva
+---
+
+## Autor
+
+**Guilherme Silva**
