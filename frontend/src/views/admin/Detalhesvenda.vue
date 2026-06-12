@@ -1,5 +1,6 @@
 <template>
   <div class="detalhes-container">
+    <BotaoVoltarAdmin to="/admin/vendas" label="Voltar ao Dashboard" />
     <h1 class="detalhes-titulo"><i class="fas fa-receipt"></i> Detalhes da Venda</h1>
 
     <div v-if="carregando" class="loading-spinner">
@@ -117,6 +118,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import BotaoVoltarAdmin from '@/components/BotaoVoltarAdmin.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -557,4 +559,51 @@ onMounted(async () => {
     padding: 0.6rem 1.2rem;
   }
 }
+
+/* ===== ERP LIGHT THEME (sobrescreve o tema escuro acima) ===== */
+.detalhes-container {
+  background: #F4F5F7;
+  min-height: 100vh;
+  max-width: none;
+  margin: 80px 0 0;
+  padding: 30px max(24px, calc((100% - 1100px) / 2)) 60px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+.detalhes-titulo {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: 22px;
+  color: #1B1A19;
+  text-align: left;
+  font-weight: 700;
+}
+.detalhes-titulo i { color: #C9A84C; font-size: 18px; }
+.detalhes-card {
+  background: #FFFFFF;
+  border: 1px solid #E3E5E8;
+  border-radius: 10px;
+  box-shadow: none;
+}
+.detalhes-card:hover { transform: none; box-shadow: 0 4px 14px rgba(27, 26, 25, 0.07); border-color: #C9A84C; }
+.detalhes-card h3 { color: #1B1A19; font-family: inherit; font-size: 14px; font-weight: 600; }
+.detalhes-card h3 i { color: #C9A84C; }
+.info-item { background: #F9FAFB; border: 1px solid #F0F1F3; }
+.info-item:hover { background: #F4F5F7; }
+.info-item strong { color: #4B5563; }
+.info-item span { color: #1B1A19; }
+.valor-total { color: #1B1A19; }
+.valor-original { color: #6B7280; }
+.valor-desconto { color: #2E8B57; }
+.cupom-info { color: #8A6520; }
+.btn-voltar {
+  background: #FFFFFF;
+  border: 1px solid #D6D9DE;
+  color: #4B5563;
+}
+.btn-voltar:hover { background: #F4F5F7; border-color: #C9A84C; color: #8A6520; }
+.btn-imprimir {
+  background: linear-gradient(135deg, #9E7A2E, #E2C06A);
+  color: #1B1A19;
+}
+.loading-spinner { color: #6B7280; }
+.loading-spinner i { color: #C9A84C; }
 </style>

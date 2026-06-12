@@ -1,5 +1,6 @@
 <template>
   <div class="dashboard-container">
+    <BotaoVoltarAdmin />
     <h1 class="dashboard-titulo fade-in" :class="{ visible: fadeInVisible }">
       <i class="fas fa-repeat"></i> Assinaturas
     </h1>
@@ -110,6 +111,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '@/services/api'
+import BotaoVoltarAdmin from '@/components/BotaoVoltarAdmin.vue'
 
 const assinaturas = ref([])
 const fadeInVisible = ref(false)
@@ -287,4 +289,46 @@ onMounted(async () => {
   .cards-estatisticas { grid-template-columns:1fr; }
   .card-estatistica { flex-direction:column; text-align:center; }
 }
+
+/* ===== ERP LIGHT THEME (sobrescreve o tema escuro acima) ===== */
+.dashboard-container {
+  max-width: none;
+  margin: 80px 0 0;
+  padding: 30px max(24px, calc((100% - 1100px) / 2)) 60px;
+  background: #F4F5F7;
+  min-height: 100vh;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+.dashboard-titulo { font-family: 'DM Sans', 'Segoe UI', sans-serif; font-size: 22px; color: #1B1A19; text-align: left; font-weight: 700; margin-bottom: 2px; }
+.dashboard-titulo i { color: #C9A84C; font-size: 18px; margin-right: 6px; }
+.dashboard-subtitulo { font-family: inherit; font-size: 13px; color: #6B7280; text-align: left; margin-bottom: 24px; }
+.dashboard-card,
+.card-estatistica { background: #FFFFFF; border: 1px solid #E3E5E8; border-radius: 10px; box-shadow: none; }
+.dashboard-card:hover,
+.card-estatistica:hover { transform: none; box-shadow: 0 4px 14px rgba(27, 26, 25, 0.07); border-color: #C9A84C; }
+.dashboard-card h3 { color: #1B1A19; font-family: inherit; font-size: 14px; font-weight: 600; }
+.dashboard-card h3 i { color: #C9A84C; }
+.card-icon { width: 52px; height: 52px; font-size: 1.2rem; border-width: 1px; }
+.card-info h3 { color: #6B7280; font-size: 12px; letter-spacing: 0.05em; }
+.card-valor { color: #1B1A19; font-size: 1.5rem; font-weight: 700; }
+.card-info p { color: #9CA3AF; font-size: 12px; }
+.btn-filtro { background: #FFFFFF; border: 1px solid #D6D9DE; color: #4B5563; font-family: inherit; }
+.btn-filtro:hover,
+.btn-filtro.ativo { background: #FDF6E5; border-color: #C9A84C; color: #8A6520; }
+.tabela-wrapper { border: 1px solid #E3E5E8; }
+.tabela-vendas th { background: #F9FAFB; color: #6B7280; border-bottom: 1px solid #E3E5E8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.tabela-vendas td { color: #1B1A19; border-bottom: 1px solid #F0F1F3; }
+.tabela-vendas tr:hover td { background: #FAFAF8; }
+.badge-status.ativa { background: #EBF8F0; color: #2E8B57; border-color: #2E8B57; }
+.badge-status.pausada { background: #FFF8E5; color: #B8860B; border-color: #B8860B; }
+.badge-status.cancelada { background: #FEF2F2; color: #DC2626; border-color: #DC2626; }
+.badge-status.expirada { background: #F0F1F3; color: #6B7280; border-color: #9CA3AF; }
+.badge-plano.mensal { background: #FDF6E5; color: #8A6520; border-color: #C9A84C; }
+.badge-plano.semestral { background: #F3EEFD; color: #7B2FE0; border-color: #7B2FE0; }
+.badge-plano.anual { background: #EBEBEA; color: #1B1A19; border-color: #1B1A19; }
+.btn-acao.pausar { background: #FFF8E5; color: #B8860B; border-color: #B8860B; }
+.btn-acao.reativar { background: #EBF8F0; color: #2E8B57; border-color: #2E8B57; }
+.btn-acao.cancelar { background: #FEF2F2; color: #DC2626; border-color: #DC2626; }
+.sem-acao { color: #9CA3AF; }
+.sem-dados { color: #9CA3AF; }
 </style>

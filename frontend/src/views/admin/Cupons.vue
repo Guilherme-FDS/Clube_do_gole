@@ -1,6 +1,7 @@
 <template>
   <main class="cupons-container">
     <div class="container">
+      <BotaoVoltarAdmin />
       <div class="cupons-header">
         <h1 class="titulo-lg">Gerenciar Cupons de Desconto</h1>
         <p class="texto-corrido texto-centro">Controle os cupons de desconto do Clube do Gole</p>
@@ -117,6 +118,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCuponsAdminStore } from '@/stores/admin/cupons'
+import BotaoVoltarAdmin from '@/components/BotaoVoltarAdmin.vue'
 
 const router = useRouter()
 const cuponsStore = useCuponsAdminStore()
@@ -771,4 +773,75 @@ tbody tr:hover {
     padding: var(--espacamento-sm);
   }
 }
+
+/* ===== ERP LIGHT THEME (sobrescreve o tema escuro acima) ===== */
+.cupons-container {
+  background: #F4F5F7;
+  min-height: 100vh;
+  padding: 110px 0 60px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+.cupons-header { text-align: left; }
+.cupons-header .titulo-lg {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1B1A19;
+  text-align: left;
+}
+.cupons-header .titulo-lg::after { display: none; }
+.cupons-header p { color: #6B7280; font-size: 13px; text-align: left; }
+.btn-adicionar {
+  background: linear-gradient(135deg, #9E7A2E, #E2C06A);
+  color: #1B1A19;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.btn-adicionar::before { display: none; }
+.btn-adicionar:hover { transform: none; opacity: 0.88; box-shadow: none; }
+.tabela-wrapper {
+  background: #FFFFFF;
+  border: 1px solid #E3E5E8;
+  border-radius: 10px;
+  box-shadow: none;
+  padding: 0;
+}
+.tabela-wrapper::before { display: none; }
+thead { background: #F9FAFB; }
+th { color: #6B7280; font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid #E3E5E8; }
+td { color: #1B1A19; border-bottom: 1px solid #F0F1F3; font-size: 13px; }
+tbody tr:hover { background: #FAFAF8; transform: none; }
+.uso-disponivel { background: #EBF8F0; color: #2E8B57; border-color: #2E8B57; }
+.uso-esgotado { background: #FEF2F2; color: #DC2626; border-color: #DC2626; }
+.status-ativo { background: #EBF8F0; color: #2E8B57; border-color: #2E8B57; }
+.status-inativo { background: #F0F1F3; color: #6B7280; border-color: #9CA3AF; }
+.btn-ativar { background: #EBF8F0; color: #2E8B57; border-color: #2E8B57; }
+.btn-inativar { background: #FFF8E5; color: #B8860B; border-color: #B8860B; }
+.btn-editar { background: #FDF6E5; color: #8A6520; border-color: #C9A84C; }
+.btn-excluir { background: #FEF2F2; color: #DC2626; border-color: #DC2626; }
+.empty-state { color: #9CA3AF; }
+.empty-state i { color: #C9A84C; }
+.modal-content {
+  background: #FFFFFF;
+  border: 1px solid #E3E5E8;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(27, 26, 25, 0.2);
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+.modal-content::before { display: none; }
+.modal-content .titulo-md { color: #1B1A19; font-family: inherit; font-size: 17px; font-weight: 700; }
+.form-group label { color: #4B5563; font-size: 12px; font-weight: 600; }
+.input-cupom {
+  background: #FFFFFF;
+  border: 1px solid #D6D9DE;
+  color: #1B1A19;
+  font-family: inherit;
+}
+.input-cupom:focus { border-color: #C9A84C; box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15); }
+.btn-modal-salvar { background: linear-gradient(135deg, #9E7A2E, #E2C06A); color: #1B1A19; }
+.btn-modal-cancelar { background: #F0F1F3; color: #4B5563; border: 1px solid #E3E5E8; }
+.btn-modal-cancelar:hover { background: #E3E5E8; color: #1B1A19; }
 </style>

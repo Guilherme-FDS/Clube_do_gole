@@ -73,12 +73,12 @@ async def dashboard(db: AsyncSession) -> dict:
     # Produtos mais vendidos
     mais_vendidos = (await db.execute(
         select(
-            Produto.id, Produto.nome, Produto.tipo,
+            Produto.id, Produto.nome,
             func.sum(ItemVenda.quantidade).label("qtd"),
             func.sum(ItemVenda.valor_total).label("fat"),
         )
         .join(ItemVenda, ItemVenda.id_produto == Produto.id)
-        .group_by(Produto.id, Produto.nome, Produto.tipo)
+        .group_by(Produto.id, Produto.nome)
         .order_by(func.sum(ItemVenda.quantidade).desc())
         .limit(10)
     )).all()
@@ -96,15 +96,14 @@ async def dashboard(db: AsyncSession) -> dict:
         .limit(12)
     )).all()
 
-    # Resumo por tipo de produto
+    # Resumo por plano (mensal/semestral/anual)
     resumo_tipo_raw = (await db.execute(
         select(
-            Produto.tipo,
+            ItemVenda.plano.label("tipo"),
             func.sum(ItemVenda.quantidade).label("qtd"),
             func.sum(ItemVenda.valor_total).label("fat"),
         )
-        .join(ItemVenda, ItemVenda.id_produto == Produto.id)
-        .group_by(Produto.tipo)
+        .group_by(ItemVenda.plano)
     )).all()
 
     # Últimas vendas
@@ -126,7 +125,7 @@ async def dashboard(db: AsyncSession) -> dict:
             {
                 "id": r.id,
                 "nome": r.nome or f"Produto {r.id}",
-                "tipo": r.tipo or "",
+                "tipo": "",
                 "quantidade": int(r.qtd or 0),
                 "faturamento": float(r.fat or 0),
             }
@@ -152,13 +151,13 @@ async def dashboard(db: AsyncSession) -> dict:
                 "data": v.data.isoformat(),
                 "valor_total": float(v.valor_total),
                 "nome_produto": v.itens[0].produto.nome if v.itens and v.itens[0].produto else "—",
-                "tipo_produto": v.itens[0].produto.tipo if v.itens and v.itens[0].produto else "—",
+                "tipo_produto": v.itens[0].plano if v.itens else "—",
                 "quantidade": sum(i.quantidade for i in v.itens),
                 "itens": [
                     {
                         "id_produto": i.id_produto,
                         "nome_produto": i.produto.nome if i.produto else "—",
-                        "tipo_produto": i.produto.tipo if i.produto else "—",
+                        "tipo_produto": i.plano,
                         "quantidade": i.quantidade,
                         "plano": i.plano,
                         "valor_unitario": float(i.valor_unitario),

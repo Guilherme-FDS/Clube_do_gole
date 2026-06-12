@@ -22,23 +22,25 @@ async def _movimentar(db: AsyncSession, id_produto: int, tipo: str, quantidade: 
     if not produto:
         raise ValueError("Produto não encontrado.")
 
-    saldo_anterior = produto.estoque
+    saldo_anterior = await estoque_repo.saldo_atual(db, id_produto)
 
     if tipo == "entrada":
-        produto.estoque += quantidade
+        saldo_posterior = saldo_anterior + quantidade
     elif tipo == "saida":
-        if produto.estoque < quantidade:
+        if saldo_anterior < quantidade:
             raise ValueError("Estoque insuficiente.")
-        produto.estoque -= quantidade
+        saldo_posterior = saldo_anterior - quantidade
     elif tipo == "ajuste":
-        produto.estoque = quantidade
+        saldo_posterior = quantidade
+    else:
+        raise ValueError("Tipo de movimentação inválido.")
 
     await estoque_repo.registrar(db, {
         "id_produto": id_produto,
         "tipo": tipo,
         "quantidade": quantidade,
         "saldo_anterior": saldo_anterior,
-        "saldo_posterior": produto.estoque,
+        "saldo_posterior": saldo_posterior,
         "motivo": motivo,
         "id_venda": id_venda,
     })
@@ -47,7 +49,7 @@ async def _movimentar(db: AsyncSession, id_produto: int, tipo: str, quantidade: 
         "id_produto": id_produto,
         "tipo": tipo,
         "saldo_anterior": saldo_anterior,
-        "saldo_posterior": produto.estoque,
+        "saldo_posterior": saldo_posterior,
     }
 
 

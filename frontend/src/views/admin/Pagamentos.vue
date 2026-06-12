@@ -1,6 +1,7 @@
 <!-- views/admin/Pagamentos.vue -->
 <template>
   <div class="dashboard-container">
+    <BotaoVoltarAdmin />
     <h1 class="dashboard-titulo fade-in" :class="{ visible: fadeInVisible }">
       <i class="fas fa-credit-card"></i> Pagamentos
     </h1>
@@ -152,6 +153,7 @@
 import { ref, computed, onMounted } from 'vue'
 import api from '@/services/api'
 import { formatarMoeda, formatarDataHora } from '@/utils/formatters'
+import BotaoVoltarAdmin from '@/components/BotaoVoltarAdmin.vue'
 
 const pagamentos = ref([])
 const carregando = ref(true)
@@ -433,4 +435,51 @@ onMounted(async () => {
   .filtros-row { flex-direction: column; align-items: flex-start; }
   .input-busca { min-width: 100%; }
 }
+
+/* ===== ERP LIGHT THEME (sobrescreve o tema escuro acima) ===== */
+.dashboard-container {
+  max-width: none;
+  margin: 80px 0 0;
+  padding: 30px max(24px, calc((100% - 1100px) / 2)) 60px;
+  background: #F4F5F7;
+  min-height: 100vh;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+.dashboard-titulo { font-family: 'DM Sans', 'Segoe UI', sans-serif; font-size: 22px; color: #1B1A19; text-align: left; font-weight: 700; margin-bottom: 2px; }
+.dashboard-titulo i { color: #C9A84C; font-size: 18px; margin-right: 6px; }
+.dashboard-subtitulo { font-family: inherit; font-size: 13px; color: #6B7280; text-align: left; margin-bottom: 24px; }
+.dashboard-card,
+.card-estatistica { background: #FFFFFF; border: 1px solid #E3E5E8; border-radius: 10px; box-shadow: none; }
+.dashboard-card:hover,
+.card-estatistica:hover { transform: none; box-shadow: 0 4px 14px rgba(27, 26, 25, 0.07); border-color: #C9A84C; }
+.dashboard-card h3 { color: #1B1A19; font-family: inherit; font-size: 14px; font-weight: 600; }
+.dashboard-card h3 i { color: #C9A84C; }
+.card-icon { width: 52px; height: 52px; font-size: 1.2rem; border-width: 1px; }
+.card-info h3 { color: #6B7280; font-size: 12px; letter-spacing: 0.05em; }
+.card-valor { color: #1B1A19; font-size: 1.5rem; font-weight: 700; }
+.card-info p { color: #9CA3AF; font-size: 12px; }
+.btn-filtro { background: #FFFFFF; border: 1px solid #D6D9DE; color: #4B5563; font-family: inherit; }
+.btn-filtro:hover,
+.btn-filtro.ativo { background: #FDF6E5; border-color: #C9A84C; color: #8A6520; }
+.input-busca { background: #FFFFFF; border: 1px solid #D6D9DE; color: #1B1A19; font-family: inherit; }
+.input-busca:focus { border-color: #C9A84C; box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15); }
+.tabela-wrapper { border: 1px solid #E3E5E8; }
+.tabela-vendas th { background: #F9FAFB; color: #6B7280; border-bottom: 1px solid #E3E5E8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.tabela-vendas td { color: #1B1A19; border-bottom: 1px solid #F0F1F3; }
+.tabela-vendas tr:hover td { background: #FAFAF8; }
+.id-badge { background: #F0F1F3; color: #4B5563; }
+.link-venda { color: #8A6520; }
+.valor-cell { color: #1B1A19; }
+.sem-dado { color: #9CA3AF; }
+.gateway-id { color: #6B7280; }
+.badge-metodo.cartao_credito { background: #EEF4FF; color: #3B6FD4; border-color: #3B6FD4; }
+.badge-metodo.pix { background: #E8F7F4; color: #0E8C75; border-color: #0E8C75; }
+.badge-metodo.boleto { background: #FFF4E5; color: #C07010; border-color: #C07010; }
+.badge-metodo.outro { background: #F0F1F3; color: #6B7280; border-color: #9CA3AF; }
+.badge-status.aprovado { background: #EBF8F0; color: #2E8B57; border-color: #2E8B57; }
+.badge-status.pendente { background: #FFF8E5; color: #B8860B; border-color: #B8860B; }
+.badge-status.recusado { background: #FEF2F2; color: #DC2626; border-color: #DC2626; }
+.badge-status.estornado { background: #EEF4FF; color: #3B6FD4; border-color: #3B6FD4; }
+.estado-vazio { color: #9CA3AF; }
+.estado-vazio i { color: #C9A84C; }
 </style>

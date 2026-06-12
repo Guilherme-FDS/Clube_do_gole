@@ -1,307 +1,216 @@
 <template>
-  <main class="admin-container">
-    <div class="container">
-      <h1 class="admin-title titulo-lg">Painel Administrativo</h1>
-      <p class="admin-subtitle texto-corrido texto-centro">
-        Gerencie todas as áreas do Clube do Gole
-      </p>
+  <main class="admin-hub">
+    <div class="hub-container">
 
-      <div class="admin-grid">
+      <header class="hub-header">
+        <div>
+          <h1 class="hub-title">Painel Administrativo</h1>
+          <p class="hub-subtitle">Gestão do Clube do Gole</p>
+        </div>
+        <span class="hub-data">{{ dataHoje }}</span>
+      </header>
 
-        <!-- CUPONS -->
+      <div class="hub-grid">
         <router-link
-          to="/admin/cupons"
-          class="admin-card fade-in"
-          :class="{ visible: fadeInVisible }"
-          @click="handleCardClick"
+          v-for="mod in modulos"
+          :key="mod.rota"
+          :to="mod.rota"
+          class="hub-card"
         >
-          <div class="card-icon">
-            <i class="fas fa-tags"></i>
-            <span class="card-badge" v-if="stats.cuponsAtivos > 0">
-              {{ stats.cuponsAtivos }} Ativos
-            </span>
+          <div class="card-icone" :style="{ background: mod.bg, color: mod.cor }">
+            <i :class="mod.icone"></i>
           </div>
-          <h3 class="card-title">Gerenciar Cupons</h3>
-          <p class="card-description">
-            Controle cupons de desconto, usos disponíveis e porcentagens
-          </p>
-          <div class="card-arrow">
-            <i class="fas fa-chevron-right"></i>
+          <div class="card-texto">
+            <h3>{{ mod.titulo }}</h3>
+            <p>{{ mod.descricao }}</p>
           </div>
+          <i class="fas fa-chevron-right card-seta"></i>
         </router-link>
-
-        <!-- VENDAS -->
-        <router-link
-          to="/admin/vendas"
-          class="admin-card fade-in"
-          :class="{ visible: fadeInVisible }"
-          @click="handleCardClick"
-        >
-          <div class="card-icon">
-            <i class="fas fa-chart-line"></i>
-            <span class="card-badge">Relatórios</span>
-          </div>
-          <h3 class="card-title">Dashboard de Vendas</h3>
-          <p class="card-description">
-            Relatórios completos de vendas, produtos mais vendidos e faturamento
-          </p>
-          <div class="card-arrow">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </router-link>
-
-        <!-- PRODUTOS -->
-        <router-link
-          to="/admin/produtos"
-          class="admin-card fade-in"
-          :class="{ visible: fadeInVisible }"
-          @click="handleCardClick"
-        >
-          <div class="card-icon">
-            <i class="fas fa-wine-bottle"></i>
-          </div>
-          <h3 class="card-title">Gerenciar Produtos</h3>
-          <p class="card-description">
-            Adicione, edite ou remova produtos do catálogo de bebidas
-          </p>
-          <div class="card-arrow">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </router-link>
-
-        <!-- PAGAMENTOS -->
-        <router-link
-          to="/admin/pagamentos"
-          class="admin-card fade-in"
-          :class="{ visible: fadeInVisible }"
-          @click="handleCardClick"
-        >
-          <div class="card-icon">
-            <i class="fas fa-credit-card"></i>
-          </div>
-          <h3 class="card-title">Pagamentos</h3>
-          <p class="card-description">
-            Histórico de transações, aprovações, recusas e status do gateway
-          </p>
-          <div class="card-arrow">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </router-link>
-
-        <!-- ESTOQUE -->
-        <router-link
-          to="/admin/estoque"
-          class="admin-card fade-in"
-          :class="{ visible: fadeInVisible }"
-          @click="handleCardClick"
-        >
-          <div class="card-icon">
-            <i class="fas fa-boxes"></i>
-          </div>
-          <h3 class="card-title">Estoque</h3>
-          <p class="card-description">
-            Controle entradas, saídas, movimentações e saldo de produtos
-          </p>
-          <div class="card-arrow">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </router-link>
-
       </div>
+
     </div>
   </main>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const fadeInVisible = ref(false)
-const stats = ref({ cuponsAtivos: 0 })
+const dataHoje = new Date().toLocaleDateString('pt-BR', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+})
 
-const carregarEstatisticas = async () => {
-  // futuramente: /api/admin/stats
-}
+const modulos = [
+  {
+    rota: '/admin/vendas',
+    icone: 'fas fa-chart-line',
+    titulo: 'Dashboard de Vendas',
+    descricao: 'Faturamento, relatórios e produtos mais vendidos',
+    bg: '#EEF4FF', cor: '#3B6FD4'
+  },
+  {
+    rota: '/admin/produtos',
+    icone: 'fas fa-wine-bottle',
+    titulo: 'Produtos & Planos',
+    descricao: 'Catálogo, planos de assinatura e preços',
+    bg: '#FDF6E5', cor: '#A8842C'
+  },
+  {
+    rota: '/admin/assinaturas',
+    icone: 'fas fa-sync-alt',
+    titulo: 'Assinaturas',
+    descricao: 'Assinaturas ativas, pausadas e ciclos',
+    bg: '#F3EEFD', cor: '#7B2FE0'
+  },
+  {
+    rota: '/admin/cupons',
+    icone: 'fas fa-tags',
+    titulo: 'Cupons',
+    descricao: 'Descontos, usos disponíveis e validade',
+    bg: '#EBF8F0', cor: '#2E8B57'
+  },
+  {
+    rota: '/admin/pagamentos',
+    icone: 'fas fa-credit-card',
+    titulo: 'Pagamentos',
+    descricao: 'Transações, aprovações e status do gateway',
+    bg: '#FDEEEE', cor: '#C0504D'
+  },
+  {
+    rota: '/admin/estoque',
+    icone: 'fas fa-boxes',
+    titulo: 'Estoque',
+    descricao: 'Entradas, saídas e movimentações',
+    bg: '#EDF7FA', cor: '#2A7F8E'
+  },
+]
 
-const handleCardClick = () => {
-  // reservado caso queira loading visual depois
-}
-
-onMounted(async () => {
+onMounted(() => {
   if (!authStore.logado || authStore.tipo !== 'admin') {
     router.push('/login?redirect=/admin')
-    return
   }
-
-  await carregarEstatisticas()
-
-  setTimeout(() => {
-    fadeInVisible.value = true
-  }, 100)
 })
 </script>
 
 <style scoped>
-.admin-container {
-  padding: 140px 0 var(--espacamento-xl);
-  background: var(--gradiente-hero);
+.admin-hub {
   min-height: 100vh;
+  background: #F4F5F7;
+  padding: 110px 0 60px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
 }
 
-.admin-title {
-  color: var(--cor-dourado);
-  margin-bottom: var(--espacamento-sm);
-  position: relative;
-  text-align: center;
-}
-
-.admin-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 3px;
-  background: var(--gradiente-botao);
-  border-radius: var(--borda-radius-sm);
-}
-
-.admin-subtitle {
-  margin-bottom: var(--espacamento-lg);
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-}
-
-.admin-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: var(--espacamento-lg);
-  max-width: 1200px;
+.hub-container {
+  max-width: 1080px;
   margin: 0 auto;
+  padding: 0 24px;
 }
 
-.admin-card {
-  background: var(--cor-fundo-secundario);
-  border-radius: var(--borda-radius-lg);
-  padding: var(--espacamento-lg);
+/* Header */
+.hub-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #E3E5E8;
+}
+
+.hub-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1B1A19;
+  margin: 0 0 2px;
+  letter-spacing: -0.01em;
+}
+
+.hub-subtitle {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 0;
+}
+
+.hub-data {
+  font-size: 13px;
+  color: #9CA3AF;
+  text-transform: capitalize;
+}
+
+/* Grid de módulos */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.hub-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E3E5E8;
+  border-radius: 10px;
+  padding: 18px 16px;
   text-decoration: none;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-  display: block;
-  height: 100%;
-  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
-.admin-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--gradiente-botao);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
+.hub-card:hover {
+  border-color: #C9A84C;
+  box-shadow: 0 4px 14px rgba(27, 26, 25, 0.07);
+  transform: translateY(-2px);
 }
 
-.admin-card:hover::before {
-  transform: scaleX(1);
+.card-icone {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
 }
 
-.admin-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--sombra-destaque);
-  border-color: var(--cor-dourado);
-}
+.card-texto { flex: 1; min-width: 0; }
 
-.card-icon {
-  position: relative;
-  margin-bottom: var(--espacamento-md);
-  text-align: center;
-}
-
-.card-icon i {
-  font-size: 3.5rem;
-  color: var(--cor-dourado);
-  transition: all 0.3s ease;
-}
-
-.admin-card:hover .card-icon i {
-  transform: scale(1.1);
-  color: var(--cor-roxo-principal);
-}
-
-.card-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: var(--gradiente-botao);
-  color: var(--cor-fundo);
-  padding: 0.5rem 1rem;
-  border-radius: var(--borda-radius-lg);
-  font-size: 0.75rem;
+.card-texto h3 {
+  font-size: 14px;
   font-weight: 600;
+  color: #1B1A19;
+  margin: 0 0 3px;
 }
 
-.card-title {
-  font-family: var(--fonte-secundaria);
-  font-size: 1.5rem;
-  color: var(--cor-dourado);
-  margin-bottom: var(--espacamento-sm);
-  text-align: center;
-  font-weight: 600;
+.card-texto p {
+  font-size: 12px;
+  color: #6B7280;
+  margin: 0;
+  line-height: 1.4;
 }
 
-.card-description {
-  color: var(--cor-texto-secundario);
-  text-align: center;
-  line-height: 1.6;
-  margin-bottom: var(--espacamento-md);
+.card-seta {
+  font-size: 11px;
+  color: #C4C8CE;
+  transition: color 0.15s, transform 0.15s;
 }
 
-.card-arrow {
-  text-align: center;
-  color: var(--cor-dourado);
-  font-size: 1.25rem;
-  transition: all 0.3s ease;
+.hub-card:hover .card-seta {
+  color: #C9A84C;
+  transform: translateX(3px);
 }
 
-.admin-card:hover .card-arrow {
-  transform: translateX(5px);
-  color: var(--cor-roxo-principal);
+/* Responsivo */
+@media (max-width: 900px) {
+  .hub-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* animação */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.admin-card:nth-child(1) { transition-delay: 0s; }
-.admin-card:nth-child(2) { transition-delay: 0.1s; }
-.admin-card:nth-child(3) { transition-delay: 0.2s; }
-.admin-card:nth-child(4) { transition-delay: 0.3s; }
-.admin-card:nth-child(5) { transition-delay: 0.4s; }
-
-/* responsivo */
-@media (max-width: 768px) {
-  .admin-grid {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 600px) {
+  .hub-grid { grid-template-columns: 1fr; }
+  .hub-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .admin-hub { padding-top: 130px; }
 }
 </style>

@@ -105,7 +105,7 @@ async def pedidos_do_usuario(db: AsyncSession, usuario_id: int) -> list[dict]:
                 {
                     "id_produto":           i.id_produto,
                     "nome_produto":         i.produto.nome if i.produto else "Produto não encontrado",
-                    "imagem":               i.produto.imagem if i.produto else None,
+                    "imagem":               None,
                     "quantidade":           i.quantidade,
                     "plano":                i.plano,
                     "valor_total":          float(i.valor_total),

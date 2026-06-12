@@ -193,4 +193,38 @@ onMounted(async () => {
   border: 1px solid rgba(244,67,54,0.3);
   color: #f44336;
 }
+
+/* ===== ERP LIGHT THEME (sobrescreve o tema escuro acima) ===== */
+.editar-cupom-container {
+  background: #F4F5F7;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+.page-header { text-align: left; max-width: 560px; margin: 0 auto var(--espacamento-lg); }
+.page-header :deep(.titulo-lg),
+.page-header h1 {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 700;
+  color: #1B1A19 !important;
+  text-align: left;
+}
+.page-header :deep(p) { color: #6B7280 !important; font-size: 13px; text-align: left; }
+.form-card {
+  background: #FFFFFF;
+  border: 1px solid #E3E5E8;
+  border-radius: 12px;
+  box-shadow: none;
+}
+.form-card::before { display: none; }
+.form-group label { color: #4B5563; font-size: 12px; }
+.form-input {
+  background: #FFFFFF;
+  border: 1px solid #D6D9DE;
+  color: #1B1A19;
+  font-family: inherit;
+}
+.form-input:focus { border-color: #C9A84C; box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15); }
+.form-hint { color: #9CA3AF; }
+.flash-sucesso { background: #EBF8F0; border-color: #2E8B57; color: #2E8B57; }
+.flash-erro { background: #FEF2F2; border-color: #DC2626; color: #DC2626; }
 </style>

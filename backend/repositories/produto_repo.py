@@ -5,7 +5,6 @@ from database.models import Produto
 
 async def listar(db: AsyncSession, tipo: str | None = None) -> list[Produto]:
     q = select(Produto).where(Produto.ativo == True)
-    if tipo: q = q.where(Produto.tipo == tipo.lower())
     return list((await db.scalars(q.order_by(Produto.id))).all())
 
 async def listar_admin(db: AsyncSession) -> list[Produto]:
