@@ -105,25 +105,51 @@ class EnderecoOut(BaseModel):
 
 class ProdutoIn(BaseModel):
     nome: str = Field(min_length=1, max_length=200)
-    tipo: Optional[str] = Field(default=None, max_length=50)
     descricao: Optional[str] = None
-    preco: Decimal = Field(ge=0, decimal_places=2)
-    imagem: Optional[str] = None
-    estoque: int = Field(ge=0, default=0)
     ativo: bool = True
 
 
 class ProdutoOut(BaseModel):
     id: int
     nome: str
-    tipo: Optional[str] = None
     descricao: Optional[str] = None
-    preco: Decimal
-    imagem: Optional[str] = None
-    estoque: int
     ativo: bool
     criado_em: datetime
     atualizado_em: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# ── Planos de Assinatura ───────────────────────────────────────────────────────
+
+class PlanoIn(BaseModel):
+    recorrencia: Plano
+    preco_base: Decimal = Field(gt=0, decimal_places=2)
+    desconto_pct: Decimal = Field(ge=0, le=100, decimal_places=2, default=Decimal("0"))
+    ativo: bool = True
+
+
+class PlanoOut(BaseModel):
+    id: int
+    id_produto: int
+    recorrencia: str
+    preco_base: Decimal
+    desconto_pct: Decimal
+    preco_total: Decimal
+    economia: Decimal
+    ativo: bool
+    criado_em: datetime
+    atualizado_em: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ProdutoComPlanosOut(BaseModel):
+    id: int
+    nome: str
+    descricao: Optional[str] = None
+    ativo: bool
+    planos: list[PlanoOut] = []
 
     model_config = {"from_attributes": True}
 
@@ -168,7 +194,7 @@ class ValidarCupomOut(BaseModel):
 
 class AdicionarItemIn(BaseModel):
     produto_id: int = Field(gt=0)
-    plano: Plano = "mensal"
+    plano_id: int = Field(gt=0)
     quantidade: int = Field(ge=1, default=1)
 
 
@@ -180,6 +206,7 @@ class AtualizarQuantidadeIn(BaseModel):
 class ItemCarrinhoOut(BaseModel):
     id: int
     id_produto: Optional[int] = None
+    id_plano: Optional[int] = None
     nome_produto: str
     descricao: Optional[str] = None
     plano: str
@@ -206,6 +233,7 @@ class FinalizarIn(BaseModel):
 
 class ItemVendaOut(BaseModel):
     id_produto: Optional[int] = None
+    id_plano: Optional[int] = None
     nome_produto: str
     quantidade: int
     plano: str

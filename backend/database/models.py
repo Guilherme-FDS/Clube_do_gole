@@ -86,19 +86,34 @@ class Produto(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(200), nullable=False)
-    tipo: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     descricao: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    preco: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
-    imagem: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    estoque: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
     atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
+    planos: Mapped[list["PlanoAssinatura"]] = relationship(back_populates="produto", cascade="all, delete-orphan")
     itens_carrinho: Mapped[list["ItemCarrinho"]] = relationship(back_populates="produto")
     itens_venda: Mapped[list["ItemVenda"]] = relationship(back_populates="produto")
     movimentacoes: Mapped[list["MovimentacaoEstoque"]] = relationship(back_populates="produto")
     assinaturas: Mapped[list["Assinatura"]] = relationship(back_populates="produto")
+
+
+class PlanoAssinatura(Base):
+    __tablename__ = "planos_assinatura"
+    __table_args__ = (
+        CheckConstraint("recorrencia IN ('mensal', 'semestral', 'anual')", name="ck_planos_recorrencia"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id_produto: Mapped[int] = mapped_column(ForeignKey("produtos.id", ondelete="CASCADE"), nullable=False, index=True)
+    recorrencia: Mapped[str] = mapped_column(String(20), nullable=False)
+    preco_base: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    desconto_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+    ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+    atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+
+    produto: Mapped["Produto"] = relationship(back_populates="planos")
 
 
 class Cupom(Base):
@@ -129,6 +144,7 @@ class ItemCarrinho(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuarios_clientes.id", ondelete="CASCADE"), nullable=False, index=True)
     id_produto: Mapped[Optional[int]] = mapped_column(ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True)
+    id_plano: Mapped[Optional[int]] = mapped_column(ForeignKey("planos_assinatura.id", ondelete="SET NULL"), nullable=True)
     nome_produto: Mapped[str] = mapped_column(String(200), nullable=False)
     descricao: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     plano: Mapped[str] = mapped_column(String(20), nullable=False, default="mensal")
@@ -140,6 +156,7 @@ class ItemCarrinho(Base):
 
     produto: Mapped[Optional["Produto"]] = relationship(back_populates="itens_carrinho")
     usuario: Mapped["UsuarioCliente"] = relationship()
+    plano_assinatura: Mapped[Optional["PlanoAssinatura"]] = relationship()
 
 
 class Venda(Base):
@@ -180,6 +197,7 @@ class ItemVenda(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_venda: Mapped[int] = mapped_column(ForeignKey("vendas.id", ondelete="CASCADE"), nullable=False, index=True)
     id_produto: Mapped[Optional[int]] = mapped_column(ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True)
+    id_plano: Mapped[Optional[int]] = mapped_column(ForeignKey("planos_assinatura.id", ondelete="SET NULL"), nullable=True)
     nome_produto: Mapped[str] = mapped_column(String(200), nullable=False)
     plano: Mapped[str] = mapped_column(String(20), nullable=False, default="mensal")
     quantidade: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -188,6 +206,7 @@ class ItemVenda(Base):
 
     venda: Mapped["Venda"] = relationship(back_populates="itens")
     produto: Mapped[Optional["Produto"]] = relationship(back_populates="itens_venda")
+    plano_assinatura: Mapped[Optional["PlanoAssinatura"]] = relationship()
 
 
 class Assinatura(Base):
@@ -201,6 +220,7 @@ class Assinatura(Base):
     id_cliente: Mapped[int] = mapped_column(ForeignKey("usuarios_clientes.id", ondelete="CASCADE"), nullable=False, index=True)
     id_venda_origem: Mapped[Optional[int]] = mapped_column(ForeignKey("vendas.id", ondelete="SET NULL"), nullable=True)
     id_produto: Mapped[Optional[int]] = mapped_column(ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True)
+    id_plano: Mapped[Optional[int]] = mapped_column(ForeignKey("planos_assinatura.id", ondelete="SET NULL"), nullable=True)
     plano: Mapped[str] = mapped_column(String(20), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="ativa")
     data_inicio: Mapped[date] = mapped_column(Date, nullable=False)
@@ -212,6 +232,7 @@ class Assinatura(Base):
     cliente: Mapped["UsuarioCliente"] = relationship(back_populates="assinaturas")
     venda_origem: Mapped[Optional["Venda"]] = relationship(back_populates="assinatura")
     produto: Mapped[Optional["Produto"]] = relationship(back_populates="assinaturas")
+    plano_assinatura: Mapped[Optional["PlanoAssinatura"]] = relationship()
     pagamentos: Mapped[list["Pagamento"]] = relationship(back_populates="assinatura")
 
 
@@ -254,18 +275,6 @@ class MovimentacaoEstoque(Base):
     criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
 
     produto: Mapped["Produto"] = relationship(back_populates="movimentacoes")
-
-
-class DescontoPlan(Base):
-    __tablename__ = "descontos_plano"
-    __table_args__ = (
-        CheckConstraint("plano IN ('mensal', 'semestral', 'anual')", name="ck_descontos_plano"),
-    )
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    plano: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
-    desconto: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
-    atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
 
 class PasswordResetToken(Base):
