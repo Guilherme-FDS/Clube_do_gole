@@ -25,7 +25,7 @@ async def contador(payload: dict = Depends(login_required), db: AsyncSession = D
 
 @router.post("/adicionar")
 async def adicionar(body: AdicionarItemIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
-    sucesso, mensagem = await carrinho_service.adicionar(db, payload["id"], body.produto_id, body.plano, body.quantidade)
+    sucesso, mensagem = await carrinho_service.adicionar(db, payload["id"], body.produto_id, body.plano_id, body.quantidade)
     if not sucesso:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=mensagem)
     return {"message": mensagem, "count": await carrinho_repo.contador(db, payload["id"])}

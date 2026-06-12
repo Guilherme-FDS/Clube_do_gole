@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 /* ===== VARIÁVEIS CSS — CLUBE DO GOLE ===== */
 :root {
@@ -33,8 +33,8 @@
   --borda-radius-md: 12px;
   --borda-radius-lg: 20px;
   --borda-radius-xl: 30px;
-  --fonte-principal: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-  --fonte-ui: 'Inter', 'Helvetica Neue', sans-serif;
+  --fonte-principal: 'Cormorant Garamond', Georgia, serif;
+  --fonte-ui: 'DM Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* ===== RESET ===== */
@@ -47,6 +47,10 @@ body {
   overflow-x: hidden;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+body.pagina-clara {
+  background-color: #ffffff;
+  color: var(--cor-texto-claro-bg);
 }
 
 .container {
@@ -92,8 +96,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1px solid var(--cor-dourado);
-  color: var(--cor-dourado);
+  border: 1px solid var(--cor-roxo);
+  color: var(--cor-roxo);
   padding: 0.35rem 1rem;
   border-radius: var(--borda-radius-xl);
   font-family: var(--fonte-ui);
@@ -225,7 +229,7 @@ body {
 }
 .btn-modern {
   background: var(--gradiente-botao);
-  color: var(--cor-fundo);
+  color: #1b1a19;
   border: none;
   padding: 0.875rem 2rem;
   border-radius: var(--borda-radius-sm);
@@ -265,7 +269,7 @@ body {
 /* ===== HERO ===== */
 .hero {
   position: relative;
-  min-height: 88vh;
+  min-height: 70vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -905,7 +909,7 @@ body {
 .produto-card:hover .produto-imagem img { transform: scale(1.04); }
 .badge-premium {
   position: absolute; top: 0.875rem; right: 0.875rem;
-  background: var(--gradiente-botao); color: var(--cor-fundo);
+  background: var(--gradiente-botao); color: #1b1a19;
   padding: 0.2rem 0.625rem; border-radius: var(--borda-radius-lg);
   font-size: 0.6875rem; font-weight: 700; letter-spacing: 1px; font-family: var(--fonte-ui); z-index: 2;
 }
@@ -920,7 +924,7 @@ body {
   font-weight: 500; font-size: 0.875rem; text-decoration: none;
   transition: all 0.2s ease; display: inline-block; font-family: var(--fonte-ui);
 }
-.btn-produto:hover { background: var(--gradiente-botao); color: var(--cor-fundo); border-color: transparent; transform: translateY(-1px); }
+.btn-produto:hover { background: var(--gradiente-botao); color: #1b1a19; border-color: transparent; transform: translateY(-1px); }
 
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 1024px) {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { ver, adicionar, remover, atualizarQtd, contador } from '@/services/carrinho'
+import { ver, adicionar, remover, atualizarQtd } from '@/services/carrinho'
 
 export const useCarrinhoStore = defineStore('carrinho', () => {
   const itens   = ref([])
@@ -23,7 +23,7 @@ export const useCarrinhoStore = defineStore('carrinho', () => {
   async function buscar() {
     try {
       const token = localStorage.getItem('token')
-      if (!token) {          // ← adiciona isso
+      if (!token) {
         itens.value = []
         total.value = 0
         count.value = 0
@@ -36,9 +36,9 @@ export const useCarrinhoStore = defineStore('carrinho', () => {
     } catch {}
   }
 
-  async function add(produto_id, plano, quantidade = 1) {
+  async function add(produto_id, plano_id, quantidade = 1) {
     _ensureGuest()
-    const { data } = await adicionar({ produto_id, plano, quantidade })
+    const { data } = await adicionar({ produto_id, plano_id, quantidade })
     count.value = data.count
     await buscar()
     return data

@@ -3,7 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated, Optional
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -205,6 +205,7 @@ class AtualizarQuantidadeIn(BaseModel):
 
 class ItemCarrinhoOut(BaseModel):
     id: int
+    id_carrinho: int = 0
     id_produto: Optional[int] = None
     id_plano: Optional[int] = None
     nome_produto: str
@@ -214,6 +215,11 @@ class ItemCarrinhoOut(BaseModel):
     valor_unitario: Decimal
     valor_total: Decimal
     status: str
+
+    @model_validator(mode='after')
+    def set_id_carrinho(self):
+        self.id_carrinho = self.id
+        return self
 
     model_config = {"from_attributes": True}
 
@@ -225,7 +231,7 @@ class CarrinhoOut(BaseModel):
 
 class FinalizarIn(BaseModel):
     ids: list[int] = Field(min_length=1)
-    cupom: str = ""
+    cupom: Optional[str] = None
     desconto_cupom: float = Field(ge=0, le=100, default=0.0)
 
 

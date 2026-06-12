@@ -1,139 +1,110 @@
 <template>
   <div class="produto-container">
-    <!-- Produto Principal -->
+
+    <!-- HERO -->
     <div class="produto-hero">
-      <!-- COLUNA DA IMAGEM -->
       <div class="produto-imagem">
-        <img :src="produto.imagem || '/img/sem_imagem.png'" :alt="produto.nome" class="imagem-principal-premium">
-        <div v-if="produto.estoque <= 0" class="badge-esgotado">Esgotado</div>
-        <div v-else-if="produto.estoque <= 5" class="badge-estoque">Últimas unidades!</div>
+        <img :src="strapiImagem || '/img/sem_imagem.png'" :alt="produto.nome" class="imagem-principal">
+        <span class="badge-surpresa">✦ Seleção Surpresa</span>
       </div>
 
-      <!-- COLUNA DAS INFORMAÇÕES -->
       <div class="produto-info">
+        <span class="section-badge">Assinatura Premium</span>
         <h1 class="titulo-produto">{{ produto.nome }}</h1>
         <p class="descricao-produto">{{ produto.descricao }}</p>
 
-        <div class="produto-info-linha">
-          <div class="info-estoque">
-            <i class="fas fa-box"></i>
-            <span>{{ produto.estoque }} unidades disponíveis</span>
-          </div>
-
-          <div class="preco-base">
-            <span class="preco-original">{{ formatarMoeda(produto.preco) }}</span>
-            <span class="periodo">/mês</span>
-          </div>
-
-          <div class="quantidade-group">
-            <label class="quantidade-label">Quantidade:</label>
-            <div class="quantidade-controles">
-              <button type="button" class="btn-quantidade" @click="alterarQuantidade(-1)" :disabled="produto.estoque <= 0">
-                <i class="fas fa-minus"></i>
-              </button>
-              <input type="number" v-model.number="quantidade" min="1" :max="produto.estoque" class="quantidade-input">
-              <button type="button" class="btn-quantidade" @click="alterarQuantidade(1)" :disabled="quantidade >= produto.estoque || produto.estoque <= 0">
-                <i class="fas fa-plus"></i>
-              </button>
-            </div>
-          </div>
+        <div class="pills-row">
+          <span class="pill"><span class="pill-dot"></span>Curadoria especializada</span>
+          <span class="pill"><span class="pill-dot"></span>2 rótulos por mês</span>
+          <span class="pill"><span class="pill-dot"></span>Cancele quando quiser</span>
         </div>
+
+        <div class="preco-bloco" v-if="planoMensal">
+          <span class="preco-valor">{{ formatarMoeda(planoMensal.preco_base) }}</span>
+          <span class="preco-per">/mês · 2 rótulos premium</span>
+        </div>
+
+        <button class="btn-modern" @click="scrollToPlanos">Escolher Plano ↓</button>
       </div>
     </div>
 
-    <!-- SEÇÃO DE PLANOS -->
-    <div class="planos-section">
-      <h2 class="titulo-planos">Escolha seu plano</h2>
-      <p class="subtitulo-planos">Economize mais com planos de longo prazo</p>
+    <!-- PLANOS -->
+    <section class="planos-section" id="planos">
+      <div class="planos-header">
+        <span class="section-badge section-badge-escuro">Nossas Assinaturas</span>
+        <h2 class="titulo-lg titulo-claro">Escolha seu <span class="dourado-escuro">Plano</span></h2>
+        <p class="planos-sub">Você sabe o nível. A surpresa é nossa.</p>
+      </div>
 
-      <div class="planos-grid">
-        <!-- Plano Mensal -->
-        <div class="plano-card" :class="{ selecionado: planoSelecionado === 'mensal' }">
-          <div class="plano-header">
-            <h3>Mensal</h3>
-            <span class="plano-badge popular">Mais Popular</span>
-          </div>
-          <div class="plano-preco">
-            <span class="valor">{{ formatarMoeda(produto.preco) }}</span>
-            <span class="periodo">/mês</span>
-          </div>
-          <ul class="plano-beneficios">
-            <li><i class="fas fa-check"></i> Flexibilidade total</li>
-            <li><i class="fas fa-check"></i> Renovação mensal</li>
-            <li><i class="fas fa-check"></i> Sem compromisso</li>
-          </ul>
-          <button type="button" class="btn-plano" @click="selecionarPlano('mensal')" :disabled="produto.estoque <= 0">
-            <i class="fas fa-shopping-cart"></i> Assinar Mensal
-          </button>
-        </div>
+      <div class="planos-grid" v-if="planos.length">
+        <div
+          v-for="plano in planos"
+          :key="plano.id"
+          class="plano-card"
+          :class="{ selecionado: planoSelecionado === plano.id, 'plano-destaque': plano.recorrencia === 'semestral' }"
+          @click="planoSelecionado = plano.id"
+        >
+          <div class="plano-badge-popular" v-if="plano.recorrencia === 'semestral'">Mais Popular</div>
 
-        <!-- Plano Semestral -->
-        <div class="plano-card" :class="{ selecionado: planoSelecionado === 'semestral' }">
-          <div class="plano-header">
-            <h3>Semestral</h3>
-            <span class="plano-badge economize">Economize 5%</span>
+          <div class="plano-header-row">
+            <h3 class="plano-nome">{{ nomePlano(plano.recorrencia) }}</h3>
+            <span class="economia-tag" v-if="plano.desconto_pct > 0">-{{ plano.desconto_pct }}%</span>
           </div>
-          <div class="plano-preco">
-            <span class="valor">{{ formatarMoeda(precoComDesconto(produto.preco, 6, 0.05)) }}</span>
-            <span class="periodo">/semestre</span>
-          </div>
-          <div class="economia-info">
-            <span class="economia-valor">Economize {{ formatarMoeda(produto.preco * 6 * 0.05) }}</span>
-          </div>
-          <ul class="plano-beneficios">
-            <li><i class="fas fa-check"></i> 5% de desconto</li>
-            <li><i class="fas fa-check"></i> 6 meses de acesso</li>
-            <li><i class="fas fa-check"></i> Melhor custo-benefício</li>
-          </ul>
-          <button type="button" class="btn-plano" @click="selecionarPlano('semestral')" :disabled="produto.estoque <= 0">
-            <i class="fas fa-shopping-cart"></i> Assinar Semestral
-          </button>
-        </div>
 
-        <!-- Plano Anual -->
-        <div class="plano-card" :class="{ selecionado: planoSelecionado === 'anual' }">
-          <div class="plano-header">
-            <h3>Anual</h3>
-            <span class="plano-badge melhor">Melhor Oferta</span>
-          </div>
           <div class="plano-preco">
-            <span class="valor">{{ formatarMoeda(precoComDesconto(produto.preco, 12, 0.10)) }}</span>
-            <span class="periodo">/ano</span>
+            <span class="valor">{{ formatarMoeda(plano.preco_total) }}</span>
+            <span class="periodo">/{{ periodoLabel(plano.recorrencia) }}</span>
           </div>
-          <div class="economia-info">
-            <span class="economia-valor">Economize {{ formatarMoeda(produto.preco * 12 * 0.10) }}</span>
+
+          <div class="economia-info" v-if="plano.economia > 0">
+            Economize {{ formatarMoeda(plano.economia) }}
           </div>
-          <ul class="plano-beneficios">
-            <li><i class="fas fa-check"></i> 10% de desconto</li>
-            <li><i class="fas fa-check"></i> 12 meses de acesso</li>
-            <li><i class="fas fa-check"></i> Maior economia</li>
+
+          <p class="plano-copy">{{ copyPlano(plano.recorrencia) }}</p>
+
+          <ul class="plano-lista">
+            <li v-for="item in listaPlano(plano)" :key="item">{{ item }}</li>
           </ul>
-          <button type="button" class="btn-plano" @click="selecionarPlano('anual')" :disabled="produto.estoque <= 0">
-            <i class="fas fa-shopping-cart"></i> Assinar Anual
-          </button>
+
+          <div class="plano-acoes">
+            <button class="btn-carrinho" @click.stop="irParaCarrinho(plano)">
+              <i class="fas fa-shopping-cart"></i> Carrinho
+            </button>
+            <button class="btn-assinar" @click.stop="irParaCheckout(plano)">Assinar</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Benefícios -->
+      <div v-else class="planos-loading">
+        <p>Carregando planos...</p>
+      </div>
+
+      <p class="planos-nota">
+        <i class="fas fa-lock"></i> Pagamento seguro · Cancele quando quiser · Sem taxas ocultas
+      </p>
+    </section>
+
+    <!-- ENTREGAS ANTERIORES -->
+    <EntregasAnteriores :entregas="entregasAnteriores" titulo="O que já entregamos" />
+
+    <!-- BENEFÍCIOS -->
     <section class="beneficios-section">
       <div class="container">
-        <h2 class="titulo-lg">Por que escolher o Clube do Gole?</h2>
         <div class="beneficios-grid">
           <div class="beneficio-card">
             <div class="beneficio-icone"><i class="fas fa-shipping-fast"></i></div>
             <h3>Entrega Rápida</h3>
-            <p>Receba seus produtos em todo o Brasil com agilidade e segurança</p>
+            <p>Em todo o Brasil, com agilidade e segurança</p>
           </div>
           <div class="beneficio-card">
             <div class="beneficio-icone"><i class="fas fa-lock"></i></div>
             <h3>Compra Segura</h3>
-            <p>Seus dados protegidos com criptografia de última geração</p>
+            <p>Dados protegidos com criptografia de última geração</p>
           </div>
           <div class="beneficio-card">
             <div class="beneficio-icone"><i class="fas fa-headset"></i></div>
             <h3>Suporte Premium</h3>
-            <p>Atendimento especializado para tirar todas suas dúvidas</p>
+            <p>Atendimento especializado para nossos membros</p>
           </div>
           <div class="beneficio-card">
             <div class="beneficio-icone"><i class="fas fa-undo"></i></div>
@@ -149,25 +120,45 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCarrinhoStore } from '@/stores/carrinho'
+import { useAuthStore } from '@/stores/auth'
+import { getEntregasAnteriores } from '@/services/strapi'
+import EntregasAnteriores from '@/components/EntregasAnteriores.vue'
 import api from '@/services/api'
 
 const route = useRoute()
 const router = useRouter()
 const carrinhoStore = useCarrinhoStore()
+const authStore = useAuthStore()
 
-const produto = reactive({ id: null, nome: '', descricao: '', preco: 0, estoque: 0, imagem: '' })
-const quantidade = ref(1)
-const planoSelecionado = ref('mensal')
+const produto = reactive({ id: null, nome: '', descricao: '', ativo: true })
+const planos = ref([])
+const strapiImagem = ref('')
+const planoSelecionado = ref(null)
+const entregasAnteriores = ref([])
 const carregando = ref(false)
+
+const planoMensal = computed(() => planos.value.find(p => p.recorrencia === 'mensal'))
 
 const formatarMoeda = (valor) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0)
 
-const precoComDesconto = (precoUnitario, meses, desconto) =>
-  precoUnitario * meses * (1 - desconto)
+const nomePlano = (rec) => ({ mensal: 'Mensal', semestral: 'Semestral', anual: 'Anual' }[rec] || rec)
+const periodoLabel = (rec) => ({ mensal: 'mês', semestral: 'semestre', anual: 'ano' }[rec] || rec)
+
+const copyPlano = (rec) => ({
+  mensal: 'Flexibilidade total. Sua entrada para um mundo de rótulos que você não encontra em nenhuma prateleira.',
+  semestral: 'Rótulos selecionados de qualidade elevada. Experiência completa, entregue todo mês.',
+  anual: 'Para quem entende que algumas garrafas não têm preço. Têm acesso.',
+}[rec] || '')
+
+const listaPlano = (plano) => ({
+  mensal:    ['Renovação mensal', 'Sem compromisso', 'Cancele quando quiser'],
+  semestral: ['5% de desconto', '6 meses de acesso', 'Melhor custo-benefício'],
+  anual:     ['10% de desconto', '12 meses de acesso', 'Maior economia'],
+}[plano.recorrencia] || [])
 
 const carregarProduto = async () => {
   const id = route.params.id
@@ -176,6 +167,9 @@ const carregarProduto = async () => {
   try {
     const { data } = await api.get(`/produtos/${id}`)
     Object.assign(produto, data)
+    planos.value = data.planos || []
+    const semestral = planos.value.find(p => p.recorrencia === 'semestral')
+    planoSelecionado.value = semestral?.id ?? planos.value[0]?.id ?? null
   } catch {
     mostrarToast('Produto não encontrado', 'error')
     router.push('/')
@@ -184,25 +178,47 @@ const carregarProduto = async () => {
   }
 }
 
-const alterarQuantidade = (delta) => {
-  let nova = quantidade.value + delta
-  if (nova < 1) nova = 1
-  if (nova > produto.estoque) nova = produto.estoque
-  quantidade.value = nova
-}
-
-const selecionarPlano = async (plano) => {
-  planoSelecionado.value = plano
-  await adicionarAoCarrinho()
-}
-
-const adicionarAoCarrinho = async () => {
-  if (produto.estoque <= 0) { mostrarToast('Produto esgotado', 'error'); return }
+const carregarEntregas = async () => {
   try {
-    await carrinhoStore.add(produto.id, planoSelecionado.value, quantidade.value)
-    mostrarToast('Produto adicionado ao carrinho!', 'success')
+    const { data } = await getEntregasAnteriores()
+    entregasAnteriores.value = data.data || []
+  } catch { /* silencioso */ }
+}
+
+const scrollToPlanos = () => {
+  document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })
+}
+
+const irParaCarrinho = async (plano) => {
+  if (!authStore.logado) {
+    router.push('/login?redirect=/carrinho')
+    return
+  }
+  try {
+    await carrinhoStore.add(produto.id, plano.id, 1)
+    mostrarToast('Adicionado ao carrinho!', 'success')
+    router.push('/carrinho')
   } catch {
     mostrarToast('Erro ao adicionar ao carrinho', 'error')
+  }
+}
+
+const irParaCheckout = async (plano) => {
+  if (!authStore.logado) {
+    const dest = `/produto/${produto.id}`
+    router.push(`/login?redirect=${encodeURIComponent(dest)}`)
+    return
+  }
+  try {
+    await carrinhoStore.add(produto.id, plano.id, 1)
+    const item = carrinhoStore.itens.find(
+      i => i.id_plano === plano.id || (i.id_produto === produto.id && i.plano === plano.recorrencia)
+    )
+    if (!item) throw new Error('Item não encontrado no carrinho')
+    localStorage.setItem('checkoutItems', JSON.stringify([item.id_carrinho]))
+    router.push('/checkout')
+  } catch {
+    mostrarToast('Erro ao iniciar checkout', 'error')
   }
 }
 
@@ -211,229 +227,351 @@ const mostrarToast = (mensagem, tipo = 'success') => {
   if (!container) return
   const toast = document.createElement('div')
   toast.className = `toast-message toast-${tipo}`
-  toast.innerHTML = `
-    <div class="toast-content">
-      <i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-      <span>${mensagem}</span>
-      <button class="toast-close" onclick="this.parentElement.parentElement.remove()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>`
+  toast.innerHTML = `<div class="toast-content">
+    <i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+    <span>${mensagem}</span>
+    <button class="toast-close" onclick="this.parentElement.parentElement.remove()"><i class="fas fa-times"></i></button>
+  </div>`
   container.appendChild(toast)
   setTimeout(() => toast.classList.add('show'), 10)
   setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300) }, 5000)
 }
 
-onMounted(() => { carregarProduto() })
+onMounted(() => {
+  document.body.classList.add('pagina-clara')
+  carregarProduto()
+  carregarEntregas()
+})
+
+onUnmounted(() => {
+  document.body.classList.remove('pagina-clara')
+})
 </script>
 
 <style scoped>
+/* ── CONTAINER ─────────────────────────────────── */
 .produto-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: calc(var(--espacamento-xl) + var(--espacamento-md)) var(--espacamento-md) var(--espacamento-xl);
 }
+
+/* ── HERO ───────────────────────────────────────── */
 .produto-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--espacamento-lg);
+  gap: 4rem;
   align-items: start;
-  margin-bottom: var(--espacamento-xl);
+  margin-bottom: 5rem;
 }
+
 .produto-imagem {
   position: relative;
-  border-radius: var(--borda-radius-lg);
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: var(--sombra-destaque);
+  background: #f5f4f2;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
 }
-.imagem-principal-premium {
-  width: 100%; height: auto;
-  object-fit: contain;
-  display: block;
-  transition: transform 0.3s ease;
+.imagem-principal {
+  width: 100%; display: block; object-fit: cover;
+  transition: transform 0.4s ease;
+  min-height: 400px;
 }
-.produto-imagem:hover .imagem-principal-premium { transform: scale(1.05); }
-.badge-esgotado, .badge-estoque {
-  position: absolute;
-  top: var(--espacamento-sm); right: var(--espacamento-sm);
-  padding: var(--espacamento-xs) var(--espacamento-sm);
-  border-radius: var(--borda-radius-lg);
-  font-weight: 600; font-size: 0.875rem; z-index: 2;
-}
-.badge-esgotado { background: linear-gradient(45deg, #ff4444, #cc0000); color: #fff; }
-.badge-estoque  { background: var(--gradiente-dourado); color: var(--cor-fundo); }
+.produto-imagem:hover .imagem-principal { transform: scale(1.03); }
 
-.produto-info { padding: var(--espacamento-md); }
+.badge-surpresa {
+  position: absolute; top: 1.25rem; left: 1.25rem;
+  background: var(--gradiente-dourado);
+  color: #fff; font-weight: 700; font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 0.4rem 1rem; border-radius: 100px;
+}
+
+/* Info */
+.section-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  border: 1px solid var(--cor-dourado);
+  color: var(--cor-dourado-escuro);
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.35rem 0.9rem; border-radius: 100px;
+  margin-bottom: 1.25rem;
+  background: rgba(201,168,76,0.06);
+}
+
 .titulo-produto {
   font-family: var(--fonte-principal);
-  font-size: clamp(2rem, 4vw, 3rem);
-  color: var(--cor-dourado);
-  margin-bottom: var(--espacamento-sm);
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  color: #1b1a19;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+  font-weight: 600;
 }
-.descricao-produto {
-  font-size: 1.125rem;
-  color: var(--cor-texto-secundario);
-  margin-bottom: var(--espacamento-md);
-}
-.info-estoque {
-  display: flex; align-items: center; gap: var(--espacamento-xs);
-  margin-bottom: var(--espacamento-md);
-  padding: var(--espacamento-sm);
-  background: rgba(201,168,76,0.1);
-  border-radius: var(--borda-radius-md);
-  border: 1px solid rgba(201,168,76,0.2);
-}
-.preco-base {
-  margin-bottom: var(--espacamento-lg);
-  padding: var(--espacamento-md);
-  background: var(--cor-fundo-secundario);
-  border-radius: var(--borda-radius-md);
-  border: 1px solid rgba(201,168,76,0.2);
-}
-.preco-original {
-  font-family: var(--fonte-principal);
-  font-size: 2rem; color: var(--cor-dourado); font-weight: 600;
-}
-.quantidade-group { margin-bottom: var(--espacamento-lg); }
-.quantidade-label { display: block; margin-bottom: var(--espacamento-sm); font-weight: 600; font-size: 1.125rem; }
-.quantidade-controles { display: flex; align-items: center; gap: var(--espacamento-sm); max-width: 200px; }
-.btn-quantidade {
-  background: var(--gradiente-botao); color: var(--cor-fundo);
-  border: none; border-radius: var(--borda-radius-sm);
-  width: 40px; height: 40px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all 0.3s ease;
-}
-.btn-quantidade:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--sombra-suave); }
-.btn-quantidade:disabled { opacity: 0.5; cursor: not-allowed; }
-.quantidade-input {
-  width: 80px; padding: var(--espacamento-sm);
-  border: 1px solid rgba(201,168,76,0.3);
-  border-radius: var(--borda-radius-sm);
-  background: var(--cor-fundo-secundario); color: var(--cor-texto);
-  text-align: center; font-size: 1.125rem; font-weight: 600;
-  -moz-appearance: textfield; appearance: textfield;
-}
-.quantidade-input:focus { outline: none; border-color: var(--cor-dourado); }
 
-.planos-section { margin-top: var(--espacamento-lg); }
-.titulo-planos {
-  font-family: var(--fonte-principal);
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  color: var(--cor-dourado); text-align: center; margin-bottom: var(--espacamento-xs);
+.descricao-produto {
+  font-size: 1.05rem;
+  color: #555;
+  margin-bottom: 2rem;
+  line-height: 1.75;
 }
-.subtitulo-planos { text-align: center; margin-bottom: var(--espacamento-lg); color: var(--cor-texto-secundario); }
+
+.pills-row {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+.pill {
+  display: flex; align-items: center; gap: 0.4rem;
+  background: #f8f7f5;
+  border: 1px solid #e8e4de;
+  border-radius: 100px;
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem; color: #555;
+}
+.pill-dot { width: 6px; height: 6px; background: var(--cor-dourado); border-radius: 50%; flex-shrink: 0; }
+
+.preco-bloco {
+  display: flex; align-items: baseline; gap: 0.6rem;
+  border: 1.5px solid #ede9e2;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
+  background: #fdfcfa;
+}
+.preco-valor {
+  font-family: var(--fonte-principal);
+  font-size: 2.5rem; color: #1b1a19; font-weight: 700;
+}
+.preco-per { color: #888; font-size: 0.9rem; }
+
+.btn-modern {
+  width: 100%;
+  background: #1b1a19;
+  color: #fff;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: all 0.25s;
+  letter-spacing: 0.3px;
+}
+.btn-modern:hover {
+  background: #2d2b28;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* ── DIVISOR SECTION ────────────────────────────── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e8e4de, transparent);
+  margin: 0 calc(-1 * var(--espacamento-md));
+}
+
+/* ── PLANOS ─────────────────────────────────────── */
+.planos-section {
+  background: #f8f7f5;
+  margin: 0 calc(-1 * var(--espacamento-md));
+  padding: 5rem var(--espacamento-md);
+}
+
+.planos-header { text-align: center; margin-bottom: 3.5rem; }
+
+.section-badge-escuro {
+  border-color: #9E7A2E;
+  color: #9E7A2E;
+  background: rgba(158,122,46,0.06);
+}
+
+.titulo-claro {
+  color: #1b1a19 !important;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+.dourado-escuro { color: var(--cor-dourado-escuro); }
+
+.planos-sub {
+  color: #777;
+  font-size: 1rem;
+  font-style: italic;
+}
+
 .planos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--espacamento-md);
-  margin-top: var(--espacamento-md);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  align-items: start;
 }
-.plano-card {
-  background: var(--cor-fundo-secundario);
-  border-radius: var(--borda-radius-lg);
-  padding: var(--espacamento-lg);
-  border: 1px solid rgba(201,168,76,0.2);
-  transition: all 0.3s ease;
-  position: relative; overflow: hidden;
-}
-.plano-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--gradiente-botao); transform: scaleX(0); transition: transform 0.3s ease;
-}
-.plano-card:hover::before, .plano-card.selecionado::before { transform: scaleX(1); }
-.plano-card:hover, .plano-card.selecionado {
-  transform: translateY(-5px);
-  box-shadow: var(--sombra-destaque);
-  border-color: var(--cor-dourado);
-}
-.plano-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--espacamento-md); }
-.plano-header h3 { font-family: var(--fonte-principal); font-size: 1.5rem; }
-.plano-badge {
-  padding: 0.25rem 0.75rem; border-radius: var(--borda-radius-lg);
-  font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
-}
-.plano-badge.popular   { background: var(--gradiente-dourado); color: var(--cor-fundo); }
-.plano-badge.economize { background: linear-gradient(45deg, #7B2FE0, #9B5FF0); color: #fff; }
-.plano-badge.melhor    { background: linear-gradient(45deg, #4A0080, #7B2FE0); color: #fff; }
-.plano-preco { text-align: center; margin-bottom: var(--espacamento-sm); }
-.plano-preco .valor { font-family: var(--fonte-principal); font-size: 2rem; color: var(--cor-dourado); font-weight: 600; }
-.economia-info { text-align: center; margin-bottom: var(--espacamento-md); }
-.economia-valor {
-  background: rgba(0,255,136,0.1); color: #00ff88;
-  padding: 0.5rem 1rem; border-radius: var(--borda-radius-lg);
-  font-size: 0.875rem; font-weight: 600;
-}
-.plano-beneficios { list-style: none; margin-bottom: var(--espacamento-lg); }
-.plano-beneficios li { display: flex; align-items: center; gap: var(--espacamento-xs); margin-bottom: var(--espacamento-xs); color: var(--cor-texto-secundario); }
-.plano-beneficios i { color: var(--cor-dourado); }
-.btn-plano {
-  width: 100%; background: var(--gradiente-botao); color: var(--cor-fundo);
-  border: none; padding: 1rem 2rem; border-radius: var(--borda-radius-lg);
-  font-weight: 600; cursor: pointer; transition: all 0.3s ease;
-  display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1.1rem;
-}
-.btn-plano:hover:not(:disabled) { transform: translateY(-3px); box-shadow: var(--sombra-destaque); }
-.btn-plano:disabled { background: #666; cursor: not-allowed; opacity: 0.6; }
+.planos-loading { text-align: center; color: #888; padding: 3rem; }
 
+.plano-card {
+  background: #fff;
+  border: 1.5px solid #e8e4de;
+  border-radius: 20px;
+  padding: 2rem;
+  position: relative; cursor: pointer;
+  transition: all 0.25s ease;
+}
+.plano-card:hover, .plano-card.selecionado {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+  border-color: rgba(201,168,76,0.4);
+}
+
+/* Card destaque — único que é escuro, para contraste premium */
+.plano-destaque {
+  background: #1b1a19;
+  border-color: rgba(201,168,76,0.3);
+  transform: translateY(-10px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+}
+.plano-destaque:hover { transform: translateY(-14px); }
+
+.plano-badge-popular {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--gradiente-dourado); color: #fff;
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 0.3rem 1.1rem; border-radius: 100px; white-space: nowrap;
+}
+
+.plano-header-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.75rem;
+}
+.plano-nome {
+  font-family: var(--fonte-principal); font-size: 1.375rem; font-weight: 600;
+  color: #1b1a19;
+}
+.plano-destaque .plano-nome { color: #fff; }
+
+.economia-tag {
+  background: #ecfdf5; color: #16a34a;
+  font-size: 0.73rem; font-weight: 700;
+  padding: 0.2rem 0.65rem; border-radius: 100px;
+}
+.plano-destaque .economia-tag { background: rgba(74,222,128,0.12); color: #4ade80; }
+
+.plano-preco { margin-bottom: 0.3rem; }
+.plano-preco .valor {
+  font-family: var(--fonte-principal); font-size: 2rem;
+  color: var(--cor-dourado); font-weight: 700;
+}
+.plano-preco .periodo { color: #999; font-size: 0.85rem; margin-left: 0.2rem; }
+.plano-destaque .plano-preco .periodo { color: #aaa; }
+
+.economia-info { color: #16a34a; font-size: 0.8rem; margin-bottom: 1rem; font-weight: 500; }
+.plano-destaque .economia-info { color: #4ade80; }
+
+.plano-copy {
+  color: #666; font-size: 0.875rem;
+  font-style: italic; line-height: 1.65;
+  margin-bottom: 1.25rem;
+  border-top: 1px solid #f0ece6; padding-top: 1rem;
+}
+.plano-destaque .plano-copy { color: #aaa; border-color: rgba(255,255,255,0.08); }
+
+.plano-lista {
+  list-style: none; margin-bottom: 1.5rem;
+  display: flex; flex-direction: column; gap: 0.55rem;
+}
+.plano-lista li {
+  color: #555; font-size: 0.85rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.plano-destaque .plano-lista li { color: #ccc; }
+.plano-lista li::before {
+  content: ''; width: 5px; height: 5px;
+  background: var(--cor-dourado); border-radius: 50%; flex-shrink: 0;
+}
+
+.plano-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.btn-carrinho {
+  background: transparent;
+  border: 1.5px solid #e0dbd2;
+  color: #555;
+  padding: 0.75rem 0.5rem; border-radius: 10px;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  transition: all 0.2s; white-space: nowrap;
+}
+.btn-carrinho:hover { background: #f5f4f2; border-color: #ccc; }
+.plano-destaque .btn-carrinho { border-color: rgba(255,255,255,0.15); color: #ccc; }
+.plano-destaque .btn-carrinho:hover { background: rgba(255,255,255,0.06); }
+
+.btn-assinar {
+  background: var(--gradiente-botao); color: #1b1a19;
+  border: none; padding: 0.75rem 0.5rem; border-radius: 10px;
+  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+}
+.btn-assinar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.35); }
+
+.planos-nota {
+  text-align: center; margin-top: 2.5rem;
+  color: #888; font-size: 0.82rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.planos-nota i { color: var(--cor-dourado-escuro); }
+
+/* ── BENEFÍCIOS ─────────────────────────────────── */
 .beneficios-section {
-  background: var(--cor-fundo-secundario);
-  padding: var(--espacamento-xl) 0;
-  border-top: 2px solid var(--cor-dourado);
-  border-bottom: 2px solid var(--cor-dourado);
-  margin-top: var(--espacamento-xl);
+  padding: 5rem 0;
+  background: #fff;
 }
 .beneficios-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--espacamento-md);
+  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+  gap: 1.5rem;
 }
 .beneficio-card {
-  background: var(--cor-fundo);
-  padding: var(--espacamento-lg);
-  border-radius: var(--borda-radius-md);
-  text-align: center;
-  border: 1px solid rgba(201,168,76,0.2);
-  transition: all 0.3s ease;
+  background: #fafaf9;
+  border: 1px solid #ede9e3;
+  padding: 2rem 1.5rem;
+  border-radius: 16px; text-align: center;
+  transition: all 0.25s;
 }
-.beneficio-card:hover { transform: translateY(-5px); box-shadow: var(--sombra-destaque); border-color: var(--cor-dourado); }
+.beneficio-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  border-color: rgba(201,168,76,0.25);
+}
 .beneficio-icone {
-  width: 80px; height: 80px;
-  background: var(--gradiente-botao); border-radius: 50%;
+  width: 52px; height: 52px;
+  background: rgba(201,168,76,0.1);
+  border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto var(--espacamento-md);
-  font-size: 2rem; color: var(--cor-fundo);
+  margin: 0 auto 1rem; font-size: 1.2rem; color: var(--cor-dourado);
 }
-.beneficio-card h3 { color: var(--cor-texto); margin-bottom: var(--espacamento-sm); }
-.beneficio-card p  { color: var(--cor-texto-secundario); }
+.beneficio-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; color: #1b1a19; }
+.beneficio-card p { color: #777; font-size: 0.85rem; line-height: 1.55; }
 
+/* ── TOAST ──────────────────────────────────────── */
 #toast-container {
-  position: fixed; top: 100px; right: var(--espacamento-md);
-  z-index: 10000; display: flex; flex-direction: column; gap: var(--espacamento-xs);
+  position: fixed; top: 100px; right: 1.5rem;
+  z-index: 10000; display: flex; flex-direction: column; gap: 0.5rem;
 }
 .toast-message {
-  opacity: 0; transform: translateX(100%);
-  padding: var(--espacamento-sm) var(--espacamento-md);
-  border-radius: var(--borda-radius-md);
-  background: var(--cor-fundo-secundario); color: var(--cor-texto);
-  font-weight: 600; box-shadow: var(--sombra-destaque);
-  transition: all 0.3s ease; min-width: 300px;
+  opacity: 0; transform: translateX(110%); padding: 0.75rem 1rem;
+  border-radius: 12px; font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  transition: all 0.3s; min-width: 280px;
 }
 .toast-message.show { opacity: 1; transform: translateX(0); }
-.toast-message.toast-success { background: linear-gradient(135deg, #00ff88, #00cc66); color: var(--cor-fundo); }
-.toast-message.toast-error   { background: linear-gradient(135deg, #ff4444, #cc0000); color: #fff; }
-.toast-content { display: flex; align-items: center; gap: var(--espacamento-sm); }
+.toast-success { background: #ecfdf5; color: #16a34a; border: 1px solid #bbf7d0; }
+.toast-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.toast-content { display: flex; align-items: center; gap: 0.75rem; }
 .toast-content span { flex: 1; }
-.toast-close { background: none; border: none; color: inherit; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
-.toast-close:hover { opacity: 1; }
+.toast-close { background: none; border: none; color: inherit; cursor: pointer; opacity: 0.6; }
 
-@media (max-width: 1024px) { .produto-hero { grid-template-columns: 1fr; } }
+/* ── RESPONSIVO ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  .produto-hero { grid-template-columns: 1fr; gap: 2.5rem; }
+  .imagem-principal { min-height: 300px; }
+}
 @media (max-width: 768px) {
-  .planos-grid, .beneficios-grid { grid-template-columns: 1fr; }
-  .quantidade-controles { max-width: 100%; }
+  .planos-grid { grid-template-columns: 1fr; }
+  .plano-destaque { transform: none; }
+  .beneficios-grid { grid-template-columns: 1fr 1fr; }
 }
-@media (max-width: 480px) {
-  .produto-container { padding: calc(var(--espacamento-xl) + var(--espacamento-xs)) var(--espacamento-xs) var(--espacamento-lg); }
-  .toast-message { min-width: 250px; }
-}
+@media (max-width: 480px) { .beneficios-grid { grid-template-columns: 1fr; } }
 </style>

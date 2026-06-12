@@ -33,7 +33,4 @@ async def remover(db: AsyncSession, produto_id: int) -> bool:
     return True
 
 async def decrementar_estoque(db: AsyncSession, produto_id: int, qtd: int) -> None:
-    p = await db.get(Produto, produto_id)
-    if p and p.estoque > 0:
-        p.estoque = max(0, p.estoque - qtd)
-        await db.flush()
+    pass
