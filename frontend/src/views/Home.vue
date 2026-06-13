@@ -201,7 +201,7 @@
             </div>
             <p class="depoimento-texto">"{{ dep.texto }}"</p>
             <div class="depoimento-autor">
-              <img v-if="dep.foto?.url" :src="`${strapiUrl}${dep.foto.url}`"
+              <img v-if="dep.foto?.url" :src="mediaUrl(dep.foto.url)"
                 :alt="dep.nome" class="depoimento-foto">
               <div v-else class="depoimento-foto-placeholder">
                 <i class="fas fa-user"></i>
@@ -254,7 +254,7 @@
             class="blog-preview-card fade-in" :class="{ visible: fadeInVisible }"
             @click="$router.push(`/blog/${post.slug}`)">
             <div class="blog-preview-capa">
-              <img v-if="post.capa?.url" :src="`${strapiUrl}${post.capa.url}`" :alt="post.titulo">
+              <img v-if="post.capa?.url" :src="mediaUrl(post.capa.url)" :alt="post.titulo">
               <div v-else class="blog-preview-placeholder">
                 <i class="fas fa-wine-bottle"></i>
               </div>
@@ -364,6 +364,8 @@ const irParaPlano = () => {
 }
 
 const strapiUrl = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'
+const mediaUrl = (url: string | undefined) =>
+  !url ? '/img/sem_imagem.png' : url.startsWith('http') ? url : `${strapiUrl}${url}`
 
 const fadeInVisible = ref(false)
 const carouselContainer = ref(null)
@@ -518,7 +520,7 @@ onMounted(async () => {
     const banners = data?.data || []
     slides.value = banners.length
       ? banners.map(b => ({
-          image: b.imagem?.url ? `${strapiUrl}${b.imagem.url}` : '/img/sem_imagem.png',
+          image: mediaUrl(b.imagem?.url),
           alt: b.titulo || '',
           link: b.link || null,
           overlayText: b.titulo || ''

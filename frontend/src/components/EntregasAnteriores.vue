@@ -76,7 +76,7 @@ const getImagem = (entrega) => {
   const attr = entrega.attributes || entrega
   const img = attr?.imagem?.data?.attributes || attr?.imagem?.data || attr?.imagem
   if (img?.url) return img.url.startsWith('http') ? img.url : `${strapiUrl}${img.url}`
-  if (img?.formats?.medium?.url) return `${strapiUrl}${img.formats.medium.url}`
+  if (img?.formats?.medium?.url) { const u = img.formats.medium.url; return u.startsWith('http') ? u : `${strapiUrl}${u}` }
   return '/img/logo.webp'
 }
 
