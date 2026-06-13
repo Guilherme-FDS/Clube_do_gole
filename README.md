@@ -20,6 +20,9 @@ Plataforma de e-commerce de assinatura de bebidas premium — catálogo de produ
 - **Axios** com interceptors de token
 - Identidade visual: Cormorant Garamond + DM Sans
 
+### CMS
+- **Strapi** (headless CMS) — gerencia conteúdo editorial do site: blog, FAQ, banners da home, depoimentos, entregas anteriores e páginas institucionais (Sobre, Contato, Envio & Devoluções)
+
 ---
 
 ## Arquitetura
@@ -126,6 +129,7 @@ SECRET_KEY=<sua-chave>
 Frontend (`frontend/.env.local`):
 ```
 VITE_API_URL=http://localhost:8000/api
+VITE_STRAPI_URL=http://localhost:1337
 ```
 
 ---
