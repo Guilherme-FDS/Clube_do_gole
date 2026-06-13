@@ -364,8 +364,11 @@ const irParaPlano = () => {
 }
 
 const strapiUrl = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'
-const mediaUrl = (url: string | undefined) =>
-  !url ? '/img/sem_imagem.png' : url.startsWith('http') ? url : `${strapiUrl}${url}`
+const mediaUrl = (url) => {
+  if (!url) return '/img/sem_imagem.png'
+  if (url.startsWith('http')) return url
+  return strapiUrl + url
+}
 
 const fadeInVisible = ref(false)
 const carouselContainer = ref(null)
