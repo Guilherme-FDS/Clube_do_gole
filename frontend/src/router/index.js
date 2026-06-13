@@ -5,7 +5,7 @@ const routes = [
   // Públicas
   { path: '/',                  name: 'Home',             component: () => import('@/views/Home.vue') },
   { path: '/produto/:id',       name: 'ProdutoDetalhe',   component: () => import('@/views/ProdutosDetalhe.vue') },
-  { path: '/mixupcode',         name: 'MixUpCode',        component: () => import('@/views/Mixupcode.vue') },
+
   { path: '/carrinho',          name: 'Carrinho',         component: () => import('@/views/Carrinho.vue') },
   { path: '/faq',               name: 'FAQ',              component: () => import('@/views/FAQ.vue') },
   { path: '/blog',              name: 'Blog',             component: () => import('@/views/Blog.vue') },
