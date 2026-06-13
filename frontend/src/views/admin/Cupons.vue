@@ -16,7 +16,7 @@
             <tr>
               <th>Código</th>
               <th>Desconto</th>
-              <th>Usos Máximos</th>
+              <th>Validade</th>
               <th>Usos Restantes</th>
               <th>Status</th>
               <th>Ações</th>
@@ -37,11 +37,20 @@
               </tr>
               <tr v-for="cupom in cupons" :key="cupom.id">
                 <td><strong>{{ cupom.codigo }}</strong></td>
-                <td>{{ cupom.desconto_percentual }}%</td>
-                <td>{{ cupom.usos_maximos }}</td>
                 <td>
-                  <span :class="['uso-indicator', cupom.usos_restantes > 0 ? 'uso-disponivel' : 'uso-esgotado']">
-                    {{ cupom.usos_restantes }}
+                  <span v-if="cupom.tipo_desconto === 'fixo'">R$ {{ Number(cupom.desconto_fixo).toFixed(2) }}</span>
+                  <span v-else>{{ cupom.desconto_percentual }}%</span>
+                </td>
+                <td>
+                  <span v-if="cupom.valido_ate" :class="['uso-indicator', estaExpirado(cupom.valido_ate) ? 'uso-esgotado' : 'uso-disponivel']">
+                    {{ formatarData(cupom.valido_ate) }}
+                  </span>
+                  <span v-else class="uso-indicator uso-disponivel">Sem prazo</span>
+                </td>
+                <td>
+                  <span v-if="cupom.usos_restantes === null" class="uso-indicator uso-disponivel">Ilimitado</span>
+                  <span v-else :class="['uso-indicator', cupom.usos_restantes > 0 ? 'uso-disponivel' : 'uso-esgotado']">
+                    {{ cupom.usos_restantes }} / {{ cupom.usos_maximos }}
                   </span>
                 </td>
                 <td>
@@ -78,18 +87,57 @@
                    required maxlength="20" @input="form.codigo = form.codigo.toUpperCase().replace(/[^A-Z0-9]/g, '')"
                    class="input-cupom">
           </div>
+
           <div class="form-group">
-            <label for="descontoCupom">Desconto (%):</label>
-            <input type="number" id="descontoCupom" v-model.number="form.desconto_percentual"
-                   placeholder="Ex: 10 para 10% de desconto" min="1" max="100" required
+            <label>Tipo de Desconto:</label>
+            <div style="display:flex;gap:12px;margin-top:4px">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#4B5563;font-size:13px;font-weight:400">
+                <input type="radio" v-model="form.tipo_desconto" value="percentual"> Percentual (%)
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#4B5563;font-size:13px;font-weight:400">
+                <input type="radio" v-model="form.tipo_desconto" value="fixo"> Valor fixo (R$)
+              </label>
+            </div>
+          </div>
+
+          <div v-if="form.tipo_desconto === 'percentual'" class="form-group">
+            <label for="descontoPct">Desconto (%):</label>
+            <input type="number" id="descontoPct" v-model.number="form.desconto_percentual"
+                   placeholder="Ex: 10 para 10% de desconto" min="1" max="100" :required="form.tipo_desconto === 'percentual'"
                    class="input-cupom">
           </div>
-          <div class="form-group">
-            <label for="usosCupom">Usos Máximos:</label>
-            <input type="number" id="usosCupom" v-model.number="form.usos_maximos"
-                   placeholder="Ex: 100" min="1" required
+          <div v-else class="form-group">
+            <label for="descontoFixo">Valor do Desconto (R$):</label>
+            <input type="number" id="descontoFixo" v-model.number="form.desconto_fixo"
+                   placeholder="Ex: 50.00" min="0.01" step="0.01" :required="form.tipo_desconto === 'fixo'"
                    class="input-cupom">
           </div>
+
+          <div class="form-group">
+            <label>Limite de Usos:</label>
+            <div style="display:flex;gap:12px;margin-top:4px;margin-bottom:8px">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#4B5563;font-size:13px;font-weight:400">
+                <input type="radio" v-model="form.limite_tipo" value="ilimitado"> Ilimitado
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#4B5563;font-size:13px;font-weight:400">
+                <input type="radio" v-model="form.limite_tipo" value="quantidade"> Por quantidade
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#4B5563;font-size:13px;font-weight:400">
+                <input type="radio" v-model="form.limite_tipo" value="data"> Por data
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#4B5563;font-size:13px;font-weight:400">
+                <input type="radio" v-model="form.limite_tipo" value="ambos"> Ambos
+              </label>
+            </div>
+            <input v-if="form.limite_tipo === 'quantidade' || form.limite_tipo === 'ambos'"
+                   type="number" v-model.number="form.usos_maximos"
+                   placeholder="Usos máximos (ex: 100)" min="1"
+                   class="input-cupom" style="margin-bottom:8px">
+            <input v-if="form.limite_tipo === 'data' || form.limite_tipo === 'ambos'"
+                   type="date" v-model="form.valido_ate"
+                   class="input-cupom">
+          </div>
+
           <div class="form-group">
             <label for="statusCupom">Status Inicial:</label>
             <select id="statusCupom" v-model="form.status" required class="input-cupom">
@@ -131,8 +179,12 @@ const erros = ref([])
 
 const form = ref({
   codigo: '',
+  tipo_desconto: 'percentual',
   desconto_percentual: '',
+  desconto_fixo: '',
+  limite_tipo: 'ilimitado',
   usos_maximos: '',
+  valido_ate: '',
   status: 'ativo'
 })
 
@@ -165,25 +217,35 @@ const fecharModal = () => {
 const resetForm = () => {
   form.value = {
     codigo: '',
+    tipo_desconto: 'percentual',
     desconto_percentual: '',
+    desconto_fixo: '',
+    limite_tipo: 'ilimitado',
     usos_maximos: '',
+    valido_ate: '',
     status: 'ativo'
   }
 }
 
 const validarFormulario = () => {
   erros.value = []
-  if (!form.value.codigo || form.value.codigo.length < 3) {
-    erros.value.push('Código deve ter pelo menos 3 caracteres')
+  if (!form.value.codigo || !form.value.codigo.match(/^[A-Z0-9]{3,20}$/)) {
+    erros.value.push('Código deve ter 3-20 caracteres (letras maiúsculas e números)')
   }
-  if (!form.value.codigo.match(/^[A-Z0-9]{3,20}$/)) {
-    erros.value.push('Código deve conter apenas letras maiúsculas e números')
+  if (form.value.tipo_desconto === 'percentual') {
+    if (!form.value.desconto_percentual || form.value.desconto_percentual < 1 || form.value.desconto_percentual > 100) {
+      erros.value.push('Desconto percentual deve ser entre 1% e 100%')
+    }
+  } else {
+    if (!form.value.desconto_fixo || form.value.desconto_fixo <= 0) {
+      erros.value.push('Informe um valor de desconto maior que R$ 0')
+    }
   }
-  if (!form.value.desconto_percentual || form.value.desconto_percentual < 1 || form.value.desconto_percentual > 100) {
-    erros.value.push('Desconto deve ser entre 1% e 100%')
+  if ((form.value.limite_tipo === 'quantidade' || form.value.limite_tipo === 'ambos') && (!form.value.usos_maximos || form.value.usos_maximos < 1)) {
+    erros.value.push('Informe a quantidade máxima de usos')
   }
-  if (!form.value.usos_maximos || form.value.usos_maximos < 1) {
-    erros.value.push('Usos máximos deve ser pelo menos 1')
+  if ((form.value.limite_tipo === 'data' || form.value.limite_tipo === 'ambos') && !form.value.valido_ate) {
+    erros.value.push('Informe a data de validade')
   }
   return erros.value.length === 0
 }
@@ -192,10 +254,15 @@ const salvarCupom = async () => {
   if (!validarFormulario()) return
   salvando.value = true
   try {
+    const temQtd = form.value.limite_tipo === 'quantidade' || form.value.limite_tipo === 'ambos'
+    const temData = form.value.limite_tipo === 'data' || form.value.limite_tipo === 'ambos'
     const dados = {
       codigo: form.value.codigo,
-      desconto_percentual: form.value.desconto_percentual,
-      usos_maximos: form.value.usos_maximos,
+      tipo_desconto: form.value.tipo_desconto,
+      desconto_percentual: form.value.tipo_desconto === 'percentual' ? Number(form.value.desconto_percentual) : 0,
+      desconto_fixo: form.value.tipo_desconto === 'fixo' ? Number(form.value.desconto_fixo) : null,
+      usos_maximos: temQtd ? Number(form.value.usos_maximos) : null,
+      valido_ate: temData ? form.value.valido_ate : null,
       status: form.value.status
     }
     await cuponsStore.adicionarCupom(dados)
@@ -248,6 +315,17 @@ const mostrarNotificacao = (message, type = 'success') => {
     notification.style.opacity = '0'
     setTimeout(() => notification.remove(), 300)
   }, 5000)
+}
+
+const formatarData = (data) => {
+  if (!data) return ''
+  const [ano, mes, dia] = data.split('-')
+  return `${dia}/${mes}/${ano}`
+}
+
+const estaExpirado = (data) => {
+  if (!data) return false
+  return new Date(data + 'T23:59:59') < new Date()
 }
 
 const handleKeydown = (event) => {

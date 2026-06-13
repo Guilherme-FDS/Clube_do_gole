@@ -322,6 +322,8 @@ const enderecoSelecionado = ref(null)
 const cupom = ref('')
 const cupomAplicado = ref(false)
 const desconto = ref(0)
+const descontoPct = ref(0)
+const descontoFixo = ref(null)
 const carregandoCupom = ref(false)
 const mensagemCupom = ref('')
 
@@ -453,10 +455,25 @@ async function aplicarCupom() {
   carregandoCupom.value = true
   mensagemCupom.value = ''
   try {
-    const res = await api.post('/carrinho/validar_cupom', { cupom: cupom.value })
+    const res = await api.post('/cupons/validar', { codigo: cupom.value.trim().toUpperCase() })
+    if (!res.data.valido) {
+      cupomAplicado.value = false
+      desconto.value = 0
+      mensagemCupom.value = res.data.mensagem || 'Cupom inválido'
+      return
+    }
     cupomAplicado.value = true
-    desconto.value = res.data.desconto || 0
-    mensagemCupom.value = `Cupom aplicado! Desconto de ${formatarMoeda(desconto.value)}`
+    if (res.data.desconto_tipo === 'fixo') {
+      descontoFixo.value = res.data.desconto_fixo
+      descontoPct.value = 0
+      desconto.value = Math.min(res.data.desconto_fixo, subtotal.value)
+      mensagemCupom.value = `Cupom aplicado! R$ ${res.data.desconto_fixo.toFixed(2)} de desconto`
+    } else {
+      descontoFixo.value = null
+      descontoPct.value = res.data.desconto || 0
+      desconto.value = subtotal.value * (descontoPct.value / 100)
+      mensagemCupom.value = `Cupom aplicado! ${descontoPct.value}% de desconto`
+    }
   } catch (e) {
     cupomAplicado.value = false
     desconto.value = 0
@@ -470,6 +487,8 @@ function removerCupom() {
   cupom.value = ''
   cupomAplicado.value = false
   desconto.value = 0
+  descontoPct.value = 0
+  descontoFixo.value = null
   mensagemCupom.value = ''
 }
 
@@ -484,7 +503,8 @@ async function finalizarCompra() {
     const { data } = await api.post('/carrinho/finalizar', {
       ids,
       cupom: cupomAplicado.value ? cupom.value : null,
-      desconto_cupom: desconto.value
+      desconto_cupom: descontoPct.value,
+      desconto_fixo_cupom: descontoFixo.value
     })
     localStorage.removeItem('checkoutItems')
     await carrinhoStore.buscar()

@@ -120,13 +120,24 @@ class Cupom(Base):
     __tablename__ = "cupons"
     __table_args__ = (
         CheckConstraint("status IN ('ativo', 'inativo')", name="ck_cupons_status"),
+        CheckConstraint("tipo_desconto IN ('percentual', 'fixo')", name="ck_cupons_tipo_desconto"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     codigo: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+
+    # tipo: 'percentual' (0-100%) ou 'fixo' (valor em R$)
+    tipo_desconto: Mapped[str] = mapped_column(String(10), nullable=False, default="percentual")
     desconto_percentual: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
-    usos_maximos: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    usos_restantes: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    desconto_fixo: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 2), nullable=True)
+
+    # limite por quantidade (None = ilimitado)
+    usos_maximos: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    usos_restantes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    # limite por data (None = sem expiração)
+    valido_ate: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+
     status: Mapped[str] = mapped_column(String(10), nullable=False, default="ativo")
     criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
     atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())

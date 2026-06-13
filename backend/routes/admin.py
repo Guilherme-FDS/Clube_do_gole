@@ -133,6 +133,7 @@ async def detalhe_cupom(cupom_id: int, _: dict = Depends(admin_required), db: As
 @router.post("/cupons", response_model=CupomOut, status_code=201)
 async def criar_cupom(body: CupomIn, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
     dados = body.model_dump()
+    # usos_restantes = usos_maximos (None = ilimitado)
     dados["usos_restantes"] = dados["usos_maximos"]
     return await cupom_repo.criar(db, dados)
 
@@ -143,7 +144,12 @@ async def editar_cupom(cupom_id: int, body: CupomIn, _: dict = Depends(admin_req
     if not atual:
         raise HTTPException(status_code=404, detail="Cupom não encontrado.")
     dados = body.model_dump()
-    dados["usos_restantes"] = max(0, dados["usos_maximos"] - (atual.usos_maximos - atual.usos_restantes))
+    # preservar usos já consumidos
+    if dados["usos_maximos"] is None:
+        dados["usos_restantes"] = None
+    else:
+        usos_consumidos = (atual.usos_maximos or 0) - (atual.usos_restantes or 0)
+        dados["usos_restantes"] = max(0, dados["usos_maximos"] - usos_consumidos)
     return await cupom_repo.atualizar(db, cupom_id, dados)
 
 

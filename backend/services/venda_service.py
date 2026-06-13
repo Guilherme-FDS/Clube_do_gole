@@ -20,6 +20,7 @@ async def finalizar_compra(
     ids_itens: list[int],
     codigo_cupom: str = "",
     desconto_cupom: float = 0.0,
+    desconto_fixo_cupom: float | None = None,
     email_cliente: str | None = None,
 ) -> tuple[bool, str, str | None]:
     """
@@ -46,7 +47,11 @@ async def finalizar_compra(
 
         valor_original   = valor_unitario * mult * quantidade
         valor_apos_plano = valor_original * (1 - desc_plano)
-        valor_final      = max(Decimal("0"), valor_apos_plano * (1 - Decimal(str(desconto_cupom)) / 100))
+        if desconto_fixo_cupom:
+            # desconto fixo: distribuído proporcionalmente por item
+            valor_final = max(Decimal("0"), valor_apos_plano - Decimal(str(desconto_fixo_cupom)))
+        else:
+            valor_final = max(Decimal("0"), valor_apos_plano * (1 - Decimal(str(desconto_cupom)) / 100))
 
         valor_original_total += valor_original
         valor_final_total    += valor_final

@@ -31,10 +31,19 @@ async def remover(db: AsyncSession, cupom_id: int) -> bool:
     return True
 
 async def consumir_atomico(db: AsyncSession, codigo: str) -> bool:
-    """WHERE usos_restantes > 0 garante atomicidade — resolve race condition."""
+    """Decrementa usos_restantes só quando há limite de quantidade definido."""
+    from sqlalchemy import or_
     result = await db.execute(
         update(Cupom)
-        .where(Cupom.codigo == codigo.upper(), Cupom.usos_restantes > 0)
-        .values(usos_restantes=Cupom.usos_restantes - 1)
+        .where(
+            Cupom.codigo == codigo.upper(),
+            or_(Cupom.usos_restantes.is_(None), Cupom.usos_restantes > 0),
+        )
+        .values(
+            usos_restantes=(
+                Cupom.usos_restantes - 1
+            )
+        )
+        .execution_options(synchronize_session=False)
     )
     return result.rowcount > 0

@@ -156,10 +156,16 @@ class ProdutoComPlanosOut(BaseModel):
 
 # ── Cupons ─────────────────────────────────────────────────────────────────────
 
+TipoDesconto = Annotated[str, Field(pattern="^(percentual|fixo)$")]
+
+
 class CupomIn(BaseModel):
     codigo: str = Field(min_length=1, max_length=50)
-    desconto_percentual: Decimal = Field(ge=0, le=100, decimal_places=2)
-    usos_maximos: int = Field(ge=1, default=1)
+    tipo_desconto: TipoDesconto = "percentual"
+    desconto_percentual: Decimal = Field(ge=0, le=100, decimal_places=2, default=Decimal("0"))
+    desconto_fixo: Optional[Decimal] = Field(ge=0, default=None)
+    usos_maximos: Optional[int] = Field(ge=1, default=None)
+    valido_ate: Optional[date] = None
     status: StatusCupom = "ativo"
 
     @field_validator("codigo", mode="after")
@@ -167,13 +173,24 @@ class CupomIn(BaseModel):
     def uppercase_codigo(cls, v: str) -> str:
         return v.upper()
 
+    @model_validator(mode="after")
+    def validar_desconto(self) -> "CupomIn":
+        if self.tipo_desconto == "percentual" and self.desconto_percentual == 0:
+            raise ValueError("Informe desconto_percentual para tipo percentual.")
+        if self.tipo_desconto == "fixo" and not self.desconto_fixo:
+            raise ValueError("Informe desconto_fixo para tipo fixo.")
+        return self
+
 
 class CupomOut(BaseModel):
     id: int
     codigo: str
+    tipo_desconto: str
     desconto_percentual: Decimal
-    usos_maximos: int
-    usos_restantes: int
+    desconto_fixo: Optional[Decimal]
+    usos_maximos: Optional[int]
+    usos_restantes: Optional[int]
+    valido_ate: Optional[date]
     status: str
     criado_em: datetime
 
@@ -187,7 +204,9 @@ class ValidarCupomIn(BaseModel):
 class ValidarCupomOut(BaseModel):
     valido: bool
     mensagem: str
-    desconto: float = 0.0
+    desconto: float = 0.0          # sempre percentual equivalente para o frontend
+    desconto_tipo: str = "percentual"
+    desconto_fixo: Optional[float] = None
 
 
 # ── Carrinho ───────────────────────────────────────────────────────────────────
@@ -232,7 +251,8 @@ class CarrinhoOut(BaseModel):
 class FinalizarIn(BaseModel):
     ids: list[int] = Field(min_length=1)
     cupom: Optional[str] = None
-    desconto_cupom: float = Field(ge=0, le=100, default=0.0)
+    desconto_cupom: float = Field(ge=0, le=100, default=0.0)   # percentual
+    desconto_fixo_cupom: Optional[float] = Field(ge=0, default=None)  # valor R$
 
 
 # ── Vendas ─────────────────────────────────────────────────────────────────────

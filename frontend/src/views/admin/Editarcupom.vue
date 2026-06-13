@@ -22,15 +22,35 @@
             <label>Código do Cupom</label>
             <input v-model="form.codigo" type="text" required class="form-input" />
           </div>
+
           <div class="form-group">
+            <label>Tipo de Desconto</label>
+            <select v-model="form.tipo_desconto" required class="form-input">
+              <option value="percentual">Percentual (%)</option>
+              <option value="fixo">Valor fixo (R$)</option>
+            </select>
+          </div>
+
+          <div v-if="form.tipo_desconto === 'percentual'" class="form-group">
             <label>Desconto (%)</label>
-            <input v-model="form.desconto_percentual" type="number" min="1" max="100" required class="form-input" />
+            <input v-model="form.desconto_percentual" type="number" min="1" max="100" :required="form.tipo_desconto === 'percentual'" class="form-input" />
           </div>
+          <div v-else class="form-group">
+            <label>Valor do Desconto (R$)</label>
+            <input v-model="form.desconto_fixo" type="number" min="0.01" step="0.01" :required="form.tipo_desconto === 'fixo'" class="form-input" />
+          </div>
+
           <div class="form-group">
-            <label>Usos Máximos</label>
-            <input v-model="form.usos_maximos" type="number" min="1" required class="form-input" />
-            <small class="form-hint">Usos restantes atuais: {{ form.usos_restantes }}</small>
+            <label>Usos Máximos <small style="font-weight:400;color:#9CA3AF">(deixe em branco para ilimitado)</small></label>
+            <input v-model="form.usos_maximos" type="number" min="1" class="form-input" />
+            <small class="form-hint" v-if="form.usos_restantes !== null">Usos restantes atuais: {{ form.usos_restantes }}</small>
           </div>
+
+          <div class="form-group">
+            <label>Válido até <small style="font-weight:400;color:#9CA3AF">(deixe em branco sem expiração)</small></label>
+            <input v-model="form.valido_ate" type="date" class="form-input" />
+          </div>
+
           <div class="form-group">
             <label>Status</label>
             <select v-model="form.status" required class="form-input">

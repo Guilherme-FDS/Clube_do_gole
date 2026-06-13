@@ -56,6 +56,7 @@ async def finalizar(body: FinalizarIn, payload: dict = Depends(login_required), 
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
     sucesso, mensagem, checkout_url = await venda_service.finalizar_compra(
         db, payload["id"], body.ids, body.cupom, body.desconto_cupom,
+        desconto_fixo_cupom=body.desconto_fixo_cupom,
         email_cliente=payload.get("email"),
     )
     if not sucesso:
