@@ -388,10 +388,10 @@ const contatoEnviando = ref(false)
 const contatoSucesso = ref(false)
 
 const slidesLocal = [
-  { image: '/img/carrossel1.png', alt: 'Imagem 1', link: null },
-  { image: '/img/carrossel2.png', alt: 'Imagem 2', link: null },
-  { image: '/img/carrossel3.png', alt: 'Imagem 3', link: '#planos', overlayText: 'Conheça nossos planos' },
-  { image: '/img/carrossel4.png', alt: 'Imagem 4', link: '#planos', overlayText: 'Conheça nossos planos' }
+  { image: '/img/carrossel1.webp', alt: 'Imagem 1', link: null },
+  { image: '/img/carrossel2.webp', alt: 'Imagem 2', link: null },
+  { image: '/img/carrossel3.webp', alt: 'Imagem 3', link: '#planos', overlayText: 'Conheça nossos planos' },
+  { image: '/img/carrossel4.webp', alt: 'Imagem 4', link: '#planos', overlayText: 'Conheça nossos planos' }
 ]
 const slides = ref([])
 
@@ -403,9 +403,9 @@ const passos = [
 ]
 
 const sobreBlocos = [
-  { icone: 'mdi mdi-medal-outline', titulo: 'Rótulos Exclusivos', descricao: 'Destilados de distribuição limitada que você não encontra nas prateleiras locais.' },
-  { icone: 'mdi mdi-magnify', titulo: 'Curadoria Especializada', descricao: 'Cada garrafa é selecionada por especialistas com critérios rígidos de qualidade e raridade.' },
-  { icone: 'mdi mdi-glass-cocktail', titulo: 'Experiência Completa', descricao: 'Caixa premium, cartão de degustação e a história de cada rótulo entregue junto.' }
+  { icone: 'fas fa-medal', titulo: 'Rótulos Exclusivos', descricao: 'Destilados de distribuição limitada que você não encontra nas prateleiras locais.' },
+  { icone: 'fas fa-search', titulo: 'Curadoria Especializada', descricao: 'Cada garrafa é selecionada por especialistas com critérios rígidos de qualidade e raridade.' },
+  { icone: 'fas fa-cocktail', titulo: 'Experiência Completa', descricao: 'Caixa premium, cartão de degustação e a história de cada rótulo entregue junto.' }
 ]
 
 const formatarDataPost = (d) => {

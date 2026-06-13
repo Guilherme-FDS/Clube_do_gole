@@ -24,6 +24,14 @@ async def listar_todos(db: AsyncSession) -> list[Pagamento]:
     return result.scalars().all()
 
 
+async def atualizar_gateway(db: AsyncSession, id_pagamento: int, dados: dict) -> None:
+    """Atualiza campos vindos do gateway (status, metodo, gateway_id, pago_em...)."""
+    from sqlalchemy import update
+    await db.execute(
+        update(Pagamento).where(Pagamento.id == id_pagamento).values(**dados)
+    )
+
+
 async def atualizar_status(db: AsyncSession, id_pagamento: int, status: str, pago_em=None) -> None:
     from datetime import datetime, timezone
     from sqlalchemy import update

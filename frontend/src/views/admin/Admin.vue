@@ -87,6 +87,13 @@ const modulos = [
     descricao: 'Entradas, saídas e movimentações',
     bg: '#EDF7FA', cor: '#2A7F8E'
   },
+  {
+    rota: '/admin/clientes',
+    icone: 'fas fa-users',
+    titulo: 'Clientes',
+    descricao: 'Cadastros, histórico e assinaturas',
+    bg: '#F0EEFF', cor: '#5B4FCF'
+  },
 ]
 
 onMounted(() => {

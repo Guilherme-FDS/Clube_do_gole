@@ -252,7 +252,7 @@ async function registrar() {
     // recarregar movimentações e produtos
     const [movs, prods] = await Promise.all([
       api.get('/estoque/admin'),
-      api.get('/produtos/admin'),
+      api.get('/admin/produtos'),
     ])
     movimentacoes.value = movs.data
     produtos.value = prods.data
@@ -267,7 +267,7 @@ onMounted(async () => {
   try {
     const [movs, prods] = await Promise.all([
       api.get('/estoque/admin'),
-      api.get('/produtos/admin'),
+      api.get('/admin/produtos'),
     ])
     movimentacoes.value = movs.data
     produtos.value = prods.data

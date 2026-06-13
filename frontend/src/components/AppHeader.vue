@@ -2,7 +2,7 @@
   <header class="main-header" :class="{ 'header-scrolled': isScrolled }">
     <div class="header-left">
       <div class="logo">
-        <img src="/img/logo.png" alt="Clube do Gole" class="logo-img-small">
+        <img src="/img/logo.webp" alt="Clube do Gole" class="logo-img-small">
       </div>
       <nav class="nav-left">
         <ul>

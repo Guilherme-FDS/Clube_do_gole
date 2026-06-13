@@ -31,6 +31,78 @@ async def buscar(db: AsyncSession, venda_id: int) -> Venda | None:
     )
 
 
+async def detalhe_admin(db: AsyncSession, venda_id: int) -> dict | None:
+    v = await db.scalar(
+        select(Venda)
+        .options(
+            selectinload(Venda.itens).joinedload(ItemVenda.produto),
+            joinedload(Venda.cliente),
+            joinedload(Venda.endereco_entrega),
+            selectinload(Venda.pagamentos),
+            joinedload(Venda.assinatura),
+        )
+        .where(Venda.id == venda_id)
+    )
+    if not v:
+        return None
+    e = v.endereco_entrega
+    a = v.assinatura
+    return {
+        "id": v.id,
+        "data": v.data.isoformat(),
+        "status": v.status,
+        "valor_original": float(v.valor_original or 0),
+        "valor_desconto": float(v.valor_desconto or 0),
+        "valor_total": float(v.valor_total),
+        "desconto_aplicado": float(v.desconto_aplicado or 0),
+        "cupom_aplicado": v.cupom_aplicado,
+        "cliente": {
+            "id": v.cliente.id,
+            "nome": f"{v.cliente.nome} {v.cliente.sobrenome}",
+            "email": v.cliente.email,
+            "telefone": v.cliente.telefone,
+        } if v.cliente else None,
+        "endereco": {
+            "logradouro": e.logradouro,
+            "numero": e.numero,
+            "complemento": e.complemento,
+            "bairro": e.bairro,
+            "cidade": e.cidade,
+            "estado": e.estado,
+            "cep": e.cep,
+        } if e else None,
+        "itens": [
+            {
+                "nome_produto": i.nome_produto,
+                "plano": i.plano,
+                "quantidade": i.quantidade,
+                "valor_unitario": float(i.valor_unitario),
+                "valor_total": float(i.valor_total),
+            }
+            for i in v.itens
+        ],
+        "pagamentos": [
+            {
+                "id": p.id,
+                "metodo": p.metodo,
+                "status": p.status,
+                "valor": float(p.valor),
+                "gateway_id": p.gateway_id,
+                "pago_em": p.pago_em.isoformat() if p.pago_em else None,
+                "criado_em": p.criado_em.isoformat(),
+            }
+            for p in v.pagamentos
+        ],
+        "assinatura": {
+            "id": a.id,
+            "plano": a.plano,
+            "status": a.status,
+            "data_inicio": a.data_inicio.isoformat(),
+            "proximo_ciclo": a.proximo_ciclo.isoformat() if a.proximo_ciclo else None,
+        } if a else None,
+    }
+
+
 async def pedidos_do_cliente_admin(db: AsyncSession, usuario_id: int) -> list[dict]:
     vendas = list((await db.scalars(
         select(Venda)

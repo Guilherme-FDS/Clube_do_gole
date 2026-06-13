@@ -481,13 +481,18 @@ async function finalizarCompra() {
   const ids = itensSelecionados.value.map(i => i.id_carrinho)
   finalizando.value = true
   try {
-    await api.post('/carrinho/finalizar', {
+    const { data } = await api.post('/carrinho/finalizar', {
       ids,
       cupom: cupomAplicado.value ? cupom.value : null,
       desconto_cupom: desconto.value
     })
     localStorage.removeItem('checkoutItems')
     await carrinhoStore.buscar()
+    if (data.checkout_url) {
+      // Mercado Pago: paga na página do gateway e volta via back_urls
+      window.location.href = data.checkout_url
+      return
+    }
     mostrarToast('Pedido realizado com sucesso!', 'success')
     setTimeout(() => router.push('/pedidos'), 1500)
   } catch (e) {

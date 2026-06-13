@@ -17,6 +17,10 @@ from schemas import (
 )
 from utils.auth import gerar_token, login_required
 from utils.email import send_reset_password_email
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 
 settings = get_settings()
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -39,7 +43,8 @@ def _gerar_token_com_sessao(cliente: UsuarioCliente) -> str:
 # ── Login / Cadastro ───────────────────────────────────────────────────────────
 
 @router.post("/login", response_model=TokenOut)
-async def login(body: LoginIn, request: Request, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, body: LoginIn, db: AsyncSession = Depends(get_db)):
     adm = await auth_repo.autenticar_admin(db, body.email, body.senha)
     if adm:
         token = gerar_token({"id": adm.id, "email": adm.email, "tipo": "admin", "nome": adm.nome})
@@ -213,7 +218,8 @@ async def logout(payload: dict = Depends(login_required), db: AsyncSession = Dep
 # ── Recuperação de senha ───────────────────────────────────────────────────────
 
 @router.post("/esqueceu-senha")
-async def esqueceu_senha(body: EsqueceuSenhaIn, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def esqueceu_senha(request: Request, body: EsqueceuSenhaIn, db: AsyncSession = Depends(get_db)):
     cliente = await auth_repo.buscar_cliente_por_email(db, body.email)
     if cliente:
         token = secrets.token_urlsafe(48)

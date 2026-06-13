@@ -33,13 +33,14 @@ const routes = [
   { path: '/admin',                     name: 'Admin',              component: () => import('@/views/admin/Admin.vue'),          meta: { admin: true } },
   { path: '/admin/vendas',              name: 'AdminVendas',        component: () => import('@/views/admin/Dashboard.vue'),      meta: { admin: true } },
   { path: '/admin/produtos',            name: 'AdminProdutos',      component: () => import('@/views/admin/Produtos.vue'),       meta: { admin: true } },
-  { path: '/admin/produtos/editar/:id', name: 'AdminEditarProduto', component: () => import('@/views/admin/Editarprodutos.vue'), meta: { admin: true } },
+
   { path: '/admin/cupons',              name: 'AdminCupons',        component: () => import('@/views/admin/Cupons.vue'),         meta: { admin: true } },
   { path: '/admin/cupons/editar/:id',   name: 'AdminEditarCupom',   component: () => import('@/views/admin/Editarcupom.vue'),    meta: { admin: true } },
   { path: '/admin/vendas/:id',          name: 'AdminDetalhesVenda', component: () => import('@/views/admin/Detalhesvenda.vue'),  meta: { admin: true } },
   { path: '/admin/assinaturas',         name: 'AdminAssinaturas',   component: () => import('@/views/admin/Assinaturas.vue'),    meta: { admin: true } },
   { path: '/admin/pagamentos',          name: 'AdminPagamentos',    component: () => import('@/views/admin/Pagamentos.vue'),     meta: { admin: true } },
   { path: '/admin/estoque',             name: 'AdminEstoque',       component: () => import('@/views/admin/Estoque.vue'),        meta: { admin: true } },
+  { path: '/admin/clientes',            name: 'AdminClientes',      component: () => import('@/views/admin/Clientes.vue'),       meta: { admin: true } },
 
   // 404
   { path: '/:pathMatch(.*)*', redirect: '/' }

@@ -1,609 +1,284 @@
 <template>
-  <div class="detalhes-container">
+  <div class="venda-container">
     <BotaoVoltarAdmin to="/admin/vendas" label="Voltar ao Dashboard" />
-    <h1 class="detalhes-titulo"><i class="fas fa-receipt"></i> Detalhes da Venda</h1>
 
-    <div v-if="carregando" class="loading-spinner">
-      <i class="fas fa-spinner fa-spin"></i> Carregando detalhes...
+    <div v-if="carregando" class="loading">
+      <i class="fas fa-spinner fa-spin"></i> Carregando venda...
     </div>
 
-    <div v-else-if="venda" class="detalhes-grid">
-      <!-- INFORMAÇÕES DA VENDA -->
-      <div class="detalhes-card fade-in" :class="{ visible: fadeInVisible }">
-        <h3><i class="fas fa-info-circle"></i> Informações da Venda</h3>
-        <div class="info-list">
-          <div class="info-item">
-            <strong>ID da Venda:</strong>
-            <span>{{ venda.id_compra }}</span>
+    <div v-else-if="erro" class="erro-box">
+      <i class="fas fa-exclamation-circle"></i> {{ erro }}
+    </div>
+
+    <template v-else-if="venda">
+      <!-- Cabeçalho -->
+      <div class="page-header">
+        <div>
+          <h1>Venda <span class="id-destaque">#{{ venda.id }}</span></h1>
+          <p>{{ formatarDataHora(venda.data) }}</p>
+        </div>
+        <span :class="['status-badge', venda.status]">{{ labelStatus(venda.status) }}</span>
+      </div>
+
+      <div class="grid-principal">
+        <!-- Coluna esquerda -->
+        <div class="coluna">
+
+          <!-- Itens -->
+          <div class="card">
+            <h3><i class="fas fa-wine-bottle"></i> Itens</h3>
+            <table>
+              <thead>
+                <tr><th>Produto</th><th>Plano</th><th>Qtd</th><th>Unitário</th><th>Total</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="(i, idx) in venda.itens" :key="idx">
+                  <td class="nome-col">{{ i.nome_produto }}</td>
+                  <td><span class="plano-badge">{{ i.plano }}</span></td>
+                  <td>{{ i.quantidade }}</td>
+                  <td>{{ moeda(i.valor_unitario) }}</td>
+                  <td class="valor-col">{{ moeda(i.valor_total) }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Resumo financeiro -->
+            <div class="resumo">
+              <div class="resumo-linha"><span>Subtotal</span><span>{{ moeda(venda.valor_original) }}</span></div>
+              <div class="resumo-linha desconto" v-if="venda.valor_desconto > 0">
+                <span>Desconto {{ venda.desconto_aplicado > 0 ? `(${venda.desconto_aplicado}%)` : '' }}
+                  <span v-if="venda.cupom_aplicado" class="cupom-tag"><i class="fas fa-tag"></i> {{ venda.cupom_aplicado }}</span>
+                </span>
+                <span>− {{ moeda(venda.valor_desconto) }}</span>
+              </div>
+              <div class="resumo-linha total"><span>Total</span><span>{{ moeda(venda.valor_total) }}</span></div>
+            </div>
           </div>
-          <div class="info-item">
-            <strong>Data e Hora:</strong>
-            <span>{{ formatarDataHora(venda.data) }}</span>
+
+          <!-- Pagamentos -->
+          <div class="card">
+            <h3><i class="fas fa-credit-card"></i> Pagamentos</h3>
+            <div v-if="!venda.pagamentos.length" class="sem-dados">Nenhum pagamento registrado.</div>
+            <table v-else>
+              <thead>
+                <tr><th>ID</th><th>Método</th><th>Status</th><th>Valor</th><th>Pago em</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="p in venda.pagamentos" :key="p.id">
+                  <td><span class="id-badge">#{{ p.id }}</span></td>
+                  <td>{{ labelMetodo(p.metodo) }}</td>
+                  <td><span :class="['status-badge', 'sm', p.status]">{{ labelStatus(p.status) }}</span></td>
+                  <td class="valor-col">{{ moeda(p.valor) }}</td>
+                  <td>{{ p.pago_em ? formatarDataHora(p.pago_em) : '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div class="info-item">
-            <strong>Produto:</strong>
-            <span>{{ venda.nome_produto }}</span>
+        </div>
+
+        <!-- Coluna direita -->
+        <div class="coluna">
+
+          <!-- Cliente -->
+          <div class="card">
+            <h3><i class="fas fa-user"></i> Cliente</h3>
+            <div v-if="!venda.cliente" class="sem-dados">Cliente não identificado.</div>
+            <div v-else class="info-list">
+              <div class="info"><span class="label">Nome</span><span>{{ venda.cliente.nome }}</span></div>
+              <div class="info"><span class="label">Email</span><span>{{ venda.cliente.email }}</span></div>
+              <div class="info"><span class="label">Telefone</span><span>{{ venda.cliente.telefone || '—' }}</span></div>
+              <div class="info"><span class="label">ID</span><span class="id-badge">#{{ venda.cliente.id }}</span></div>
+            </div>
           </div>
-          <div class="info-item">
-            <strong>Tipo:</strong>
-            <span :class="['badge-tipo', venda.tipo_produto.toLowerCase()]">{{ venda.tipo_produto }}</span>
+
+          <!-- Assinatura -->
+          <div class="card" v-if="venda.assinatura">
+            <h3><i class="fas fa-sync-alt"></i> Assinatura Gerada</h3>
+            <div class="info-list">
+              <div class="info"><span class="label">ID</span><span class="id-badge">#{{ venda.assinatura.id }}</span></div>
+              <div class="info"><span class="label">Plano</span><span class="plano-badge">{{ venda.assinatura.plano }}</span></div>
+              <div class="info"><span class="label">Status</span>
+                <span :class="['status-badge', 'sm', venda.assinatura.status]">{{ venda.assinatura.status }}</span>
+              </div>
+              <div class="info"><span class="label">Início</span><span>{{ formatarData(venda.assinatura.data_inicio) }}</span></div>
+              <div class="info" v-if="venda.assinatura.proximo_ciclo">
+                <span class="label">Próximo ciclo</span><span>{{ formatarData(venda.assinatura.proximo_ciclo) }}</span>
+              </div>
+            </div>
           </div>
-          <div class="info-item">
-            <strong>Quantidade:</strong>
-            <span>{{ venda.quantidade }} unidades</span>
-          </div>
-          <div class="info-item">
-            <strong>Preço Unitário:</strong>
-            <span>{{ formatarMoeda(venda.preco_unitario) }}</span>
-          </div>
-          <div class="info-item" v-if="venda.valor_sem_desconto">
-            <strong>Valor Original:</strong>
-            <span class="valor-original">{{ formatarMoeda(venda.valor_sem_desconto) }}</span>
-          </div>
-          <div class="info-item" v-if="venda.desconto_aplicado && venda.desconto_aplicado > 0">
-            <strong>Desconto:</strong>
-            <span class="valor-desconto">{{ venda.desconto_aplicado }}%</span>
-          </div>
-          <div class="info-item total">
-            <strong>Valor Total:</strong>
-            <span class="valor-total">{{ formatarMoeda(venda.valor_total) }}</span>
-          </div>
-          <div class="info-item" v-if="venda.cupom_aplicado">
-            <strong>Cupom Utilizado:</strong>
-            <span class="cupom-info">{{ venda.cupom_aplicado }}</span>
+
+          <!-- Endereço -->
+          <div class="card" v-if="venda.endereco">
+            <h3><i class="fas fa-map-marker-alt"></i> Entrega</h3>
+            <p class="endereco-texto">
+              {{ venda.endereco.logradouro }}, {{ venda.endereco.numero }}<template v-if="venda.endereco.complemento"> — {{ venda.endereco.complemento }}</template><br>
+              {{ venda.endereco.bairro }} — {{ venda.endereco.cidade }}/{{ venda.endereco.estado }}<br>
+              CEP {{ venda.endereco.cep }}
+            </p>
           </div>
         </div>
       </div>
-
-      <!-- INFORMAÇÕES DO CLIENTE -->
-      <div class="detalhes-card fade-in" :class="{ visible: fadeInVisible }">
-        <h3><i class="fas fa-user"></i> Informações do Cliente</h3>
-        <div class="info-list">
-          <div class="info-item">
-            <strong>Nome:</strong>
-            <span>{{ venda.nome_usuario || venda.cliente_nome || 'Cliente não identificado' }}</span>
-          </div>
-          <div class="info-item">
-            <strong>Email:</strong>
-            <span>{{ venda.email_usuario || venda.cliente_email || '---' }}</span>
-          </div>
-          <div class="info-item">
-            <strong>ID do Cliente:</strong>
-            <span>{{ venda.id_usuario || venda.cliente_id || '---' }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Detalhes do Endereço de Entrega (se disponível) -->
-    <div v-if="venda && venda.endereco" class="detalhes-card full-width fade-in" :class="{ visible: fadeInVisible }">
-      <h3><i class="fas fa-map-marker-alt"></i> Endereço de Entrega</h3>
-      <div class="info-list endereco-list">
-        <div class="info-item">
-          <strong>Endereço:</strong>
-          <span>{{ venda.endereco }}, {{ venda.numero }}</span>
-        </div>
-        <div class="info-item" v-if="venda.complemento">
-          <strong>Complemento:</strong>
-          <span>{{ venda.complemento }}</span>
-        </div>
-        <div class="info-item">
-          <strong>Bairro:</strong>
-          <span>{{ venda.bairro }}</span>
-        </div>
-        <div class="info-item">
-          <strong>Cidade/UF:</strong>
-          <span>{{ venda.cidade }}/{{ venda.estado }}</span>
-        </div>
-        <div class="info-item">
-          <strong>CEP:</strong>
-          <span>{{ venda.cep }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- AÇÕES -->
-    <div class="acoes-detalhes fade-in" :class="{ visible: fadeInVisible }">
-      <router-link to="/admin" class="btn-voltar">
-        <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
-      </router-link>
-      <button @click="imprimirRecibo" class="btn-imprimir">
-        <i class="fas fa-print"></i> Imprimir Recibo
-      </button>
-    </div>
+    </template>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useRoute } from 'vue-router'
+import api from '@/services/api'
 import BotaoVoltarAdmin from '@/components/BotaoVoltarAdmin.vue'
 
 const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
-
-// Estados
 const venda = ref(null)
-const carregando = ref(false)
-const fadeInVisible = ref(false)
+const carregando = ref(true)
+const erro = ref('')
 
-// Formatação
-const formatarMoeda = (valor) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(valor || 0)
-}
+const moeda = (v) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0)
 
-const formatarDataHora = (dataStr) => {
-  if (!dataStr) return '---'
-  const data = new Date(dataStr)
-  return data.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+const formatarDataHora = (d) =>
+  d ? new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
 
-// Carregar detalhes da venda
-const carregarDetalhesVenda = async () => {
-  const vendaId = route.params.id
-  if (!vendaId) {
-    mostrarNotificacao('ID da venda não informado', 'error')
-    router.push('/admin')
-    return
-  }
+const formatarData = (d) => (d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—')
 
-  carregando.value = true
+const labelStatus = (s) => ({
+  pendente: 'Pendente', pago: 'Pago', cancelado: 'Cancelado', estornado: 'Estornado',
+  aprovado: 'Aprovado', recusado: 'Recusado', ativa: 'Ativa', pausada: 'Pausada', expirada: 'Expirada', cancelada: 'Cancelada',
+}[s] || s)
+
+const labelMetodo = (m) => ({
+  cartao_credito: 'Cartão de Crédito', pix: 'PIX', boleto: 'Boleto', outro: 'Outro',
+}[m] || m)
+
+onMounted(async () => {
   try {
-    const response = await fetch(`/api/admin/vendas/${vendaId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Venda não encontrada')
-      }
-      if (response.status === 403) {
-        throw new Error('Acesso não autorizado')
-      }
-      throw new Error('Erro ao carregar detalhes da venda')
-    }
-
-    const data = await response.json()
-    venda.value = data.venda || data
-    mostrarNotificacao('Detalhes carregados com sucesso!', 'success')
-  } catch (error) {
-    console.error('Erro:', error)
-    mostrarNotificacao(error.message, 'error')
-    setTimeout(() => {
-      router.push('/admin')
-    }, 2000)
+    const { data } = await api.get(`/admin/vendas/${route.params.id}`)
+    venda.value = data
+  } catch (e) {
+    erro.value = e?.response?.status === 404 ? 'Venda não encontrada.' : 'Erro ao carregar detalhes da venda.'
   } finally {
     carregando.value = false
-    setTimeout(() => {
-      fadeInVisible.value = true
-    }, 100)
   }
-}
-
-// Imprimir recibo
-const imprimirRecibo = () => {
-  window.print()
-}
-
-// Mostrar notificação
-const mostrarNotificacao = (message, type = 'success') => {
-  const existing = document.querySelector('.admin-notification')
-  if (existing) existing.remove()
-
-  const notification = document.createElement('div')
-  notification.className = `admin-notification admin-notification-${type}`
-
-  const icons = { success: 'check', error: 'exclamation', info: 'info', warning: 'exclamation-triangle' }
-
-  notification.innerHTML = `<i class="fas fa-${icons[type]}"></i><span>${message}</span>`
-
-  document.body.appendChild(notification)
-
-  setTimeout(() => notification.style.opacity = '1', 10)
-  setTimeout(() => {
-    notification.style.opacity = '0'
-    setTimeout(() => notification.remove(), 300)
-  }, 5000)
-}
-
-// Verificar autenticação e permissão
-onMounted(async () => {
-  if (!authStore.logado || authStore.tipo !== 'admin') {
-    router.push('/login?redirect=' + route.fullPath)
-    return
-  }
-  await carregarDetalhesVenda()
 })
 </script>
 
 <style scoped>
-/* ===== ESTILOS EXCLUSIVOS PARA DETALHES DE VENDA ===== */
-.detalhes-container {
-  max-width: 1000px;
-  margin: 120px auto 2rem;
-  padding: 0 20px;
+.venda-container {
+  min-height: 100vh;
+  background: #F4F5F7;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  padding: 80px max(24px, calc((100% - 1100px) / 2)) 60px;
 }
 
-.detalhes-titulo {
-  color: var(--cor-dourado);
-  text-align: center;
-  margin-bottom: 2rem;
-  font-size: 2.2rem;
-}
+.loading, .erro-box { text-align: center; padding: 60px 0; color: #9CA3AF; font-size: 14px; }
+.erro-box { color: #DC2626; }
 
-.detalhes-titulo i {
-  margin-right: 10px;
-}
-
-.detalhes-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.detalhes-card {
-  background: var(--cor-fundo-secundario);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  border-radius: var(--borda-radius-lg);
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.detalhes-card.full-width {
-  grid-column: 1 / -1;
-}
-
-.detalhes-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--sombra-destaque);
-  border-color: var(--cor-dourado);
-}
-
-.detalhes-card h3 {
-  color: var(--cor-dourado);
-  margin-bottom: 1.5rem;
-  font-size: 1.3rem;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-  padding-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.detalhes-card h3 i {
-  font-size: 1.2rem;
-}
-
-.info-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.info-item {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 1rem;
-  background: var(--cor-fundo);
-  border-radius: var(--borda-radius-md);
-  transition: all 0.3s ease;
+  margin-bottom: 20px;
 }
+.page-header h1 { font-size: 22px; font-weight: 700; color: #1B1A19; margin: 0 0 2px; }
+.id-destaque { color: #C9A84C; }
+.page-header p { color: #6B7280; font-size: 13px; margin: 0; }
 
-.info-item:hover {
-  background: rgba(255, 215, 0, 0.05);
-  transform: translateX(5px);
+.grid-principal {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 16px;
+  align-items: start;
 }
+.coluna { display: flex; flex-direction: column; gap: 16px; }
+@media (max-width: 900px) { .grid-principal { grid-template-columns: 1fr; } }
 
-.info-item.total {
-  background: rgba(255, 215, 0, 0.1);
-  border: 1px solid var(--cor-dourado);
-}
-
-.info-item strong {
-  color: var(--cor-texto);
-  font-weight: 600;
-}
-
-.info-item span {
-  color: var(--cor-texto-secundario);
-}
-
-.valor-total {
-  color: var(--cor-dourado) !important;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-.valor-original {
-  text-decoration: line-through;
-  color: #888 !important;
-}
-
-.valor-desconto {
-  color: #4CAF50 !important;
-  font-weight: bold;
-}
-
-.cupom-info {
-  color: #2196F3 !important;
-  font-weight: bold;
-}
-
-/* Badges */
-.badge-tipo {
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--borda-radius-xl);
-  font-size: 0.8rem;
-  font-weight: bold;
-  display: inline-block;
-}
-
-.badge-tipo.gold {
-  background: rgba(255, 215, 0, 0.2);
-  color: var(--cor-dourado);
-  border: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.badge-tipo.premium {
-  background: rgba(138, 43, 226, 0.2);
-  color: var(--cor-roxo-principal);
-  border: 1px solid rgba(138, 43, 226, 0.3);
-}
-
-/* Botões */
-.acoes-detalhes {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-}
-
-.btn-voltar {
-  background: var(--gradiente-botao);
-  color: var(--cor-fundo);
-  padding: 0.8rem 1.8rem;
-  border-radius: var(--borda-radius-lg);
-  text-decoration: none;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-}
-
-.btn-voltar:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--sombra-destaque);
-}
-
-.btn-imprimir {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  color: white;
-  padding: 0.8rem 1.8rem;
-  border: none;
-  border-radius: var(--borda-radius-lg);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-}
-
-.btn-imprimir:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--sombra-destaque);
-}
-
-/* Loading spinner */
-.loading-spinner {
-  text-align: center;
-  padding: 3rem;
-  font-size: 1.2rem;
-  color: var(--cor-dourado);
-}
-
-.loading-spinner i {
-  margin-right: 0.5rem;
-}
-
-/* Animações */
-.fade-in {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.6s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Notificações */
-.admin-notification {
-  position: fixed;
-  top: 100px;
-  right: 20px;
-  padding: 1rem 1.5rem;
-  border-radius: var(--borda-radius-md);
-  box-shadow: var(--sombra-destaque);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  font-weight: 600;
-  max-width: 400px;
-  opacity: 0;
-  transform: translateX(100%);
-  transition: all 0.3s ease;
-}
-
-.admin-notification-success {
-  background: linear-gradient(135deg, #00ff88, #00cc66);
-  color: var(--cor-fundo);
-}
-
-.admin-notification-error {
-  background: linear-gradient(135deg, #ff4444, #cc0000);
-  color: var(--cor-texto);
-}
-
-.admin-notification-info {
-  background: linear-gradient(135deg, #2196F3, #1976D2);
-  color: var(--cor-texto);
-}
-
-/* Estilos para impressão */
-@media print {
-  .header, .footer, .acoes-detalhes, .admin-notification, .btn-imprimir, .btn-voltar {
-    display: none !important;
-  }
-  
-  .detalhes-container {
-    margin: 0;
-    padding: 0;
-  }
-  
-  .detalhes-card {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-  
-  .detalhes-card h3 {
-    color: black;
-  }
-  
-  .info-item {
-    background: white;
-    border: 1px solid #ddd;
-  }
-  
-  .badge-tipo.gold {
-    background: #FFD700;
-    color: black;
-  }
-  
-  .badge-tipo.premium {
-    background: #8A2BE2;
-    color: white;
-  }
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .detalhes-container {
-    margin-top: 100px;
-  }
-
-  .detalhes-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .detalhes-card {
-    padding: 1rem;
-  }
-
-  .info-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .acoes-detalhes {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .btn-voltar, .btn-imprimir {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .detalhes-container {
-    padding: 0 15px;
-  }
-
-  .detalhes-titulo {
-    font-size: 1.6rem;
-  }
-
-  .detalhes-card h3 {
-    font-size: 1.1rem;
-  }
-
-  .info-item {
-    padding: 0.6rem 0.8rem;
-  }
-
-  .btn-voltar, .btn-imprimir {
-    padding: 0.6rem 1.2rem;
-  }
-}
-
-/* ===== ERP LIGHT THEME (sobrescreve o tema escuro acima) ===== */
-.detalhes-container {
-  background: #F4F5F7;
-  min-height: 100vh;
-  max-width: none;
-  margin: 80px 0 0;
-  padding: 30px max(24px, calc((100% - 1100px) / 2)) 60px;
-  font-family: 'DM Sans', 'Segoe UI', sans-serif;
-}
-.detalhes-titulo {
-  font-family: 'DM Sans', 'Segoe UI', sans-serif;
-  font-size: 22px;
-  color: #1B1A19;
-  text-align: left;
-  font-weight: 700;
-}
-.detalhes-titulo i { color: #C9A84C; font-size: 18px; }
-.detalhes-card {
-  background: #FFFFFF;
+.card {
+  background: #fff;
   border: 1px solid #E3E5E8;
   border-radius: 10px;
-  box-shadow: none;
+  padding: 18px 20px;
 }
-.detalhes-card:hover { transform: none; box-shadow: 0 4px 14px rgba(27, 26, 25, 0.07); border-color: #C9A84C; }
-.detalhes-card h3 { color: #1B1A19; font-family: inherit; font-size: 14px; font-weight: 600; }
-.detalhes-card h3 i { color: #C9A84C; }
-.info-item { background: #F9FAFB; border: 1px solid #F0F1F3; }
-.info-item:hover { background: #F4F5F7; }
-.info-item strong { color: #4B5563; }
-.info-item span { color: #1B1A19; }
-.valor-total { color: #1B1A19; }
-.valor-original { color: #6B7280; }
-.valor-desconto { color: #2E8B57; }
-.cupom-info { color: #8A6520; }
-.btn-voltar {
-  background: #FFFFFF;
-  border: 1px solid #D6D9DE;
+.card h3 {
+  font-size: 12px;
+  font-weight: 700;
   color: #4B5563;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.btn-voltar:hover { background: #F4F5F7; border-color: #C9A84C; color: #8A6520; }
-.btn-imprimir {
-  background: linear-gradient(135deg, #9E7A2E, #E2C06A);
+.card h3 i { color: #C9A84C; }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  color: #6B7280;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #E3E5E8;
+}
+td { padding: 10px 8px; font-size: 13px; color: #1B1A19; border-bottom: 1px solid #F3F4F6; }
+.nome-col { font-weight: 600; }
+.valor-col { font-weight: 600; white-space: nowrap; }
+
+.plano-badge {
+  background: #FDF6E5;
+  color: #8A6520;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.id-badge { background: #F3F4F6; border-radius: 6px; padding: 2px 8px; font-size: 12px; color: #4B5563; font-weight: 600; }
+
+.status-badge {
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.status-badge.sm { padding: 3px 10px; font-size: 11px; }
+.status-badge.pago, .status-badge.aprovado, .status-badge.ativa { background: #EBF8F0; color: #2E8B57; }
+.status-badge.pendente, .status-badge.pausada { background: #FEF8E7; color: #B7791F; }
+.status-badge.cancelado, .status-badge.recusado, .status-badge.cancelada { background: #FEF2F2; color: #DC2626; }
+.status-badge.estornado, .status-badge.expirada { background: #F3F4F6; color: #6B7280; }
+
+.resumo { margin-top: 14px; border-top: 1px solid #E3E5E8; padding-top: 12px; }
+.resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #4B5563;
+  padding: 4px 8px;
+}
+.resumo-linha.desconto { color: #2E8B57; }
+.cupom-tag {
+  background: #EBF8F0;
+  border-radius: 6px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+.resumo-linha.total {
+  font-size: 16px;
+  font-weight: 700;
   color: #1B1A19;
+  border-top: 1px solid #E3E5E8;
+  margin-top: 6px;
+  padding-top: 10px;
 }
-.loading-spinner { color: #6B7280; }
-.loading-spinner i { color: #C9A84C; }
+
+.info-list { display: flex; flex-direction: column; gap: 10px; }
+.info { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #1B1A19; }
+.label { font-size: 11px; color: #9CA3AF; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+.endereco-texto { font-size: 13px; color: #4B5563; line-height: 1.7; margin: 0; }
+.sem-dados { color: #9CA3AF; font-size: 13px; padding: 8px 0; }
 </style>

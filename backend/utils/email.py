@@ -42,6 +42,75 @@ def _html_reset(nome: str, url: str, expire: int) -> str:
     """
 
 
+def _html_pedido_confirmado(nome: str, venda_id: int, valor_total: float, itens: list[dict]) -> str:
+    itens_html = "".join(
+        f"<tr><td style='padding:6px 0'>{i['nome_produto']} ({i['plano']})</td>"
+        f"<td style='padding:6px 0;text-align:right'>R$ {i['valor_total']:.2f}</td></tr>"
+        for i in itens
+    )
+    return f"""
+    <div style="font-family:Arial,sans-serif;background:#f5f5f5;padding:40px;">
+      <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:32px;">
+        <h2 style="color:#b5860d;">Clube do Golê 🍾</h2>
+        <p>Olá, <strong>{nome}</strong>! Seu pedido foi recebido.</p>
+        <table width="100%" style="border-collapse:collapse;margin:16px 0;">{itens_html}</table>
+        <p style="font-size:16px;font-weight:bold;">Total: R$ {valor_total:.2f}</p>
+        <p style="color:#666;font-size:13px;">Pedido #{venda_id} — aguardando confirmação de pagamento.</p>
+        <hr style="border:1px solid #eee;margin:24px 0;"/>
+        <p style="font-size:12px;color:#999;">Clube do Golê — bebidas com curadoria.</p>
+      </div>
+    </div>
+    """
+
+
+def _html_pagamento_aprovado(nome: str, venda_id: int, valor_total: float, plano: str) -> str:
+    return f"""
+    <div style="font-family:Arial,sans-serif;background:#f5f5f5;padding:40px;">
+      <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:32px;">
+        <h2 style="color:#2e8b57;">✅ Pagamento Aprovado — Clube do Golê</h2>
+        <p>Olá, <strong>{nome}</strong>!</p>
+        <p>Seu pagamento de <strong>R$ {valor_total:.2f}</strong> foi aprovado.</p>
+        <p>Sua assinatura <strong>{plano}</strong> já está ativa. Em breve sua caixa chega.</p>
+        <p style="color:#666;font-size:13px;">Pedido #{venda_id}</p>
+        <hr style="border:1px solid #eee;margin:24px 0;"/>
+        <p style="font-size:12px;color:#999;">Clube do Golê — bebidas com curadoria.</p>
+      </div>
+    </div>
+    """
+
+
+async def send_pedido_confirmado(recipient_email: str, nome: str, venda_id: int, valor_total: float, itens: list[dict]) -> None:
+    conf = _get_mail_config()
+    if not conf:
+        return
+    try:
+        message = MessageSchema(
+            subject=f"Clube do Golê — Pedido #{venda_id} recebido!",
+            recipients=[recipient_email],
+            body=_html_pedido_confirmado(nome, venda_id, valor_total, itens),
+            subtype=MessageType.html,
+        )
+        await FastMail(conf).send_message(message)
+    except Exception as e:
+        logger.error(f"Erro ao enviar email pedido confirmado {recipient_email}: {e}")
+
+
+async def send_pagamento_aprovado(recipient_email: str, nome: str, venda_id: int, valor_total: float, plano: str) -> None:
+    conf = _get_mail_config()
+    if not conf:
+        return
+    try:
+        message = MessageSchema(
+            subject=f"Clube do Golê — Pagamento aprovado! 🎉",
+            recipients=[recipient_email],
+            body=_html_pagamento_aprovado(nome, venda_id, valor_total, plano),
+            subtype=MessageType.html,
+        )
+        await FastMail(conf).send_message(message)
+    except Exception as e:
+        logger.error(f"Erro ao enviar email pagamento aprovado {recipient_email}: {e}")
+
+
 async def send_reset_password_email(recipient_email: str, nome: str, token: str) -> None:
     settings = get_settings()
     conf = _get_mail_config()

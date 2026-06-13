@@ -35,7 +35,12 @@ class Settings(BaseSettings):
 
     # ── Admin inicial ──────────────────────────────────────────────────────────
     admin_email_inicial: str = "admin@clubedogole.com"
+    # OBRIGATÓRIO em produção — sem default fraco
     admin_senha_inicial: str = "troque-esta-senha-admin"
+
+    @property
+    def admin_senha_segura(self) -> bool:
+        return self.admin_senha_inicial != "troque-esta-senha-admin" and len(self.admin_senha_inicial) >= 12
 
     # ── Planos ─────────────────────────────────────────────────────────────────
     descontos_plano: dict = {"mensal": 0.00, "semestral": 0.05, "anual": 0.10}
@@ -45,6 +50,12 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:5173/auth/google/callback"
+
+    # ── Mercado Pago ───────────────────────────────────────────────────────────
+    mp_access_token: str = ""
+    mp_public_key: str = ""
+    # URL pública do backend (ngrok em dev, domínio em prod) — usada no webhook
+    backend_public_url: str = "http://localhost:8000"
 
     # ── OAuth Facebook ─────────────────────────────────────────────────────────
     facebook_app_id: str = ""
@@ -59,6 +70,10 @@ class Settings(BaseSettings):
     @property
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")
+
+    @property
+    def mp_configured(self) -> bool:
+        return bool(self.mp_access_token)
 
     @property
     def google_configured(self) -> bool:

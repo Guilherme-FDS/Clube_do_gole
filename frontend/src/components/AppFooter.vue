@@ -7,7 +7,7 @@
       <!-- Coluna 1: Marca -->
       <div class="footer-col footer-col-marca">
         <router-link to="/" class="footer-logo">
-          <img src="/img/logo.png" alt="Clube do Gole" style="width:40px;height:auto;">
+          <img src="/img/logo.webp" alt="Clube do Gole" style="width:40px;height:auto;">
           <div class="logo-text">
             <span class="nome">CLUBE DO GOLE</span>
             <span class="subtitulo">Bebidas Premium</span>

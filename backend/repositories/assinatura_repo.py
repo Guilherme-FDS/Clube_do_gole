@@ -35,6 +35,16 @@ async def listar_todas(db: AsyncSession) -> list[Assinatura]:
     return result.scalars().all()
 
 
+async def listar_ativas_expiradas(db: AsyncSession) -> list[Assinatura]:
+    """Retorna assinaturas ativas cujo proximo_ciclo já passou."""
+    hoje = date.today()
+    result = await db.execute(
+        select(Assinatura)
+        .where(Assinatura.status == "ativa", Assinatura.proximo_ciclo < hoje)
+    )
+    return result.scalars().all()
+
+
 async def atualizar_status(db: AsyncSession, id_assinatura: int, status: str) -> None:
     await db.execute(
         update(Assinatura)

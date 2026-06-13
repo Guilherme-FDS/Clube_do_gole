@@ -54,10 +54,13 @@ async def finalizar(body: FinalizarIn, payload: dict = Depends(login_required), 
         valido, msg, _ = await cupom_service.validar(db, body.cupom)
         if not valido:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
-    sucesso, mensagem = await venda_service.finalizar_compra(db, payload["id"], body.ids, body.cupom, body.desconto_cupom)
+    sucesso, mensagem, checkout_url = await venda_service.finalizar_compra(
+        db, payload["id"], body.ids, body.cupom, body.desconto_cupom,
+        email_cliente=payload.get("email"),
+    )
     if not sucesso:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=mensagem)
-    return {"message": mensagem}
+    return {"message": mensagem, "checkout_url": checkout_url}
 
 
 @router.get("/meus_pedidos")

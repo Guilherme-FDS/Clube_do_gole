@@ -15,6 +15,14 @@ async def dashboard(_: dict = Depends(admin_required), db: AsyncSession = Depend
     return await venda_repo.dashboard(db)
 
 
+@router.get("/vendas/{venda_id}")
+async def detalhe_venda(venda_id: int, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
+    venda = await venda_repo.detalhe_admin(db, venda_id)
+    if not venda:
+        raise HTTPException(status_code=404, detail="Venda não encontrada.")
+    return venda
+
+
 @router.get("/clientes", response_model=list[ClienteAdminOut])
 async def listar_clientes(_: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
     return await auth_repo.listar_clientes(db)

@@ -62,7 +62,7 @@
           <h3>Clube do Gole</h3>
           <p><strong>Website institucional moderno e responsivo.</strong></p>
           <router-link to="/" class="portfolio-button">
-            <img src="/img/clubedogole.png" alt="Clube do Gole" class="portfolio-image" />
+            <img src="/img/clubedogole.webp" alt="Clube do Gole" class="portfolio-image" />
           </router-link>
           <p class="portfolio-description">
             Desenvolvimento completo de website institucional com design moderno,
