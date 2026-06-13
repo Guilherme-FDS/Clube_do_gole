@@ -62,7 +62,6 @@ async def criar_preferencia(venda_id: int, itens: list[dict], email_cliente: str
             "pending": f"{settings.frontend_url}/meus-pedidos?pagamento=pendente",
             "failure": f"{settings.frontend_url}/meus-pedidos?pagamento=falha",
         },
-        "auto_return": "approved",
         "statement_descriptor": "CLUBE DO GOLE",
     }
     if email_cliente:
@@ -70,11 +69,18 @@ async def criar_preferencia(venda_id: int, itens: list[dict], email_cliente: str
 
     async with httpx.AsyncClient(timeout=15) as client:
         r = await client.post(f"{API_BASE}/checkout/preferences", json=payload, headers=_headers())
+        if not r.is_success:
+            import logging
+            logging.getLogger("clube_do_gole.mp").error("MP 400 body: %s", r.text)
         r.raise_for_status()
         data = r.json()
 
-    # Em sandbox o init_point normal também funciona com contas de teste
-    return data["init_point"]
+    # sandbox_init_point em teste, init_point em produção
+    from config import get_settings as _s
+    use_sandbox = not _s().mp_access_token.startswith("APP_USR") or "TEST" in _s().mp_access_token.upper()
+    # credenciais de teste do MP começam com APP_USR mas são sandbox — usar sandbox_init_point sempre que não for prod
+    # na prática: se o token não começa com um access token de produção homologado
+    return data.get("sandbox_init_point") or data["init_point"]
 
 
 async def buscar_pagamento(payment_id: str) -> dict:

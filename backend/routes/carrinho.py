@@ -51,7 +51,7 @@ async def atualizar_quantidade(body: AtualizarQuantidadeIn, payload: dict = Depe
 @router.post("/finalizar")
 async def finalizar(body: FinalizarIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
     if body.cupom:
-        valido, msg, _ = await cupom_service.validar(db, body.cupom)
+        valido, msg, *_ = await cupom_service.validar(db, body.cupom)
         if not valido:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
     sucesso, mensagem, checkout_url = await venda_service.finalizar_compra(
