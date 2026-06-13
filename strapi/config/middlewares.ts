@@ -1,6 +1,4 @@
-import type { Core } from '@strapi/strapi';
-
-const config: Core.Config.Middlewares = [
+const config = [
   'strapi::logger',
   'strapi::errors',
   {
@@ -14,11 +12,10 @@ const config: Core.Config.Middlewares = [
             "'self'",
             'data:',
             'blob:',
-            'https://market-assets.strapi.io',
-            'https://res.cloudinary.com',
+            'market-assets.strapi.io',
+            'res.cloudinary.com',
           ],
-          'media-src': ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
-          upgradeInsecureRequests: null,
+          'media-src': ["'self'", 'data:', 'blob:', 'res.cloudinary.com'],
         },
       },
     },
