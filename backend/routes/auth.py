@@ -30,7 +30,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 def _gerar_token_com_sessao(cliente: UsuarioCliente) -> str:
     jti = str(uuid.uuid4())
-    expira_em = datetime.now(timezone.utc) + timedelta(days=settings.jwt_expiry_days)
+    expira_em = datetime.utcnow() + timedelta(days=settings.jwt_expiry_days)
     return gerar_token({
         "id": cliente.id,
         "email": cliente.email,
