@@ -12,7 +12,12 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res,
   err => {
-    if (err.response?.status === 401) {
+    // Só redireciona em 401 de sessão expirada (já estava logado), nunca numa
+    // tentativa de login/cadastro — senão o erro "senha incorreta" some no reload.
+    const url = err.config?.url || ''
+    const ehEndpointAuth = /\/auth\/(login|cadastro|oauth)/.test(url)
+    const tinhaToken = !!localStorage.getItem('token')
+    if (err.response?.status === 401 && tinhaToken && !ehEndpointAuth) {
       localStorage.removeItem('token')
       window.location.href = '/login'
     }
