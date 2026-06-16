@@ -1,0 +1,53 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------
+# post-commit - Agente de Codigo do Clube do Gole
+# Instalado por scripts/agente-de-codigo/install.ps1
+# A cada commit, dispara o agente agente-de-codigo (Claude headless) para
+# atualizar a documentacao no vault do Obsidian. Roda em background e NUNCA
+# bloqueia o commit.
+#   - Desativar temporariamente:  git commit --no-verify
+#   - Desativar de vez:           apague/renomeie este arquivo
+#   - Logs:                       .git/agente-de-codigo.log
+# ---------------------------------------------------------------------------
+
+REPO=$(git rev-parse --show-toplevel)
+COMMIT=$(git rev-parse --short HEAD)
+VAULT="__VAULT__"
+LOG="$REPO/.git/agente-de-codigo.log"
+
+# Resolve o claude.exe embutido no app (app empacotado Store/MSIX: o exe real
+# fica no LocalCache do pacote). Pega a versao mais recente.
+CLAUDE=$(ls -dt "$LOCALAPPDATA"/Packages/*laude*/LocalCache/Roaming/Claude/claude-code/*/claude.exe 2>/dev/null | head -n1)
+[ -z "$CLAUDE" ] && CLAUDE=$(ls -dt "$USERPROFILE"/AppData/Local/Packages/*laude*/LocalCache/Roaming/Claude/claude-code/*/claude.exe 2>/dev/null | head -n1)
+[ -z "$CLAUDE" ] && CLAUDE=$(ls -dt "$APPDATA"/Claude/claude-code/*/claude.exe 2>/dev/null | head -n1)
+if [ -z "$CLAUDE" ]; then
+  echo "[agente-de-codigo] $(date '+%F %T') claude.exe nao encontrado - pulei commit $COMMIT" >> "$LOG"
+  exit 0
+fi
+
+# Salva o diff do commit para o agente ler
+DIFF_FILE="$REPO/.git/agente-de-codigo-last-diff.txt"
+{
+  git show "$COMMIT" --stat
+  echo
+  git show "$COMMIT"
+} > "$DIFF_FILE" 2>/dev/null
+
+echo "[agente-de-codigo] $(date '+%F %T') disparando para commit $COMMIT" >> "$LOG"
+
+PROMPT="Aja como o agente agente-de-codigo (agente de codigo e documentacao do Clube do Gole). Foi feito o commit $COMMIT. O diff completo esta no arquivo $DIFF_FILE. Leia esse diff e os arquivos de codigo que precisar, e atualize a documentacao tecnica do vault em '$VAULT/Docs/' conforme as mudancas. Se o commit alterou variaveis de ambiente (.env.example, config.py, strapi config) ou credenciais, sincronize tambem '$VAULT/Envs.md' e '$VAULT/Senhas.md', preservando os valores reais ja existentes. Edite APENAS arquivos dentro do vault. NUNCA altere codigo, NUNCA rode git commit/add/push, NUNCA apague arquivos. Se nada precisar mudar, apenas registre isso no resumo final."
+
+# Carrega o token OAuth (autentica o headless, independente do sandbox do app)
+TOKEN_FILE="$REPO/.git/agente-de-codigo.token"
+if [ -f "$TOKEN_FILE" ]; then
+  CLAUDE_CODE_OAUTH_TOKEN=$(tr -d ' \t\r\n' < "$TOKEN_FILE")
+  export CLAUDE_CODE_OAUTH_TOKEN
+fi
+
+# Dispara em background, detached, sem bloquear o commit
+nohup "$CLAUDE" -p "$PROMPT" \
+  --permission-mode bypassPermissions \
+  --add-dir "$VAULT" \
+  >> "$LOG" 2>&1 &
+
+exit 0
