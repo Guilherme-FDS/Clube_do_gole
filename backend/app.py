@@ -22,10 +22,25 @@ settings = get_settings()
 
 limiter = Limiter(key_func=get_remote_address)
 
+async def _seed_admin():
+    from database.engine import get_db
+    from database.models import UsuarioAdm
+    from sqlalchemy import select
+    import bcrypt
+    async for db in get_db():
+        existe = await db.scalar(select(UsuarioAdm).where(UsuarioAdm.email == settings.admin_email_inicial))
+        if not existe:
+            h = bcrypt.hashpw(settings.admin_senha_inicial.encode(), bcrypt.gensalt()).decode()
+            db.add(UsuarioAdm(nome="Admin", email=settings.admin_email_inicial, senha=h, tipo="admin"))
+            await db.commit()
+            logger.info("✅ Admin inicial criado: %s", settings.admin_email_inicial)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from services.scheduler import iniciar_scheduler
     await create_tables()
+    await _seed_admin()
     iniciar_scheduler()
     if not settings.admin_senha_segura:
         logger.warning("⚠️  ADMIN_SENHA_INICIAL ainda é o valor padrão inseguro. Troque em backend/.env antes de ir para produção.")
