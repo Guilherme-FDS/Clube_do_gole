@@ -35,15 +35,20 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('nome',    data.nome)
         localStorage.setItem('tipo',    data.tipo)
         localStorage.setItem('user_id', userId.value)
-      } catch {
-        token.value  = null
-        nome.value   = null
-        tipo.value   = null
-        userId.value = null
-        localStorage.removeItem('token')
-        localStorage.removeItem('nome')
-        localStorage.removeItem('tipo')
-        localStorage.removeItem('user_id')
+      } catch (err) {
+        // Só limpa auth em erros explícitos de autenticação (token inválido/expirado).
+        // Erros de rede (backend dormindo) não invalidam o token — mantém o estado atual.
+        const status = err?.response?.status
+        if (status === 401 || status === 403) {
+          token.value  = null
+          nome.value   = null
+          tipo.value   = null
+          userId.value = null
+          localStorage.removeItem('token')
+          localStorage.removeItem('nome')
+          localStorage.removeItem('tipo')
+          localStorage.removeItem('user_id')
+        }
       }
     }
   }
