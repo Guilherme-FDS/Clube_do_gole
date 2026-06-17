@@ -17,7 +17,18 @@
           <h1>Venda <span class="id-destaque">#{{ venda.id }}</span></h1>
           <p>{{ formatarDataHora(venda.data) }}</p>
         </div>
-        <span :class="['status-badge', venda.status]">{{ labelStatus(venda.status) }}</span>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span :class="['status-badge', venda.status]">{{ labelStatus(venda.status) }}</span>
+          <button
+            v-if="venda.status === 'pendente'"
+            @click="aprovarVenda"
+            :disabled="aprovando"
+            class="btn-aprovar"
+          >
+            <i :class="aprovando ? 'fas fa-spinner fa-spin' : 'fas fa-check'"></i>
+            {{ aprovando ? 'Aprovando...' : 'Aprovar venda' }}
+          </button>
+        </div>
       </div>
 
       <div class="grid-principal">
@@ -132,6 +143,7 @@ const route = useRoute()
 const venda = ref(null)
 const carregando = ref(true)
 const erro = ref('')
+const aprovando = ref(false)
 
 const moeda = (v) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0)
@@ -149,6 +161,21 @@ const labelStatus = (s) => ({
 const labelMetodo = (m) => ({
   cartao_credito: 'Cartão de Crédito', pix: 'PIX', boleto: 'Boleto', outro: 'Outro',
 }[m] || m)
+
+const aprovarVenda = async () => {
+  if (!confirm('Aprovar esta venda manualmente? Isso criará a assinatura do cliente.')) return
+  aprovando.value = true
+  try {
+    await api.post(`/admin/vendas/${route.params.id}/aprovar`)
+    const { data } = await api.get(`/admin/vendas/${route.params.id}`)
+    venda.value = data
+    alert('Venda aprovada com sucesso!')
+  } catch (e) {
+    alert(e?.response?.data?.detail || 'Erro ao aprovar venda.')
+  } finally {
+    aprovando.value = false
+  }
+}
 
 onMounted(async () => {
   try {
@@ -281,4 +308,21 @@ td { padding: 10px 8px; font-size: 13px; color: #1B1A19; border-bottom: 1px soli
 
 .endereco-texto { font-size: 13px; color: #4B5563; line-height: 1.7; margin: 0; }
 .sem-dados { color: #9CA3AF; font-size: 13px; padding: 8px 0; }
+
+.btn-aprovar {
+  background: #2E8B57;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.btn-aprovar:hover:not(:disabled) { background: #246b44; }
+.btn-aprovar:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>

@@ -159,6 +159,21 @@ async def deletar_cupom(cupom_id: int, _: dict = Depends(admin_required), db: As
         raise HTTPException(status_code=404, detail="Cupom não encontrado.")
 
 
+# ── Aprovação manual de venda ───────────────────────────────────────────────────
+
+@router.post("/vendas/{venda_id}/aprovar", dependencies=[Depends(admin_required)])
+async def aprovar_venda_manual(venda_id: int, db: AsyncSession = Depends(get_db)):
+    from repositories.venda_repo import buscar
+    from services.venda_service import aprovar_venda
+    venda = await buscar(db, venda_id)
+    if not venda:
+        raise HTTPException(status_code=404, detail="Venda não encontrada.")
+    if venda.status == "pago":
+        return {"message": "Venda já estava aprovada."}
+    await aprovar_venda(db, venda_id)
+    return {"message": "Venda aprovada e assinatura criada com sucesso."}
+
+
 @router.patch("/cupons/{cupom_id}/status", response_model=CupomOut)
 async def status_cupom(cupom_id: int, body: dict, _: dict = Depends(admin_required), db: AsyncSession = Depends(get_db)):
     if body.get("status") not in ("ativo", "inativo"):

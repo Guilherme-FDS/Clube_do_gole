@@ -271,7 +271,12 @@ const salvarCupom = async () => {
     await carregarCupons()
   } catch (error) {
     console.error('Erro ao salvar cupom:', error)
-    mostrarNotificacao(error.message || 'Erro ao salvar cupom', 'error')
+    const detail = error?.response?.data?.detail
+    const msg = Array.isArray(detail)
+      ? detail.map(e => e.msg).join('. ')
+      : (typeof detail === 'string' ? detail : error.message || 'Erro ao salvar cupom')
+    erros.value.push(msg)
+    mostrarNotificacao(msg, 'error')
   } finally {
     salvando.value = false
   }
@@ -310,7 +315,10 @@ const mostrarNotificacao = (message, type = 'success') => {
   const icons = { success: 'check', error: 'exclamation', info: 'info', warning: 'exclamation-triangle' }
   notification.innerHTML = `<i class="fas fa-${icons[type]}"></i><span>${message}</span>`
   document.body.appendChild(notification)
-  setTimeout(() => notification.style.opacity = '1', 10)
+  setTimeout(() => {
+    notification.style.opacity = '1'
+    notification.style.transform = 'translateX(0)'
+  }, 10)
   setTimeout(() => {
     notification.style.opacity = '0'
     setTimeout(() => notification.remove(), 300)
