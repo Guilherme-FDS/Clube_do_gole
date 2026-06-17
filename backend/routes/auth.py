@@ -5,11 +5,12 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy import select as sa_select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import get_settings
 from database.engine import get_db
-from database.models import UsuarioCliente
+from database.models import UsuarioCliente, UsuarioAdm
 from repositories import auth_repo, carrinho_repo
 from schemas import (
     CadastroIn, EsqueceuSenhaIn, LoginIn,
@@ -197,12 +198,22 @@ async def _trocar_code_facebook(code: str) -> dict:
 
 # ── Sessão / Perfil ────────────────────────────────────────────────────────────
 
-@router.get("/me", response_model=UsuarioOut)
+@router.get("/me")
 async def me(payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    if payload.get("tipo") == "admin":
+        adm = await db.scalar(
+            sa_select(UsuarioAdm).where(UsuarioAdm.id == payload["id"])
+        )
+        if not adm:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Admin não encontrado.")
+        return {"id": adm.id, "nome": adm.nome, "email": adm.email, "tipo": "admin"}
+
     cliente = await auth_repo.buscar_cliente(db, payload["id"])
     if not cliente:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
-    return cliente
+    data = UsuarioOut.model_validate(cliente).model_dump()
+    data["tipo"] = "cliente"
+    return data
 
 
 @router.post("/logout")
