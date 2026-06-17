@@ -19,7 +19,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import api from '@/services/api'
 
 const router = useRouter()
 const route  = useRoute()
@@ -38,8 +37,7 @@ onMounted(async () => {
   }
 
   try {
-    const { data } = await api.post('/auth/oauth/callback', { provider, code })
-    auth.setAuth(data.token, data.tipo, data.nome)
+    const data = await auth.entrarOAuth(code, provider)
     router.push(data.tipo === 'admin' ? '/admin' : '/')
   } catch (e) {
     const msg = e?.response?.data?.detail
