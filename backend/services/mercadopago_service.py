@@ -75,12 +75,11 @@ async def criar_preferencia(venda_id: int, itens: list[dict], email_cliente: str
         r.raise_for_status()
         data = r.json()
 
-    # sandbox_init_point em teste, init_point em produção
-    from config import get_settings as _s
-    use_sandbox = not _s().mp_access_token.startswith("APP_USR") or "TEST" in _s().mp_access_token.upper()
-    # credenciais de teste do MP começam com APP_USR mas são sandbox — usar sandbox_init_point sempre que não for prod
-    # na prática: se o token não começa com um access token de produção homologado
-    return data.get("sandbox_init_point") or data["init_point"]
+    # Credenciais de teste (TEST-...) usam sandbox_init_point; produção (APP_USR-...) usa init_point
+    use_sandbox = "TEST" in settings.mp_access_token.upper() or not settings.mp_access_token.startswith("APP_USR")
+    if use_sandbox:
+        return data.get("sandbox_init_point") or data["init_point"]
+    return data.get("init_point") or data.get("sandbox_init_point", "")
 
 
 async def buscar_pagamento(payment_id: str) -> dict:

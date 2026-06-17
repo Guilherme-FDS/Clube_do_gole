@@ -2,6 +2,11 @@
   <div class="container meus-pedidos">
     <h1 class="titulo-lg">Meus Pedidos</h1>
 
+    <div v-if="bannerPagamento" :class="['banner-pagamento', bannerPagamento.tipo]">
+      <i :class="bannerPagamento.icone"></i>
+      {{ bannerPagamento.msg }}
+    </div>
+
     <div v-if="carregando" class="loading-spinner">
       <i class="fas fa-spinner fa-spin"></i> Carregando pedidos...
     </div>
@@ -69,15 +74,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
 const router = useRouter()
+const route  = useRoute()
 const authStore = useAuthStore()
 
 const pedidos = ref([])
+
+const bannerPagamento = computed(() => {
+  const s = route.query.pagamento
+  if (!s) return null
+  if (s === 'sucesso') return { tipo: 'sucesso', icone: 'fas fa-check-circle', msg: 'Pagamento aprovado! Seu pedido está confirmado.' }
+  if (s === 'pendente') return { tipo: 'pendente', icone: 'fas fa-clock', msg: 'Pagamento em análise. Você será notificado quando aprovado.' }
+  return { tipo: 'falha', icone: 'fas fa-times-circle', msg: 'Pagamento não aprovado. Tente novamente.' }
+})
 const carregando = ref(false)
 const fadeInVisible = ref(false)
 const aberto = ref(null)
@@ -123,6 +137,20 @@ onMounted(async () => {
   padding-bottom: var(--espacamento-xl);
 }
 .meus-pedidos .titulo-lg { text-align: center; margin-bottom: var(--espacamento-lg); }
+
+.banner-pagamento {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+.banner-pagamento.sucesso  { background: #EBF8F0; color: #2E8B57; border: 1px solid #2E8B57; }
+.banner-pagamento.pendente { background: #FEF8E7; color: #B7791F; border: 1px solid #B7791F; }
+.banner-pagamento.falha    { background: #FEF2F2; color: #DC2626; border: 1px solid #DC2626; }
 
 .pedidos-lista {
   display: flex;

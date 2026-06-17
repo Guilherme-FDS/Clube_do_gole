@@ -514,7 +514,7 @@ async function finalizarCompra() {
       return
     }
     mostrarToast('Pedido realizado com sucesso!', 'success')
-    setTimeout(() => router.push('/pedidos'), 1500)
+    setTimeout(() => router.push('/meus-pedidos'), 1500)
   } catch (e) {
     mostrarToast(e.response?.data?.detail || 'Erro ao finalizar pedido', 'error')
   } finally {
