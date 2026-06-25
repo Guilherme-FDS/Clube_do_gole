@@ -4,8 +4,28 @@ const strapi = axios.create({
   baseURL: import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337',
 })
 
-const get = (path, params = {}) =>
-  strapi.get(`/api${path}`, { params: { populate: '*', ...params } })
+// Cache em memória — persiste enquanto a aba estiver aberta, zerando entre recarregamentos
+const _cache = new Map()
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutos
+
+const _getCached = (key) => {
+  const entry = _cache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.ts > CACHE_TTL) { _cache.delete(key); return null }
+  return entry.data
+}
+
+const get = (path, params = {}) => {
+  const key = path + JSON.stringify(params)
+  const cached = _getCached(key)
+  if (cached) return Promise.resolve(cached)
+
+  const req = strapi.get(`/api${path}`, { params: { populate: '*', ...params } })
+  req.then(res => _cache.set(key, { data: res, ts: Date.now() })).catch(() => {})
+  return req
+}
+
+export const invalidarCacheStrapi = () => _cache.clear()
 
 export const getBanners = () =>
   get('/banners', { filters: { ativo: true }, sort: 'ordem:asc' })

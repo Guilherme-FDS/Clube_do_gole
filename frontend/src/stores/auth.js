@@ -4,6 +4,13 @@ import { ref, computed } from 'vue'
 import { login as apiLogin, logout as apiLogout, oauthCallback, me as apiMe } from '@/services/auth'
 import { useCarrinhoStore } from './carrinho'
 
+const INATIVIDADE_MS = 30 * 60 * 1000 // 30 minutos
+
+// Detecta dispositivo móvel — não aplica timeout em mobile
+const _isMobile = () =>
+  typeof navigator !== 'undefined' &&
+  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+
 export const useAuthStore = defineStore('auth', () => {
   const token  = ref(localStorage.getItem('token')   || null)
   const nome   = ref(localStorage.getItem('nome')    || null)
@@ -11,6 +18,30 @@ export const useAuthStore = defineStore('auth', () => {
   const userId = ref(localStorage.getItem('user_id') || null)
 
   const logado = computed(() => !!token.value)
+
+  // ── Inatividade ────────────────────────────────────────────────────────────
+  let _inativTimer  = null
+  let _inativSetup  = false
+
+  function _resetarTimer() {
+    if (_inativTimer) clearTimeout(_inativTimer)
+    _inativTimer = setTimeout(() => sair(), INATIVIDADE_MS)
+  }
+
+  function _iniciarInatividade() {
+    if (_isMobile() || _inativSetup) return
+    _inativSetup = true
+    const eventos = ['mousemove', 'keydown', 'click', 'scroll']
+    eventos.forEach(ev => window.addEventListener(ev, _resetarTimer, { passive: true }))
+    _resetarTimer()
+  }
+
+  function _pararInatividade() {
+    if (_inativTimer) { clearTimeout(_inativTimer); _inativTimer = null }
+    // Não remove os listeners (tornaria necessário guardar referência); chamar
+    // sair() em estado deslogado é inofensivo.
+  }
+  // ───────────────────────────────────────────────────────────────────────────
 
   function _salvar(data) {
     token.value  = data.token
@@ -23,6 +54,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('tipo',    data.tipo)
     localStorage.setItem('user_id', userId.value)
     localStorage.removeItem('guest_id')
+
+    _iniciarInatividade()
   }
 
   async function init() {
@@ -35,6 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('nome',    data.nome)
         localStorage.setItem('tipo',    data.tipo)
         localStorage.setItem('user_id', userId.value)
+        _iniciarInatividade()
       } catch (err) {
         // Só limpa auth em erros explícitos de autenticação (token inválido/expirado).
         // Erros de rede (backend dormindo) não invalidam o token — mantém o estado atual.
@@ -48,6 +82,7 @@ export const useAuthStore = defineStore('auth', () => {
           localStorage.removeItem('nome')
           localStorage.removeItem('tipo')
           localStorage.removeItem('user_id')
+          _pararInatividade()
         }
       }
     }
@@ -87,6 +122,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('nome')
     localStorage.removeItem('tipo')
     localStorage.removeItem('user_id')
+    _pararInatividade()
   }
 
   return { token, nome, tipo, userId, logado, init, entrar, entrarOAuth, sair }

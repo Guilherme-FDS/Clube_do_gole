@@ -19,6 +19,9 @@ api.interceptors.response.use(
     const tinhaToken = !!localStorage.getItem('token')
     if (err.response?.status === 401 && tinhaToken && !ehEndpointAuth) {
       localStorage.removeItem('token')
+      localStorage.removeItem('nome')
+      localStorage.removeItem('tipo')
+      localStorage.removeItem('user_id')
       window.location.href = '/login'
     }
     return Promise.reject(err)

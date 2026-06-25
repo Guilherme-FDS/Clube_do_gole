@@ -1,6 +1,19 @@
 <template>
   <div class="produto-container">
 
+    <!-- ESTADO DE ERRO (API fora do ar / produto não encontrado) -->
+    <div v-if="erroCarregamento" class="erro-container">
+      <i class="fas fa-wine-bottle erro-icone"></i>
+      <h2>Não conseguimos carregar o produto</h2>
+      <p>O servidor pode estar acordando. Tente novamente em alguns segundos.</p>
+      <button class="btn-modern" style="width:auto;padding:0.875rem 2.5rem;" @click="carregarProduto">
+        <i class="fas fa-redo"></i> Tentar novamente
+      </button>
+      <router-link to="/" class="erro-voltar">← Voltar para o início</router-link>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <template v-else>
     <!-- HERO -->
     <div class="produto-hero">
       <div class="produto-imagem">
@@ -116,6 +129,8 @@
     </section>
 
     <div id="toast-container"></div>
+    </template><!-- /v-else -->
+
   </div>
 </template>
 
@@ -139,6 +154,7 @@ const strapiImagem = ref('')
 const planoSelecionado = ref(null)
 const entregasAnteriores = ref([])
 const carregando = ref(false)
+const erroCarregamento = ref(false)
 
 const planoMensal = computed(() => planos.value.find(p => p.recorrencia === 'mensal'))
 
@@ -164,15 +180,17 @@ const carregarProduto = async () => {
   const id = route.params.id
   if (!id) { router.push('/'); return }
   carregando.value = true
+  erroCarregamento.value = false
   try {
     const { data } = await api.get(`/produtos/${id}`)
     Object.assign(produto, data)
     planos.value = data.planos || []
     const semestral = planos.value.find(p => p.recorrencia === 'semestral')
     planoSelecionado.value = semestral?.id ?? planos.value[0]?.id ?? null
-  } catch {
-    mostrarToast('Produto não encontrado', 'error')
-    router.push('/')
+  } catch (err) {
+    // Não redireciona para home — mantém o usuário na página com opção de retry.
+    // Redirect silencioso era a causa do bug "volta para o hero" ao clicar em Começar Agora.
+    erroCarregamento.value = true
   } finally {
     carregando.value = false
   }
@@ -249,6 +267,17 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── ERRO ───────────────────────────────────────── */
+.erro-container {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 5rem 2rem; gap: 1.25rem;
+}
+.erro-icone { font-size: 3.5rem; color: var(--cor-dourado); opacity: 0.4; }
+.erro-container h2 { font-family: var(--fonte-principal); font-size: 1.75rem; color: #1b1a19; }
+.erro-container p { color: #777; max-width: 420px; line-height: 1.65; }
+.erro-voltar { color: var(--cor-dourado-escuro); font-size: 0.875rem; margin-top: 0.5rem; text-decoration: none; }
+.erro-voltar:hover { text-decoration: underline; }
+
 /* ── CONTAINER ─────────────────────────────────── */
 .produto-container {
   max-width: 1200px;
