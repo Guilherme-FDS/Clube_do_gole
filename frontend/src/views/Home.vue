@@ -112,7 +112,7 @@
               <li><i class="fas fa-check"></i> Frete incluso</li>
               <li><i class="fas fa-check"></i> Flexibilidade total</li>
             </ul>
-            <button class="plano-cta" @click="irParaPlano">Começar Agora</button>
+            <button class="plano-cta" @click="irParaPlano" :disabled="!produtoId">Começar Agora</button>
           </div>
 
           <!-- SEMESTRAL -->
@@ -133,7 +133,7 @@
               <li><i class="fas fa-check"></i> Frete incluso</li>
               <li><i class="fas fa-check"></i> 5% de desconto</li>
             </ul>
-            <button class="plano-cta plano-cta-destaque" @click="irParaPlano">Começar Agora</button>
+            <button class="plano-cta plano-cta-destaque" @click="irParaPlano" :disabled="!produtoId">Começar Agora</button>
           </div>
 
           <!-- ANUAL -->
@@ -154,7 +154,7 @@
               <li><i class="fas fa-check"></i> Frete incluso</li>
               <li><i class="fas fa-check"></i> 10% de desconto</li>
             </ul>
-            <button class="plano-cta" @click="irParaPlano">Começar Agora</button>
+            <button class="plano-cta" @click="irParaPlano" :disabled="!produtoId">Começar Agora</button>
           </div>
         </div>
 
@@ -351,15 +351,20 @@ import { getBanners, getHome, getDepoimentos, getFaqs, getPosts, getEntregasAnte
 import EntregasAnteriores from '@/components/EntregasAnteriores.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import api from '@/services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
+const produtoId = ref(null)
+
 const irParaPlano = () => {
+  const dest = produtoId.value ? `/produto/${produtoId.value}` : null
+  if (!dest) return
   if (authStore.logado) {
-    router.push('/produto/1')
+    router.push(dest)
   } else {
-    router.push('/login?redirect=/produto/1')
+    router.push(`/login?redirect=${encodeURIComponent(dest)}`)
   }
 }
 
@@ -483,6 +488,13 @@ const enviarContato = async () => {
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
+
+  // Descobre o ID do primeiro produto ativo para os botões "Começar Agora"
+  try {
+    const { data } = await api.get('/produtos/')
+    const primeiro = Array.isArray(data) ? data.find(p => p.ativo !== false) : null
+    if (primeiro) produtoId.value = primeiro.id
+  } catch {}
 
   try {
     const { data } = await getHome()
