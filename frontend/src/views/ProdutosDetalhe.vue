@@ -88,8 +88,14 @@
         </div>
       </div>
 
-      <div v-else class="planos-loading">
+      <div v-else-if="carregando" class="planos-loading">
+        <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;color:var(--cor-dourado);opacity:0.5;"></i>
         <p>Carregando planos...</p>
+      </div>
+      <div v-else class="planos-loading">
+        <i class="fas fa-wine-bottle" style="font-size:2rem;color:var(--cor-dourado);opacity:0.3;margin-bottom:0.75rem;"></i>
+        <p>Nenhum plano disponível no momento.</p>
+        <p style="font-size:0.8rem;opacity:0.6;">Entre em contato para mais informações.</p>
       </div>
 
       <p class="planos-nota">
