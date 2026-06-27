@@ -103,58 +103,14 @@
               <span class="eyebrow-badge">● Pagamento</span>
             </div>
             <h2 class="section-title">Forma de pagamento</h2>
-            <div class="pagamento-opcoes">
-              <label class="pagamento-card" :class="{ selected: pagamento === 'cartao' }">
-                <input type="radio" value="cartao" v-model="pagamento" class="sr-only" />
-                <div class="radio-dot" :class="{ active: pagamento === 'cartao' }"></div>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
-                </svg>
-                <span>Cartão de crédito</span>
-              </label>
-              <label class="pagamento-card" :class="{ selected: pagamento === 'pix' }">
-                <input type="radio" value="pix" v-model="pagamento" class="sr-only" />
-                <div class="radio-dot" :class="{ active: pagamento === 'pix' }"></div>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-                </svg>
-                <span>Pix</span>
-              </label>
-            </div>
-
-            <div v-if="pagamento === 'cartao'" class="cartao-form">
-              <div class="form-group">
-                <label>Número do cartão</label>
-                <input type="text" v-model="cartao.numero" placeholder="0000 0000 0000 0000" class="form-input" maxlength="19" @input="formatarCartao" />
-              </div>
-              <div class="form-group">
-                <label>Nome no cartão</label>
-                <input type="text" v-model="cartao.nome" placeholder="Como está no cartão" class="form-input" />
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Validade</label>
-                  <input type="text" v-model="cartao.validade" placeholder="MM/AA" class="form-input" maxlength="5" />
-                </div>
-                <div class="form-group">
-                  <label>CVV</label>
-                  <input type="text" v-model="cartao.cvv" placeholder="000" class="form-input" maxlength="4" />
-                </div>
-                <div class="form-group">
-                  <label>Parcelas</label>
-                  <select v-model="cartao.parcelas" class="form-input">
-                    <option v-for="n in 12" :key="n" :value="n">{{ n }}x {{ formatarMoeda(totalFinal / n) }}</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="pagamento === 'pix'" class="pix-info">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--cor-dourado)" stroke-width="1.5">
-                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            <div class="pagamento-mp">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--ck-gold)" stroke-width="1.5">
+                <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
               </svg>
-              <p>Após confirmar o pedido, você receberá o QR Code do Pix para pagamento.</p>
-              <p class="pix-destaque">Aprovação instantânea após o pagamento.</p>
+              <div class="pagamento-mp-texto">
+                <p class="pagamento-mp-titulo">Pagamento seguro via Mercado Pago</p>
+                <p class="pagamento-mp-sub">Ao confirmar, você será direcionado ao Mercado Pago para pagar com cartão de crédito, Pix ou boleto.</p>
+              </div>
             </div>
           </section>
         </div>
@@ -214,7 +170,7 @@
 
             <button class="btn-finalizar" @click="finalizarCompra" :disabled="finalizando || !enderecoSelecionado">
               <span v-if="finalizando">Processando...</span>
-              <span v-else>Confirmar pedido</span>
+              <span v-else>Ir para pagamento</span>
             </button>
 
             <p v-if="!enderecoSelecionado" class="aviso-endereco">Selecione um endereço de entrega para continuar</p>
@@ -327,9 +283,6 @@ const descontoFixo = ref(null)
 const carregandoCupom = ref(false)
 const mensagemCupom = ref('')
 
-const pagamento = ref('cartao')
-const cartao = ref({ numero: '', nome: '', validade: '', cvv: '', parcelas: 1 })
-
 const finalizando = ref(false)
 
 const modalEndereco = ref(false)
@@ -373,11 +326,6 @@ function formatarCEPInput(e) {
   let v = e.target.value.replace(/\D/g, '').slice(0, 8)
   if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5)
   form.value.cep = v
-}
-
-function formatarCartao(e) {
-  let v = e.target.value.replace(/\D/g, '').slice(0, 16)
-  cartao.value.numero = v.replace(/(\d{4})(?=\d)/g, '$1 ')
 }
 
 async function carregarItens() {
@@ -873,33 +821,6 @@ function mostrarToast(mensagem, tipo = 'success') {
 .cupom-feedback.erro { color: #B83232; }
 
 /* ── Pagamento ─────────────────────────────────────────────────────────── */
-.pagamento-opcoes { display: flex; gap: 12px; margin-bottom: 24px; }
-
-.pagamento-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  border: 1.5px solid #C8C4BB;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--ck-text2);
-  flex: 1;
-  background: var(--ck-card);
-}
-.pagamento-card:hover { border-color: #D4B96A; }
-.pagamento-card.selected {
-  border-color: var(--ck-gold);
-  background: #FFFBF0;
-  color: var(--ck-text);
-  box-shadow: 0 2px 10px rgba(201,168,76,0.14);
-}
-
-.cartao-form { display: flex; flex-direction: column; gap: 18px; }
-
 .form-row { display: flex; gap: 14px; }
 .form-group { display: flex; flex-direction: column; gap: 7px; flex: 1; }
 .form-group.flex-1 { flex: 1; }
@@ -928,22 +849,17 @@ function mostrarToast(mensagem, tipo = 'success') {
 .form-input::placeholder { color: #B0ABA4; }
 select.form-input { cursor: pointer; }
 
-.pix-info {
+.pagamento-mp {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 10px;
-  padding: 28px 20px;
+  gap: 16px;
+  padding: 22px 24px;
   background: #FFFBF0;
-  border: 1px dashed rgba(201,168,76,0.4);
+  border: 1px solid rgba(201,168,76,0.4);
   border-radius: 12px;
-  font-size: 15px;
-  color: var(--ck-muted);
-  line-height: 1.6;
 }
-.pix-destaque { font-weight: 700; color: var(--ck-text); margin: 0; font-size: 15px; }
-.pix-info p { margin: 0; }
+.pagamento-mp-titulo { font-weight: 700; color: var(--ck-text); margin: 0 0 4px; font-size: 15px; }
+.pagamento-mp-sub { margin: 0; font-size: 14px; color: var(--ck-muted); line-height: 1.5; }
 
 /* ── Resumo sticky ─────────────────────────────────────────────────────── */
 .checkout-resumo { position: sticky; top: 28px; }
@@ -1192,7 +1108,6 @@ select.form-input { cursor: pointer; }
   .checkout-container { padding: 0 20px; }
   .checkout-header { flex-direction: column; align-items: flex-start; gap: 14px; }
   .form-row { flex-direction: column; }
-  .pagamento-opcoes { flex-direction: column; }
   .checkout-section { padding: 24px 22px; }
 }
 

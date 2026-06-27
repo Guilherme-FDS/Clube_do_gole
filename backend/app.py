@@ -69,6 +69,7 @@ from routes.configuracoes import router as configuracoes_router
 from routes.assinaturas import router as assinaturas_router
 from routes.pagamentos import router as pagamentos_router
 from routes.estoque import router as estoque_router
+from routes.contato import router as contato_router
 
 app.include_router(auth_router)
 app.include_router(admin_router)
@@ -79,6 +80,7 @@ app.include_router(configuracoes_router)
 app.include_router(assinaturas_router)
 app.include_router(pagamentos_router)
 app.include_router(estoque_router)
+app.include_router(contato_router)
 
 if __name__ == "__main__":
     import uvicorn

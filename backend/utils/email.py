@@ -111,6 +111,46 @@ async def send_pagamento_aprovado(recipient_email: str, nome: str, venda_id: int
         logger.error(f"Erro ao enviar email pagamento aprovado {recipient_email}: {e}")
 
 
+def _html_contato(nome: str, email: str, assunto: str, mensagem: str) -> str:
+    return f"""
+    <div style="font-family:Arial,sans-serif;background:#f5f5f5;padding:40px;">
+      <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:32px;">
+        <h2 style="color:#b5860d;">📬 Nova mensagem — Central de Relacionamento</h2>
+        <p><strong>Nome:</strong> {nome}</p>
+        <p><strong>E-mail:</strong> {email}</p>
+        <p><strong>Assunto:</strong> {assunto}</p>
+        <hr style="border:1px solid #eee;margin:16px 0;"/>
+        <p style="white-space:pre-wrap;">{mensagem}</p>
+        <hr style="border:1px solid #eee;margin:24px 0;"/>
+        <p style="font-size:12px;color:#999;">Enviado pelo formulário de contato do site.</p>
+      </div>
+    </div>
+    """
+
+
+async def send_contato(nome: str, email: str, assunto: str, mensagem: str) -> bool:
+    """Envia a mensagem do formulário de contato para o e-mail da empresa.
+    Retorna True se enviou, False se e-mail não configurado ou falhou."""
+    conf = _get_mail_config()
+    if not conf:
+        logger.warning("Email não configurado — formulário de contato desabilitado.")
+        return False
+    settings = get_settings()
+    try:
+        message = MessageSchema(
+            subject=f"[Contato] {assunto} — {nome}",
+            recipients=[settings.gmail_user],
+            reply_to=[email],
+            body=_html_contato(nome, email, assunto, mensagem),
+            subtype=MessageType.html,
+        )
+        await FastMail(conf).send_message(message)
+        return True
+    except Exception as e:
+        logger.error(f"Erro ao enviar mensagem de contato de {email}: {e}")
+        return False
+
+
 async def send_reset_password_email(recipient_email: str, nome: str, token: str) -> None:
     settings = get_settings()
     conf = _get_mail_config()

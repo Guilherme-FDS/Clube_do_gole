@@ -53,11 +53,6 @@
               Pesquisa de Mercado
             </a>
           </li>
-          <li>
-            <span class="footer-link-desabilitado" title="Em breve">
-              Indique um Amigo
-            </span>
-          </li>
         </ul>
       </div>
 

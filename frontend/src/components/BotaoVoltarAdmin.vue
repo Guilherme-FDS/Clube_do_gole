@@ -22,12 +22,12 @@ const voltar = () => router.push(props.to)
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #FFFFFF;
-  border: 1px solid #D6D9DE;
-  color: #4B5563;
+  background: #FDF6E5;
+  border: 1px solid #C9A84C;
+  color: #8A6520;
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -36,8 +36,8 @@ const voltar = () => router.push(props.to)
 }
 
 .btn-voltar-admin:hover {
-  background: #FDF6E5;
-  border-color: #C9A84C;
-  color: #8A6520;
+  background: #8A6520;
+  border-color: #8A6520;
+  color: #FFFFFF;
 }
 </style>

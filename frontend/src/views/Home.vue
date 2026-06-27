@@ -96,65 +96,33 @@
         </p>
 
         <div class="planos-grid">
-          <!-- MENSAL -->
-          <div class="plano-card fade-in" :class="{ visible: fadeInVisible }">
+          <div
+            v-for="plano in planosHome"
+            :key="plano.recorrencia"
+            class="plano-card fade-in"
+            :class="{ visible: fadeInVisible, 'plano-destaque': plano.recorrencia === 'semestral' }"
+          >
+            <div class="plano-badge-popular" v-if="plano.recorrencia === 'semestral'">Mais Popular</div>
             <div class="plano-topo">
-              <span class="plano-nome">Mensal</span>
+              <span class="plano-nome">{{ nomePlanoHome(plano.recorrencia) }}</span>
+              <span class="plano-badge-economia" v-if="plano.recorrencia === 'anual'">Melhor Oferta</span>
             </div>
             <div class="plano-preco-bloco">
-              <span class="plano-valor">R$ 649</span>
+              <span class="plano-valor">{{ formatarMoedaHome(precoMensal(plano)) }}</span>
               <span class="plano-periodo">/mês</span>
             </div>
+            <div class="plano-economia" v-if="plano.desconto_pct > 0">
+              Economize {{ plano.desconto_pct }}% — {{ formatarMoedaHome(plano.economia) }} no {{ periodoLabelHome(plano.recorrencia) }}
+            </div>
             <ul class="plano-lista">
-              <li><i class="fas fa-check"></i> 2 rótulos curados por mês</li>
-              <li><i class="fas fa-check"></i> Caixa com identidade premium</li>
-              <li><i class="fas fa-check"></i> Cartão de degustação incluso</li>
-              <li><i class="fas fa-check"></i> Frete incluso</li>
-              <li><i class="fas fa-check"></i> Flexibilidade total</li>
+              <li v-for="item in listaPlanoHome(plano)" :key="item"><i class="fas fa-check"></i> {{ item }}</li>
             </ul>
-            <button class="plano-cta" @click="irParaPlano" :disabled="!produtoId">Começar Agora</button>
-          </div>
-
-          <!-- SEMESTRAL -->
-          <div class="plano-card plano-destaque fade-in" :class="{ visible: fadeInVisible }">
-            <div class="plano-badge-popular">Mais Popular</div>
-            <div class="plano-topo">
-              <span class="plano-nome">Semestral</span>
-            </div>
-            <div class="plano-preco-bloco">
-              <span class="plano-valor">R$ 616</span>
-              <span class="plano-periodo">/mês</span>
-            </div>
-            <div class="plano-economia">Economize 5% — R$ 194,70 no semestre</div>
-            <ul class="plano-lista">
-              <li><i class="fas fa-check"></i> 2 rótulos curados por mês</li>
-              <li><i class="fas fa-check"></i> Caixa com identidade premium</li>
-              <li><i class="fas fa-check"></i> Cartão de degustação incluso</li>
-              <li><i class="fas fa-check"></i> Frete incluso</li>
-              <li><i class="fas fa-check"></i> 5% de desconto</li>
-            </ul>
-            <button class="plano-cta plano-cta-destaque" @click="irParaPlano" :disabled="!produtoId">Começar Agora</button>
-          </div>
-
-          <!-- ANUAL -->
-          <div class="plano-card fade-in" :class="{ visible: fadeInVisible }">
-            <div class="plano-topo">
-              <span class="plano-nome">Anual</span>
-              <span class="plano-badge-economia">Melhor Oferta</span>
-            </div>
-            <div class="plano-preco-bloco">
-              <span class="plano-valor">R$ 584</span>
-              <span class="plano-periodo">/mês</span>
-            </div>
-            <div class="plano-economia">Economize 10% — R$ 778,80 no ano</div>
-            <ul class="plano-lista">
-              <li><i class="fas fa-check"></i> 2 rótulos curados por mês</li>
-              <li><i class="fas fa-check"></i> Caixa com identidade premium</li>
-              <li><i class="fas fa-check"></i> Cartão de degustação incluso</li>
-              <li><i class="fas fa-check"></i> Frete incluso</li>
-              <li><i class="fas fa-check"></i> 10% de desconto</li>
-            </ul>
-            <button class="plano-cta" @click="irParaPlano" :disabled="!produtoId">Começar Agora</button>
+            <button
+              class="plano-cta"
+              :class="{ 'plano-cta-destaque': plano.recorrencia === 'semestral' }"
+              @click="irParaPlano"
+              :disabled="!produtoId"
+            >Começar Agora</button>
           </div>
         </div>
 
@@ -319,6 +287,9 @@
             <p v-if="contatoSucesso" class="contato-sucesso">
               <i class="fas fa-check-circle"></i> Mensagem enviada! Retornaremos em até 24 horas.
             </p>
+            <p v-if="contatoErro" class="contato-erro">
+              <i class="fas fa-exclamation-circle"></i> {{ contatoErro }}
+            </p>
           </form>
         </div>
 
@@ -357,6 +328,25 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const produtoId = ref(null)
+
+// Planos exibidos na home — puxados da API. Fallback estático se a API falhar.
+const planosFallback = [
+  { recorrencia: 'mensal',    preco_base: 649, desconto_pct: 0,  economia: 0 },
+  { recorrencia: 'semestral', preco_base: 649, desconto_pct: 5,  economia: 194.70 },
+  { recorrencia: 'anual',     preco_base: 649, desconto_pct: 10, economia: 778.80 },
+]
+const planosHome = ref(planosFallback)
+
+const _ordemPlano = { mensal: 0, semestral: 1, anual: 2 }
+const formatarMoedaHome = (v) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v || 0)
+const precoMensal = (p) => Number(p.preco_base) * (1 - Number(p.desconto_pct) / 100)
+const nomePlanoHome = (rec) => ({ mensal: 'Mensal', semestral: 'Semestral', anual: 'Anual' }[rec] || rec)
+const periodoLabelHome = (rec) => ({ semestral: 'semestre', anual: 'ano' }[rec] || 'mês')
+const listaPlanoHome = (p) => {
+  const base = ['2 rótulos curados por mês', 'Caixa com identidade premium', 'Cartão de degustação incluso', 'Frete incluso']
+  return [...base, p.recorrencia === 'mensal' ? 'Flexibilidade total' : `${p.desconto_pct}% de desconto`]
+}
 
 const irParaPlano = () => {
   const dest = produtoId.value ? `/produto/${produtoId.value}` : null
@@ -477,23 +467,42 @@ const stopCarouselAutoPlay = () => {
 
 const resetCarouselInterval = () => { stopCarouselAutoPlay(); startCarouselAutoPlay() }
 
+const contatoErro = ref('')
 const enviarContato = async () => {
   contatoEnviando.value = true
-  await new Promise(r => setTimeout(r, 1200))
-  contatoSucesso.value = true
-  contatoEnviando.value = false
-  contatoForm.value = { nome: '', email: '', assunto: '', mensagem: '' }
-  setTimeout(() => { contatoSucesso.value = false }, 5000)
+  contatoErro.value = ''
+  try {
+    await api.post('/contato', { ...contatoForm.value })
+    contatoSucesso.value = true
+    contatoForm.value = { nome: '', email: '', assunto: '', mensagem: '' }
+    setTimeout(() => { contatoSucesso.value = false }, 5000)
+  } catch (e) {
+    contatoErro.value = e.response?.data?.detail || 'Não foi possível enviar agora. Tente novamente.'
+  } finally {
+    contatoEnviando.value = false
+  }
 }
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
+  setTimeout(() => { handleScroll(); fadeInVisible.value = true }, 80)
 
   // Descobre o ID do primeiro produto ativo para os botões "Começar Agora"
   try {
     const { data } = await api.get('/produtos/')
     const primeiro = Array.isArray(data) ? data.find(p => p.ativo !== false) : null
-    if (primeiro) produtoId.value = primeiro.id
+    if (primeiro) {
+      produtoId.value = primeiro.id
+      // Puxa os planos reais para exibir os preços por mês
+      try {
+        const { data: planos } = await api.get(`/produtos/${primeiro.id}/planos`)
+        if (Array.isArray(planos) && planos.length) {
+          planosHome.value = [...planos].sort(
+            (a, b) => (_ordemPlano[a.recorrencia] ?? 9) - (_ordemPlano[b.recorrencia] ?? 9)
+          )
+        }
+      } catch {}
+    }
   } catch {}
 
   try {
@@ -545,7 +554,6 @@ onMounted(async () => {
     slides.value = slidesLocal
   }
 
-  setTimeout(() => { handleScroll(); fadeInVisible.value = true }, 100)
   startCarouselAutoPlay()
 
   const carouselElement = carouselContainer.value
@@ -719,6 +727,7 @@ onUnmounted(() => {
 .btn-contato-enviar:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.35); }
 .btn-contato-enviar:disabled { opacity: 0.7; cursor: not-allowed; }
 .contato-sucesso { color: #4ade80; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; }
+.contato-erro { color: #f87171; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; }
 
 @media (max-width: 1024px) {
   .passos-container { grid-template-columns: repeat(2, 1fr); }
