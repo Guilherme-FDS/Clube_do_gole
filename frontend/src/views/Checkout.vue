@@ -97,22 +97,6 @@
             </div>
           </section>
 
-          <!-- Pagamento -->
-          <section class="checkout-section">
-            <div class="section-eyebrow">
-              <span class="eyebrow-badge">● Pagamento</span>
-            </div>
-            <h2 class="section-title">Forma de pagamento</h2>
-            <div class="pagamento-mp">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--ck-gold)" stroke-width="1.5">
-                <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
-              </svg>
-              <div class="pagamento-mp-texto">
-                <p class="pagamento-mp-titulo">Pagamento seguro via Mercado Pago</p>
-                <p class="pagamento-mp-sub">Ao confirmar, você será direcionado ao Mercado Pago para pagar com cartão de crédito, Pix ou boleto.</p>
-              </div>
-            </div>
-          </section>
         </div>
 
         <!-- Resumo sticky -->
@@ -849,17 +833,6 @@ function mostrarToast(mensagem, tipo = 'success') {
 .form-input::placeholder { color: #B0ABA4; }
 select.form-input { cursor: pointer; }
 
-.pagamento-mp {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 22px 24px;
-  background: #FFFBF0;
-  border: 1px solid rgba(201,168,76,0.4);
-  border-radius: 12px;
-}
-.pagamento-mp-titulo { font-weight: 700; color: var(--ck-text); margin: 0 0 4px; font-size: 15px; }
-.pagamento-mp-sub { margin: 0; font-size: 14px; color: var(--ck-muted); line-height: 1.5; }
 
 /* ── Resumo sticky ─────────────────────────────────────────────────────── */
 .checkout-resumo { position: sticky; top: 28px; }

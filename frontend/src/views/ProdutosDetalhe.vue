@@ -61,16 +61,16 @@
 
           <div class="plano-header-row">
             <h3 class="plano-nome">{{ nomePlano(plano.recorrencia) }}</h3>
-            <span class="economia-tag" v-if="plano.desconto_pct > 0">-{{ plano.desconto_pct }}%</span>
+            <span class="economia-tag" v-if="plano.desconto_pct > 0">-{{ Number(plano.desconto_pct) }}%</span>
           </div>
 
           <div class="plano-preco">
-            <span class="valor">{{ formatarMoeda(plano.preco_total) }}</span>
-            <span class="periodo">/{{ periodoLabel(plano.recorrencia) }}</span>
+            <span class="valor">{{ formatarMoedaMes(precoMensal(plano)) }}</span>
+            <span class="periodo">/mês</span>
           </div>
 
           <div class="economia-info" v-if="plano.economia > 0">
-            Economize {{ formatarMoeda(plano.economia) }}
+            Economize {{ Number(plano.desconto_pct) }}% — {{ formatarMoeda(plano.economia) }} no {{ periodoLabel(plano.recorrencia) }}
           </div>
 
           <p class="plano-copy">{{ copyPlano(plano.recorrencia) }}</p>
@@ -166,6 +166,11 @@ const planoMensal = computed(() => planos.value.find(p => p.recorrencia === 'men
 
 const formatarMoeda = (valor) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0)
+
+// Preço por mês (mesmo cálculo da home): preco_base já é mensal, aplica o desconto do plano
+const precoMensal = (plano) => Number(plano.preco_base) * (1 - Number(plano.desconto_pct) / 100)
+const formatarMoedaMes = (valor) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(valor || 0)
 
 const nomePlano = (rec) => ({ mensal: 'Mensal', semestral: 'Semestral', anual: 'Anual' }[rec] || rec)
 const periodoLabel = (rec) => ({ mensal: 'mês', semestral: 'semestre', anual: 'ano' }[rec] || rec)

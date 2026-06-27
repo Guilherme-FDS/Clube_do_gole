@@ -112,7 +112,7 @@
               <span class="plano-periodo">/mês</span>
             </div>
             <div class="plano-economia" v-if="plano.desconto_pct > 0">
-              Economize {{ plano.desconto_pct }}% — {{ formatarMoedaHome(plano.economia) }} no {{ periodoLabelHome(plano.recorrencia) }}
+              Economize {{ Number(plano.desconto_pct) }}% — {{ formatarMoedaCents(plano.economia) }} no {{ periodoLabelHome(plano.recorrencia) }}
             </div>
             <ul class="plano-lista">
               <li v-for="item in listaPlanoHome(plano)" :key="item"><i class="fas fa-check"></i> {{ item }}</li>
@@ -340,6 +340,8 @@ const planosHome = ref(planosFallback)
 const _ordemPlano = { mensal: 0, semestral: 1, anual: 2 }
 const formatarMoedaHome = (v) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v || 0)
+const formatarMoedaCents = (v) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0)
 const precoMensal = (p) => Number(p.preco_base) * (1 - Number(p.desconto_pct) / 100)
 const nomePlanoHome = (rec) => ({ mensal: 'Mensal', semestral: 'Semestral', anual: 'Anual' }[rec] || rec)
 const periodoLabelHome = (rec) => ({ semestral: 'semestre', anual: 'ano' }[rec] || 'mês')
