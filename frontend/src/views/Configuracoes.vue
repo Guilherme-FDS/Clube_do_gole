@@ -142,6 +142,7 @@
                 <div class="form-group">
                   <label>Nova Senha</label>
                   <input type="password" v-model="senhaForm.nova_senha" required>
+                  <small v-if="senhaForm.nova_senha && erroNovaSenha" class="erro-senha">{{ erroNovaSenha }}</small>
                 </div>
                 <div class="form-group">
                   <label>Confirmar Nova Senha</label>
@@ -269,11 +270,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 import { formatarMoeda } from '@/utils/formatters'
+import { validarSenha } from '@/utils/validarSenha'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -295,6 +297,7 @@ const senhaForm = reactive({ senha_atual: '', nova_senha: '', confirmar_senha: '
 const salvandoSenha = ref(false)
 const msgSenha      = ref('')
 const msgSenhaTipo  = ref('success')
+const erroNovaSenha = computed(() => validarSenha(senhaForm.nova_senha))
 
 const modalAberto  = ref(false)
 const editandoId   = ref(null)
@@ -363,6 +366,11 @@ async function salvarPerfil() {
 
 async function alterarSenha() {
   msgSenha.value = ''
+  if (erroNovaSenha.value) {
+    msgSenha.value = erroNovaSenha.value
+    msgSenhaTipo.value = 'msg-error'
+    return
+  }
   if (senhaForm.nova_senha !== senhaForm.confirmar_senha) {
     msgSenha.value = 'As senhas não coincidem.'
     msgSenhaTipo.value = 'msg-error'
@@ -554,6 +562,7 @@ onMounted(async () => {
 .form-group input:focus, .form-group select:focus { border-color: var(--cor-dourado); }
 .form-group input.readonly { opacity: 0.5; cursor: not-allowed; }
 .dica-cpf { font-size: 0.78rem; color: var(--cor-texto-secundario); }
+.erro-senha { color: #e57373; font-size: 0.78rem; }
 .checkbox-group { flex-direction: row !important; align-items: center; gap: 0.5rem !important; }
 .checkbox-group label { margin: 0; font-size: 0.9rem; color: var(--cor-texto); }
 

@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -51,6 +52,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Clube do Gole API", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    primeiro = exc.errors()[0]
+    msg = primeiro["msg"].removeprefix("Value error, ")
+    return JSONResponse(status_code=422, content={"detail": msg})
 
 app.add_middleware(
     CORSMiddleware,

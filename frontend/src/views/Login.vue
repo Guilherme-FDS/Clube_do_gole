@@ -143,6 +143,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { cadastro as apiCadastro, esqueceuSenha, getGoogleAuthUrl, getFacebookAuthUrl } from '@/services/auth'
+import { validarSenha } from '@/utils/validarSenha'
 
 const router = useRouter()
 const route = useRoute()
@@ -177,14 +178,6 @@ const flashIcon = computed(() => {
 
 function mostrarMensagem(texto, tipo = 'error') {
   flashMensagem.value = { texto, tipo }
-}
-
-function validarSenha(s) {
-  if (!s || s.length < 8) return 'A senha deve ter no mínimo 8 caracteres.'
-  if (!/[A-Z]/.test(s)) return 'A senha deve conter ao menos uma letra maiúscula.'
-  if (!/[a-z]/.test(s)) return 'A senha deve conter ao menos uma letra minúscula.'
-  if (!/[0-9]/.test(s)) return 'A senha deve conter ao menos um número.'
-  return null
 }
 
 function idadeMenor18(dataNasc) {

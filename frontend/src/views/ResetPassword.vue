@@ -31,9 +31,9 @@
                 v-model="novaSenha"
                 type="password"
                 placeholder="••••••••"
-                minlength="6"
                 required
               />
+              <small v-if="novaSenha && erroSenha" class="erro-senha">{{ erroSenha }}</small>
             </div>
             <div class="campo">
               <label for="confirmar-senha">Confirmar senha</label>
@@ -64,6 +64,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
+import { validarSenha } from '@/utils/validarSenha'
 
 const route = useRoute()
 const router = useRouter()
@@ -88,6 +89,8 @@ const flashIcon = computed(() => {
 function mostrarMensagem(texto, tipo = 'error') {
   flashMensagem.value = { texto, tipo }
 }
+
+const erroSenha = computed(() => validarSenha(novaSenha.value))
 
 onMounted(() => {
   token.value = route.query.token
@@ -114,9 +117,8 @@ function iniciarContagemRegressiva() {
 
 async function submeter() {
   flashMensagem.value = null
-  if (novaSenha.value.length < 6) {
-    return mostrarMensagem('A senha deve ter no mínimo 6 caracteres.')
-  }
+  const erro = validarSenha(novaSenha.value)
+  if (erro) return mostrarMensagem(erro)
   if (novaSenha.value !== confirmar.value) {
     return mostrarMensagem('As senhas não coincidem.')
   }
@@ -190,6 +192,7 @@ async function submeter() {
 
 .campo { display: grid; gap: 0.42rem; }
 .campo label { color: #2b2b2b; font-size: 0.86rem; font-weight: 600; }
+.erro-senha { color: #d62839; font-size: 0.78rem; }
 .campo input {
   width: 100%;
   border: 1px solid #e2e2e2;

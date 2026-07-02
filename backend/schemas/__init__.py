@@ -13,6 +13,18 @@ StatusCupom = Annotated[str, Field(pattern="^(ativo|inativo)$")]
 StatusVenda = Annotated[str, Field(pattern="^(pendente|pago|cancelado|estornado)$")]
 
 
+def _validar_forca_senha(v: str) -> str:
+    if len(v) < 8:
+        raise ValueError("A senha deve ter no mínimo 8 caracteres.")
+    if not any(c.isupper() for c in v):
+        raise ValueError("A senha deve conter ao menos uma letra maiúscula.")
+    if not any(c.islower() for c in v):
+        raise ValueError("A senha deve conter ao menos uma letra minúscula.")
+    if not any(c.isdigit() for c in v):
+        raise ValueError("A senha deve conter ao menos um número.")
+    return v
+
+
 # ── Auth ───────────────────────────────────────────────────────────────────────
 
 class LoginIn(BaseModel):
@@ -27,8 +39,13 @@ class CadastroIn(BaseModel):
     sobrenome: str = Field(min_length=1, max_length=100)
     data_nascimento: date
     email: EmailStr
-    senha: str = Field(min_length=6)
+    senha: str = Field(min_length=8)
     telefone: str = Field(min_length=8, max_length=20)
+
+    @field_validator("senha")
+    @classmethod
+    def validar_senha(cls, v: str) -> str:
+        return _validar_forca_senha(v)
 
     @field_validator("data_nascimento")
     @classmethod
@@ -78,7 +95,12 @@ class EsqueceuSenhaIn(BaseModel):
 
 class RedefinirSenhaIn(BaseModel):
     token: str = Field(min_length=1)
-    nova_senha: str = Field(min_length=6)
+    nova_senha: str = Field(min_length=8)
+
+    @field_validator("nova_senha")
+    @classmethod
+    def validar_nova_senha(cls, v: str) -> str:
+        return _validar_forca_senha(v)
 
 
 # ── Endereços ──────────────────────────────────────────────────────────────────
@@ -307,7 +329,12 @@ class AtualizarPerfilIn(BaseModel):
 
 class AlterarSenhaIn(BaseModel):
     senha_atual: str = Field(min_length=1)
-    nova_senha: str = Field(min_length=6)
+    nova_senha: str = Field(min_length=8)
+
+    @field_validator("nova_senha")
+    @classmethod
+    def validar_nova_senha(cls, v: str) -> str:
+        return _validar_forca_senha(v)
 
 
 # ── Admin — Clientes ───────────────────────────────────────────────────────────
