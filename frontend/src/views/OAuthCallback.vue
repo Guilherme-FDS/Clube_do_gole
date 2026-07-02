@@ -31,6 +31,16 @@ const providerNome = computed(() => provider === 'google' ? 'Google' : 'Facebook
 onMounted(async () => {
   const code = route.query.code
 
+  // Fluxo mobile: devolve o code pro app (Expo) e não processa aqui.
+  // O state chega como "mobile|exp://..." — montado pelo app em src/services/oauth.js.
+  const state = route.query.state || ''
+  if (code && state.startsWith('mobile|')) {
+    const returnUrl = state.slice('mobile|'.length)
+    const sep = returnUrl.includes('?') ? '&' : '?'
+    window.location.replace(`${returnUrl}${sep}code=${encodeURIComponent(code)}&provider=${provider}`)
+    return
+  }
+
   if (!code) {
     erro.value = 'Código de autorização ausente. Tente novamente.'
     return
