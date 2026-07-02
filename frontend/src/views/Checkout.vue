@@ -152,12 +152,13 @@
               <span>{{ formatarMoeda(totalFinal) }}</span>
             </div>
 
-            <button class="btn-finalizar" @click="finalizarCompra" :disabled="finalizando || !enderecoSelecionado">
+            <button class="btn-finalizar" @click="finalizarCompra" :disabled="finalizando || !enderecoSelecionado || !cpfUsuario">
               <span v-if="finalizando">Processando...</span>
               <span v-else>Ir para pagamento</span>
             </button>
 
             <p v-if="!enderecoSelecionado" class="aviso-endereco">Selecione um endereço de entrega para continuar</p>
+            <p v-if="!cpfUsuario" class="aviso-endereco">Cadastre seu CPF em <router-link to="/configuracoes">Configurações</router-link> para finalizar</p>
 
             <div class="resumo-seguranca">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -258,6 +259,7 @@ const itensSelecionados = ref([])
 const enderecos = ref([])
 const carregandoEnderecos = ref(false)
 const enderecoSelecionado = ref(null)
+const cpfUsuario = ref(null)
 
 const cupom = ref('')
 const cupomAplicado = ref(false)
@@ -283,6 +285,7 @@ onMounted(async () => {
   document.body.classList.add('pagina-clara')
   await carregarItens()
   await carregarEnderecos()
+  await carregarPerfil()
   carregando.value = false
 })
 
@@ -330,6 +333,15 @@ async function carregarEnderecos() {
     mostrarToast('Erro ao carregar endereços', 'error')
   } finally {
     carregandoEnderecos.value = false
+  }
+}
+
+async function carregarPerfil() {
+  try {
+    const res = await api.get('/configuracoes/perfil')
+    cpfUsuario.value = res.data?.usuario?.cpf || null
+  } catch {
+    mostrarToast('Erro ao carregar perfil', 'error')
   }
 }
 
@@ -425,6 +437,10 @@ function removerCupom() {
 }
 
 async function finalizarCompra() {
+  if (!cpfUsuario.value) {
+    mostrarToast('Cadastre seu CPF antes de finalizar', 'error')
+    return
+  }
   if (!enderecoSelecionado.value) {
     mostrarToast('Selecione um endereço de entrega', 'error')
     return

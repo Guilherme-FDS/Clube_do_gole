@@ -111,6 +111,7 @@
               <div class="campo">
                 <label>Senha</label>
                 <input v-model="senhaCadastro" type="password" placeholder="••••••••" required />
+                <small v-if="senhaCadastro && erroSenhaCadastro" class="erro-senha">{{ erroSenhaCadastro }}</small>
               </div>
               <div class="campo">
                 <label>Telefone</label>
@@ -172,6 +173,28 @@ const flashIcon = computed(() => {
 function mostrarMensagem(texto, tipo = 'error') {
   flashMensagem.value = { texto, tipo }
 }
+
+function validarSenha(s) {
+  if (!s || s.length < 8) return 'A senha deve ter no mínimo 8 caracteres.'
+  if (!/[A-Z]/.test(s)) return 'A senha deve conter ao menos uma letra maiúscula.'
+  if (!/[a-z]/.test(s)) return 'A senha deve conter ao menos uma letra minúscula.'
+  if (!/[0-9]/.test(s)) return 'A senha deve conter ao menos um número.'
+  return null
+}
+
+function idadeMenor18(dataNasc) {
+  if (!dataNasc) return true
+  const nascimento = new Date(dataNasc)
+  const hoje = new Date()
+  let idade = hoje.getFullYear() - nascimento.getFullYear()
+  const aindaNaoFezAniversario =
+    hoje.getMonth() < nascimento.getMonth() ||
+    (hoje.getMonth() === nascimento.getMonth() && hoje.getDate() < nascimento.getDate())
+  if (aindaNaoFezAniversario) idade--
+  return idade < 18
+}
+
+const erroSenhaCadastro = computed(() => validarSenha(senhaCadastro.value))
 
 function tratarErroLogin(e) {
   const status = e?.response?.status
@@ -235,7 +258,9 @@ async function handleCadastro() {
       !emailCadastro.value || !senhaCadastro.value || !telefoneCadastro.value || !nascimentoCadastro.value) {
     return mostrarMensagem('Preencha todos os campos.')
   }
-  if (senhaCadastro.value.length < 6) return mostrarMensagem('A senha deve ter no mínimo 6 caracteres.')
+  const erroSenha = validarSenha(senhaCadastro.value)
+  if (erroSenha) return mostrarMensagem(erroSenha)
+  if (idadeMenor18(nascimentoCadastro.value)) return mostrarMensagem('Cadastro permitido apenas para maiores de 18 anos.')
   carregando.value = true
   flashMensagem.value = null
   try {
@@ -320,6 +345,7 @@ function formatarCPF(e) {
 .form-login { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.3rem; }
 
 .campo { display: grid; gap: 0.42rem; }
+.erro-senha { color: #e57373; font-size: 0.78rem; }
 .campo label { color: #2b2b2b; font-size: 0.86rem; font-weight: 600; }
 .campo input {
   width: 100%;
