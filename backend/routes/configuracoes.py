@@ -19,6 +19,14 @@ async def perfil(payload: dict = Depends(login_required), db: AsyncSession = Dep
 
 @router.put("/perfil", response_model=UsuarioOut)
 async def atualizar_perfil(body: AtualizarPerfilIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    cliente = await auth_repo.buscar_cliente(db, payload["id"])
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    if body.cpf:
+        if cliente.cpf and body.cpf != cliente.cpf:
+            raise HTTPException(status_code=400, detail="CPF já cadastrado. Para alterar, entre em contato com o suporte.")
+        if not cliente.cpf and await auth_repo.cpf_existe(db, body.cpf):
+            raise HTTPException(status_code=409, detail="CPF já cadastrado.")
     return await auth_repo.atualizar_cliente(db, payload["id"], body.model_dump())
 
 @router.put("/senha")

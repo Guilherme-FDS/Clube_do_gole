@@ -30,6 +30,19 @@ class CadastroIn(BaseModel):
     senha: str = Field(min_length=6)
     telefone: str = Field(min_length=8, max_length=20)
 
+    @field_validator("data_nascimento")
+    @classmethod
+    def validar_data_nascimento(cls, v: date) -> date:
+        hoje = date.today()
+        idade = hoje.year - v.year - ((hoje.month, hoje.day) < (v.month, v.day))
+        if v > hoje:
+            raise ValueError("Data de nascimento não pode ser no futuro.")
+        if idade > 120:
+            raise ValueError("Data de nascimento inválida.")
+        if idade < 18:
+            raise ValueError("Cadastro permitido apenas para maiores de 18 anos.")
+        return v
+
 
 class OAuthCallbackIn(BaseModel):
     code: str = Field(min_length=1)
@@ -289,6 +302,7 @@ class AtualizarPerfilIn(BaseModel):
     email: EmailStr
     telefone: str = Field(min_length=8, max_length=20)
     data_nascimento: Optional[date] = None
+    cpf: Optional[str] = Field(default=None, min_length=11, max_length=14)
 
 
 class AlterarSenhaIn(BaseModel):

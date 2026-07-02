@@ -119,7 +119,7 @@
               </div>
               <div class="campo">
                 <label>Data de Nascimento</label>
-                <input v-model="nascimentoCadastro" type="date" required />
+                <input v-model="nascimentoCadastro" type="date" :min="dataNascimentoMin" :max="dataNascimentoMax" required />
               </div>
               <button type="submit" class="btn-submit" :class="{ loading: carregando }" :disabled="carregando">
                 <span class="btn-text">Cadastrar</span>
@@ -162,6 +162,11 @@ const telefoneCadastro = ref('')
 const nascimentoCadastro = ref('')
 const carregando = ref(false)
 const flashMensagem = ref(null)
+
+function formatarDataISO(d) { return d.toISOString().slice(0, 10) }
+const hoje = new Date()
+const dataNascimentoMax = formatarDataISO(hoje)
+const dataNascimentoMin = formatarDataISO(new Date(hoje.getFullYear() - 120, hoje.getMonth(), hoje.getDate()))
 
 const flashIcon = computed(() => {
   if (!flashMensagem.value) return ''
@@ -261,6 +266,9 @@ async function handleCadastro() {
   const erroSenha = validarSenha(senhaCadastro.value)
   if (erroSenha) return mostrarMensagem(erroSenha)
   if (idadeMenor18(nascimentoCadastro.value)) return mostrarMensagem('Cadastro permitido apenas para maiores de 18 anos.')
+  if (nascimentoCadastro.value < dataNascimentoMin || nascimentoCadastro.value > dataNascimentoMax) {
+    return mostrarMensagem('Informe uma data de nascimento válida.')
+  }
   carregando.value = true
   flashMensagem.value = null
   try {

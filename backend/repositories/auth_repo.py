@@ -90,6 +90,8 @@ async def atualizar_cliente(db: AsyncSession, usuario_id: int, dados: dict) -> U
     c.email = dados["email"].lower()
     c.telefone = dados.get("telefone")
     c.data_nascimento = dados.get("data_nascimento")
+    if dados.get("cpf") and not c.cpf:
+        c.cpf = dados["cpf"]
     await db.flush()
     await db.refresh(c)
     return c

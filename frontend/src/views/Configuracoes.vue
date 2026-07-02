@@ -17,8 +17,8 @@
           <div class="user-profile-summary">
             <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
             <div class="user-info">
-              <h3>{{ usuario.nome }} {{ usuario.sobrenome }}</h3>
-              <p>{{ usuario.email }}</p>
+              <h3 :title="`${usuario.nome} ${usuario.sobrenome}`">{{ usuario.nome }} {{ usuario.sobrenome }}</h3>
+              <p :title="usuario.email">{{ usuario.email }}</p>
             </div>
           </div>
           <nav class="configuracoes-menu">
@@ -70,7 +70,8 @@
               <div class="form-grid">
                 <div class="form-group">
                   <label>CPF</label>
-                  <input type="text" v-model="usuario.cpf" readonly class="readonly">
+                  <input type="text" v-model="usuario.cpf" :readonly="!!cpfOriginal" :class="{ readonly: !!cpfOriginal }" placeholder="000.000.000-00" maxlength="14" @input="formatarCPF">
+                  <small v-if="cpfOriginal" class="dica-cpf">Para alterar o CPF já cadastrado, contate o suporte.</small>
                 </div>
                 <div class="form-group">
                   <label>Data de Nascimento</label>
@@ -282,6 +283,7 @@ const aba          = ref('perfil')
 const pedidoAberto = ref(null)
 
 const usuario = reactive({ nome: '', sobrenome: '', email: '', telefone: '', cpf: '', data_nascimento: '' })
+const cpfOriginal = ref('')
 const enderecos = ref([])
 const pedidos   = ref([])
 
@@ -308,6 +310,14 @@ const ufList = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG'
 
 const formatarData = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : ''
 
+function formatarCPF(e) {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 11)
+  v = v.replace(/(\d{3})(\d)/, '$1.$2')
+  v = v.replace(/(\d{3})(\d)/, '$1.$2')
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  usuario.cpf = v
+}
+
 function togglePedido(id) {
   pedidoAberto.value = pedidoAberto.value === id ? null : id
 }
@@ -317,6 +327,7 @@ async function carregarDados() {
   try {
     const { data } = await api.get('/configuracoes/perfil')
     Object.assign(usuario, data.usuario)
+    cpfOriginal.value = data.usuario?.cpf || ''
     enderecos.value = data.enderecos || []
     pedidos.value   = data.pedidos   || []
   } catch {
@@ -330,13 +341,16 @@ async function salvarPerfil() {
   salvandoPerfil.value = true
   msgPerfil.value = ''
   try {
-    await api.put('/configuracoes/perfil', {
+    const { data } = await api.put('/configuracoes/perfil', {
       nome: usuario.nome,
       sobrenome: usuario.sobrenome,
       email: usuario.email,
       telefone: usuario.telefone,
       data_nascimento: usuario.data_nascimento || null,
+      cpf: cpfOriginal.value ? null : (usuario.cpf || null),
     })
+    usuario.cpf = data.cpf || usuario.cpf
+    cpfOriginal.value = data.cpf || ''
     msgPerfil.value = 'Perfil atualizado com sucesso!'
     msgPerfilTipo.value = 'msg-success'
   } catch (err) {
@@ -482,7 +496,13 @@ onMounted(async () => {
   border-bottom: 1px solid rgba(201,168,76,0.2);
   margin-bottom: 1rem;
 }
-.user-avatar i { font-size: 3rem; color: var(--cor-dourado); }
+.user-avatar i { font-size: 3rem; color: var(--cor-dourado); flex-shrink: 0; }
+.user-info { min-width: 0; }
+.user-info h3, .user-info p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .user-info h3 { color: var(--cor-texto); font-size: 1rem; margin-bottom: 0.2rem; }
 .user-info p  { color: var(--cor-texto-secundario); font-size: 0.8125rem; }
 
@@ -533,6 +553,7 @@ onMounted(async () => {
 }
 .form-group input:focus, .form-group select:focus { border-color: var(--cor-dourado); }
 .form-group input.readonly { opacity: 0.5; cursor: not-allowed; }
+.dica-cpf { font-size: 0.78rem; color: var(--cor-texto-secundario); }
 .checkbox-group { flex-direction: row !important; align-items: center; gap: 0.5rem !important; }
 .checkbox-group label { margin: 0; font-size: 0.9rem; color: var(--cor-texto); }
 
