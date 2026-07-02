@@ -34,9 +34,9 @@ async def finalizar_compra(
     if not itens:
         return False, "Nenhum item válido para finalizar.", None
 
-    valor_original_total = Decimal("0")
-    valor_final_total    = Decimal("0")
-    itens_venda          = []
+    valor_original_total   = Decimal("0")
+    valor_apos_plano_total = Decimal("0")
+    dados_itens            = []
 
     for item in itens:
         valor_unitario = Decimal(str(item.valor_unitario))
@@ -47,25 +47,45 @@ async def finalizar_compra(
 
         valor_original   = valor_unitario * mult * quantidade
         valor_apos_plano = valor_original * (1 - desc_plano)
-        if desconto_fixo_cupom:
-            # desconto fixo: distribuído proporcionalmente por item
-            valor_final = max(Decimal("0"), valor_apos_plano - Decimal(str(desconto_fixo_cupom)))
-        else:
-            valor_final = max(Decimal("0"), valor_apos_plano * (1 - Decimal(str(desconto_cupom)) / 100))
 
-        valor_original_total += valor_original
-        valor_final_total    += valor_final
+        valor_original_total   += valor_original
+        valor_apos_plano_total += valor_apos_plano
+
+        dados_itens.append({
+            "item": item, "valor_unitario": valor_unitario, "mult": mult,
+            "quantidade": quantidade, "plano": plano, "valor_apos_plano": valor_apos_plano,
+        })
+
+    # Desconto fixo é um valor único do cupom — distribuído proporcionalmente
+    # ao peso de cada item no subtotal, e nunca maior que o próprio subtotal
+    # (antes disso, o valor fixo era subtraído inteiro de CADA item).
+    desconto_fixo_total = (
+        min(Decimal(str(desconto_fixo_cupom)), valor_apos_plano_total)
+        if desconto_fixo_cupom else Decimal("0")
+    )
+
+    valor_final_total = Decimal("0")
+    itens_venda       = []
+
+    for d in dados_itens:
+        if desconto_fixo_cupom and valor_apos_plano_total > 0:
+            proporcao   = d["valor_apos_plano"] / valor_apos_plano_total
+            valor_final = max(Decimal("0"), d["valor_apos_plano"] - desconto_fixo_total * proporcao)
+        else:
+            valor_final = max(Decimal("0"), d["valor_apos_plano"] * (1 - Decimal(str(desconto_cupom)) / 100))
+
+        valor_final_total += valor_final
 
         itens_venda.append({
-            "id_produto":     item.id_produto,
-            "nome_produto":   item.nome_produto,
-            "plano":          plano,
-            "quantidade":     quantidade,
-            "valor_unitario": round(valor_unitario * mult, 2),
+            "id_produto":     d["item"].id_produto,
+            "nome_produto":   d["item"].nome_produto,
+            "plano":          d["plano"],
+            "quantidade":     d["quantidade"],
+            "valor_unitario": round(d["valor_unitario"] * d["mult"], 2),
             "valor_total":    round(valor_final, 2),
         })
 
-        await produto_repo.decrementar_estoque(db, item.id_produto, quantidade)
+        await produto_repo.decrementar_estoque(db, d["item"].id_produto, d["quantidade"])
 
     desconto_total = (
         (valor_original_total - valor_final_total) / valor_original_total * 100
