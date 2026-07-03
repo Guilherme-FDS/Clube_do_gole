@@ -25,8 +25,8 @@
             :disabled="aprovando"
             class="btn-aprovar"
           >
-            <i :class="aprovando ? 'fas fa-spinner fa-spin' : 'fas fa-check'"></i>
-            {{ aprovando ? 'Aprovando...' : 'Aprovar venda' }}
+            <i :class="aprovando ? 'fas fa-spinner fa-spin' : 'fas fa-exclamation-triangle'"></i>
+            {{ aprovando ? 'Aprovando...' : '⚠️ Aprovar manualmente (bypass)' }}
           </button>
         </div>
       </div>
@@ -163,7 +163,7 @@ const labelMetodo = (m) => ({
 }[m] || m)
 
 const aprovarVenda = async () => {
-  if (!confirm('Aprovar esta venda manualmente? Isso criará a assinatura do cliente.')) return
+  if (!confirm('⚠️ Isso vai pular a validação real do Mercado Pago e ativar a assinatura manualmente. Use apenas em emergências (ex: boleto que demora a confirmar). Continuar?')) return
   aprovando.value = true
   try {
     await api.post(`/admin/vendas/${route.params.id}/aprovar`)
@@ -310,7 +310,7 @@ td { padding: 10px 8px; font-size: 13px; color: #1B1A19; border-bottom: 1px soli
 .sem-dados { color: #9CA3AF; font-size: 13px; padding: 8px 0; }
 
 .btn-aprovar {
-  background: #2E8B57;
+  background: #D97706;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -323,6 +323,6 @@ td { padding: 10px 8px; font-size: 13px; color: #1B1A19; border-bottom: 1px soli
   gap: 6px;
   transition: background 0.2s;
 }
-.btn-aprovar:hover:not(:disabled) { background: #246b44; }
+.btn-aprovar:hover:not(:disabled) { background: #B45309; }
 .btn-aprovar:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>
