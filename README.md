@@ -4,6 +4,16 @@ Plataforma de e-commerce de assinatura de bebidas premium — catálogo de produ
 
 ---
 
+## 🔗 Produção (testar direto, sem instalar nada)
+
+- **Site (frontend)**: https://clube-do-gole-frontend.onrender.com
+- **API (backend)**: https://clube-do-gole-backend.onrender.com
+- **Docs interativas da API**: https://clube-do-gole-backend.onrender.com/docs
+
+> Deploy no Render (free tier) — primeira requisição pode levar ~30-50s pra "acordar" o serviço.
+
+---
+
 ## Stack
 
 ### Backend
@@ -82,7 +92,9 @@ Cada produto possui planos independentes com preço e desconto próprios, calcul
 
 ---
 
-## Como executar
+## Como executar localmente (opcional)
+
+> Não é necessário para avaliação — use os links de produção acima.
 
 ### Pré-requisitos
 - Python 3.10+
@@ -180,8 +192,6 @@ Para números de cartão atualizados (a Mercado Pago pode alterá-los), consulte
 Em evolução 🚀
 
 **Próximos passos:**
-- Integração com gateway de pagamento (Stripe)
-- Deploy em produção com PostgreSQL
 - Cobrança recorrente automática das assinaturas
 
 ---
