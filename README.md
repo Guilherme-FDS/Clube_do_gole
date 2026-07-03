@@ -140,6 +140,16 @@ VITE_STRAPI_URL=http://localhost:1337
 
 Para testar o checkout com o Mercado Pago em modo sandbox, configure as credenciais de TESTE (prefixo `TEST-`) nas variáveis de ambiente `MP_ACCESS_TOKEN` e `MP_PUBLIC_KEY` (veja a seção de variáveis de ambiente). Com credenciais de teste, o Mercado Pago aceita apenas os dados fictícios abaixo — nenhum cartão, PIX ou boleto real é cobrado.
 
+### Conta de teste (comprador)
+
+Na hora de pagar no checkout do Mercado Pago (tela do próprio MP, fora do nosso site), use a conta de teste "comprador" abaixo para logar quando solicitado:
+
+| Papel | Usuário | Senha |
+|---|---|---|
+| Comprador | `TESTUSER6108724104764143400` | `Zw3MoG9dw1` |
+
+(Contas de teste do Mercado Pago são fictícias — não usam dados reais e não movimentam dinheiro real.)
+
 ### Cartões de crédito de teste
 
 | Bandeira | Número | CVV | Validade | Resultado |
