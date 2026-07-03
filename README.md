@@ -134,6 +134,35 @@ VITE_STRAPI_URL=http://localhost:1337
 
 ---
 
+## Testando pagamentos
+
+Para testar o checkout com o Mercado Pago em modo sandbox, configure as credenciais de TESTE (prefixo `TEST-`) nas variáveis de ambiente `MP_ACCESS_TOKEN` e `MP_PUBLIC_KEY` (veja a seção de variáveis de ambiente). Com credenciais de teste, o Mercado Pago aceita apenas os dados fictícios abaixo — nenhum cartão, PIX ou boleto real é cobrado.
+
+### Cartões de crédito de teste
+
+| Bandeira | Número | CVV | Validade | Resultado |
+|---|---|---|---|---|
+| Mastercard | 5031 4332 1540 6351 | 123 | 11/30 | Aprovado |
+| Visa | 4235 6477 2802 5682 | 123 | 11/30 | Aprovado |
+| Visa (recusado) | 4013 5406 8274 6260 | 123 | 11/30 | Recusado (fundos insuficientes) |
+
+Nome do titular: `APRO` (aprova automaticamente) ou `OTHE` (recusa) — convenção oficial de sandbox do Mercado Pago.
+CPF de teste: qualquer CPF válido gerado (ex: gerador online), ou `123.456.789-09`.
+
+### PIX de teste
+
+No sandbox, o QR code gerado é fictício. O próprio painel do Mercado Pago (conta de teste "vendedor", em [mercadopago.com.br](https://www.mercadopago.com.br)) tem uma opção para simular a confirmação do pagamento PIX manualmente.
+
+### Boleto de teste
+
+O sandbox gera um boleto fictício. O painel de testes do Mercado Pago também permite simular o pagamento do boleto, da mesma forma que o PIX.
+
+### Referência oficial
+
+Para números de cartão atualizados (a Mercado Pago pode alterá-los), consulte a [documentação oficial de cartões de teste](https://www.mercadopago.com.br/developers/pt/docs/checkout-api/testing).
+
+---
+
 ## Status do projeto
 
 Em evolução 🚀
