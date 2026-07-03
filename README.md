@@ -124,6 +124,8 @@ Backend (`backend/.env`):
 ```
 DATABASE_URL=sqlite+aiosqlite:///./database/clube_do_gole.db
 SECRET_KEY=<sua-chave>
+MP_ACCESS_TOKEN=<seu-access-token-mercado-pago>
+MP_PUBLIC_KEY=<sua-public-key-mercado-pago>
 ```
 
 Frontend (`frontend/.env.local`):
