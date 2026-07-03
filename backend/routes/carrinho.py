@@ -50,13 +50,21 @@ async def atualizar_quantidade(body: AtualizarQuantidadeIn, payload: dict = Depe
 
 @router.post("/finalizar")
 async def finalizar(body: FinalizarIn, payload: dict = Depends(login_required), db: AsyncSession = Depends(get_db)):
+    # Desconto sempre recalculado a partir do cupom no banco — nunca confiar
+    # no valor que o cliente mandou no corpo da requisição.
+    desconto_cupom = 0.0
+    desconto_fixo_cupom = None
     if body.cupom:
-        valido, msg, *_ = await cupom_service.validar(db, body.cupom)
+        valido, msg, desconto_pct, tipo_desconto, desconto_fixo = await cupom_service.validar(db, body.cupom)
         if not valido:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+        if tipo_desconto == "fixo":
+            desconto_fixo_cupom = desconto_fixo
+        else:
+            desconto_cupom = desconto_pct
     sucesso, mensagem, checkout_url = await venda_service.finalizar_compra(
-        db, payload["id"], body.ids, body.cupom, body.desconto_cupom,
-        desconto_fixo_cupom=body.desconto_fixo_cupom,
+        db, payload["id"], body.ids, body.cupom, desconto_cupom,
+        desconto_fixo_cupom=desconto_fixo_cupom,
         email_cliente=payload.get("email"),
     )
     if not sucesso:
