@@ -36,6 +36,11 @@ onMounted(async () => {
   const state = route.query.state || ''
   if (code && state.startsWith('mobile|')) {
     const returnUrl = state.slice('mobile|'.length)
+    const ORIGENS_PERMITIDAS = ['exp://', 'clubedogole://']
+    if (!ORIGENS_PERMITIDAS.some((prefixo) => returnUrl.startsWith(prefixo))) {
+      erro.value = 'Retorno inválido. Tente novamente pelo app.'
+      return
+    }
     const sep = returnUrl.includes('?') ? '&' : '?'
     window.location.replace(`${returnUrl}${sep}code=${encodeURIComponent(code)}&provider=${provider}`)
     return
