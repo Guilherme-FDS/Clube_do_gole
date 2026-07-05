@@ -7,7 +7,7 @@
         <source src="/video/hero.mp4" type="video/mp4">
       </video>
       <div class="hero-content">
-        <div class="hero-badge">Curadoria Exclusiva de Destilados</div>
+        <div class="hero-badge">Destilados raros, por assinatura</div>
         <h2 class="titulo-xl fade-in" :class="{ visible: fadeInVisible }" v-html="heroTitulo"></h2>
         <p class="texto-corrido fade-in" :class="{ visible: fadeInVisible }" v-html="heroSubtitulo"></p>
         <div class="hero-botoes fade-in" :class="{ visible: fadeInVisible }">
@@ -24,7 +24,6 @@
     <section class="como-funciona" id="como-funciona">
       <div class="container">
         <div class="como-funciona-header">
-          <span class="section-badge">Processo Simples</span>
           <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
             Como <span class="dourado" style="color:var(--cor-dourado-escuro);">Funciona</span>
           </h2>
@@ -71,14 +70,11 @@
     <!-- PLANOS -->
     <section id="planos" class="nossos-planos">
       <div class="container" style="text-align:center;">
-        <span class="section-badge" style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">
-          Nossas Assinaturas
-        </span>
         <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
           Escolha seu <span class="dourado">Plano</span>
         </h2>
         <p class="planos-subtitulo fade-in" :class="{ visible: fadeInVisible }">
-          Dois rótulos premium curados por especialistas. Entregues na sua porta todo mês.
+          Uma assinatura, dois rótulos por edição. Você escolhe apenas a recorrência.
         </p>
 
         <div class="planos-grid">
@@ -121,7 +117,6 @@
     <!-- SOBRE -->
     <section class="sobre" id="sobre">
       <div class="container" style="text-align:center;">
-        <span class="section-badge">Sobre Nós</span>
         <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
           {{ sobreTitulo }}
         </h2>
@@ -142,10 +137,7 @@
     <!-- DEPOIMENTOS -->
     <section class="depoimentos" id="depoimentos" v-if="depoimentos.length">
       <div class="container" style="text-align:center;">
-        <span class="section-badge" style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">
-          O que dizem nossos membros
-        </span>
-        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">Depoimentos</h2>
+        <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">O que dizem nossos <span class="dourado">membros</span></h2>
         <div class="depoimentos-container">
           <div v-for="dep in depoimentos" :key="dep.id" class="depoimento-card fade-in"
             :class="{ visible: fadeInVisible }">
@@ -170,7 +162,6 @@
     <!-- FAQ -->
     <section class="faq" id="faq" v-if="faqs.length">
       <div class="container" style="text-align:center;">
-        <span class="section-badge">Dúvidas Frequentes</span>
         <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
           Perguntas <span class="dourado">Frequentes</span>
         </h2>
@@ -197,9 +188,6 @@
     <!-- BLOG PREVIEW -->
     <section class="blog-preview" id="blog" v-if="postDestaque.length">
       <div class="container" style="text-align:center;">
-        <span class="section-badge" style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">
-          Do nosso blog
-        </span>
         <h2 class="titulo-lg fade-in" :class="{ visible: fadeInVisible }">
           O que está por <span class="dourado">trás do copo</span>
         </h2>
@@ -233,9 +221,6 @@
     <section id="contato" class="contato">
       <div class="container">
         <div class="contato-cta-box fade-in" :class="{ visible: fadeInVisible }">
-          <span class="section-badge" style="border-color:rgba(201,168,76,0.4);color:var(--cor-dourado);">
-            Atendimento
-          </span>
           <h2>Central de <span style="color:var(--cor-dourado);">Relacionamento</span></h2>
           <p>Nossa equipe está pronta para atender você. Envie sua mensagem e retornaremos em até 24 horas.</p>
 
@@ -355,11 +340,11 @@ const mediaUrl = (url) => {
 
 const fadeInVisible = ref(false)
 
-const heroTitulo = ref('Pertencer a um clube que poucos conhecem.')
-const heroSubtitulo = ref('Curadoria global de destilados raros e cachaças premium entregues na sua porta todo mês. Você escolhe o nível de acesso. A surpresa é nossa.')
+const heroTitulo = ref('Rótulos que não chegam às prateleiras. Chegam à sua porta.')
+const heroSubtitulo = ref('Dois rótulos raros por mês, curadoria global. Você conhece o padrão. A surpresa é nossa.')
 const heroCta = ref('Conheça o Clube')
-const sobreTitulo = ref('Não é uma caixa de bebidas. É acesso a um mundo que a maioria não consegue entrar.')
-const sobreTexto = ref('O Clube do Gole reúne destilados raros do mundo inteiro e cachaças premium brasileiras selecionadas por especialistas globais. Cada garrafa tem origem, história e raridade — você recebe o que não encontraria sozinho.')
+const sobreTitulo = ref('Não vendemos caixas. Abrimos portas.')
+const sobreTexto = ref('Alambiques de tiragem mínima, destilarias que engarrafam trezentas unidades por ano, safras que nunca chegam ao varejo. O Clube do Gole existe para colocar esses rótulos na sua mesa — com a história de cada um.')
 const depoimentos = ref([])
 const faqs = ref([])
 const faqAberto = ref(null)
@@ -372,16 +357,16 @@ const contatoEnviando = ref(false)
 const contatoSucesso = ref(false)
 
 const passos = [
-  { icone: 'fa-solid fa-wine-bottle', titulo: 'Escolha seu plano', descricao: 'Selecione a frequência que mais combina com você.' },
-  { icone: 'fa-solid fa-calendar-days', titulo: 'Confirme sua assinatura', descricao: 'Pagamento seguro e recorrente, sem surpresas.' },
-  { icone: 'fa-solid fa-box', titulo: 'Nós cuidamos da curadoria', descricao: 'Especialistas selecionam rótulos raros para você.' },
-  { icone: 'fa-solid fa-glass-cheers', titulo: 'Receba e viva a experiência', descricao: 'Abra sua caixa e descubra o extraordinário.' }
+  { icone: 'fa-solid fa-wine-bottle', titulo: 'Escolha seu plano', descricao: 'Defina a recorrência. Cancele quando quiser.' },
+  { icone: 'fa-solid fa-calendar-days', titulo: 'Confirme sua assinatura', descricao: 'Pagamento recorrente e seguro. Nada além do combinado.' },
+  { icone: 'fa-solid fa-box', titulo: 'Nós cuidamos da curadoria', descricao: 'Dois rótulos por edição, escolhidos a portas fechadas.' },
+  { icone: 'fa-solid fa-glass-cheers', titulo: 'Receba e abra', descricao: 'Nenhum aviso do que vem dentro. Abrir é parte do ritual.' }
 ]
 
 const sobreBlocos = [
-  { icone: 'fas fa-medal', titulo: 'Rótulos Exclusivos', descricao: 'Destilados de distribuição limitada que você não encontra nas prateleiras locais.' },
-  { icone: 'fas fa-search', titulo: 'Curadoria Especializada', descricao: 'Cada garrafa é selecionada por especialistas com critérios rígidos de qualidade e raridade.' },
-  { icone: 'fas fa-cocktail', titulo: 'Experiência Completa', descricao: 'Caixa premium, cartão de degustação e a história de cada rótulo entregue junto.' }
+  { icone: 'fas fa-medal', titulo: 'Fora do circuito', descricao: 'Rótulos de distribuição limitada que não passam por importadoras nem prateleiras.' },
+  { icone: 'fas fa-search', titulo: 'Critério', descricao: 'Origem, história e raridade. O que se encontra no mercado não entra na caixa.' },
+  { icone: 'fas fa-cocktail', titulo: 'Do lacre ao último gole', descricao: 'Caixa numerada, cartão de degustação e a história de cada rótulo.' }
 ]
 
 const formatarDataPost = (d) => {

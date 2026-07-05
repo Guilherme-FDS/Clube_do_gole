@@ -5,7 +5,6 @@
       <!-- HEADER -->
       <div class="carrinho-header">
         <div>
-          <span class="section-badge section-badge-escuro">Sua Seleção</span>
           <h1 class="titulo-lg titulo-claro">Meu <span class="dourado-escuro">Carrinho</span></h1>
         </div>
         <router-link to="/produto/1" class="btn-continuar-link">

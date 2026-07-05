@@ -2,7 +2,6 @@
   <section class="faq-page">
     <div class="container">
       <div class="faq-header">
-        <span class="section-badge">Dúvidas Frequentes</span>
         <h1>Perguntas <span class="dourado">Frequentes</span></h1>
         <p class="faq-subtitulo">Encontre respostas para as principais dúvidas sobre o Clube do Gole.</p>
       </div>

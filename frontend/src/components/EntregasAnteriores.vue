@@ -2,7 +2,6 @@
   <section class="entregas-anteriores" id="entregas-anteriores">
     <div class="container">
       <div class="entregas-header">
-        <span class="section-badge">Entregas Exclusivas</span>
         <h2 class="titulo-lg">
           {{ titulo || 'O que já entregamos' }}
         </h2>
@@ -38,20 +37,17 @@
 
         <!-- TEXTO DIREITO -->
         <div class="entregas-texto">
-          <div class="entregas-badge-wrap">
-            <span class="entregas-badge-label">Curadoria Exclusiva</span>
-          </div>
           <div v-if="textoMarkdown" class="entregas-descricao" v-html="textoHtml"></div>
           <div v-else class="entregas-descricao">
-            <p>Cada mês, nossa equipe de especialistas percorre o mundo em busca de rótulos que a maioria nunca terá acesso.</p>
-            <p>Destilados raros, premiados e com história — selecionados por quem entende, entregues para quem aprecia.</p>
-            <p>Você não escolhe o que vai receber. E é exatamente isso que torna cada entrega uma <strong>experiência única.</strong></p>
+            <p>Percorremos alambiques, destilarias e engarrafamentos independentes atrás do que não chega ao varejo.</p>
+            <p>Cada edição sai numerada, com cartão de degustação e a história de cada garrafa.</p>
+            <p>Você não escolhe o que recebe. <strong>Quem escolhe é quem entende.</strong></p>
           </div>
           <ul class="entregas-features">
-            <li><i class="fas fa-check-circle"></i> Rótulos não disponíveis em prateleiras comuns</li>
-            <li><i class="fas fa-check-circle"></i> Cartão de degustação incluso em cada entrega</li>
-            <li><i class="fas fa-check-circle"></i> Embalagem colecionável exclusiva</li>
-            <li><i class="fas fa-check-circle"></i> Curadoria por especialistas globais</li>
+            <li><i class="fas fa-check-circle"></i> Rótulos fora do circuito de importadoras</li>
+            <li><i class="fas fa-check-circle"></i> A história de cada rótulo, impressa</li>
+            <li><i class="fas fa-check-circle"></i> Embalagem numerada por edição</li>
+            <li><i class="fas fa-check-circle"></i> Seleção assinada, nunca repetida</li>
           </ul>
         </div>
       </div>
