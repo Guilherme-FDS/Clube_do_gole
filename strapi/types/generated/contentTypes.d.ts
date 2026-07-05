@@ -666,6 +666,37 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiProdutoImagemProdutoImagem
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'produto_imagens';
+  info: {
+    displayName: 'Produto Imagem';
+    pluralName: 'produto-imagens';
+    singularName: 'produto-imagem';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    ativo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    imagem: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::produto-imagem.produto-imagem'
+    > &
+      Schema.Attribute.Private;
+    produto_id: Schema.Attribute.Integer & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -1184,6 +1215,7 @@ declare module '@strapi/strapi' {
       'api::home.home': ApiHomeHome;
       'api::pagina.pagina': ApiPaginaPagina;
       'api::post.post': ApiPostPost;
+      'api::produto-imagem.produto-imagem': ApiProdutoImagemProdutoImagem;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
