@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "produto_imagens",
+  "info": {
+    "singularName": "produto-imagem",
+    "pluralName": "produto-imagens",
+    "displayName": "Produto Imagem"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "produto_id": {
+      "type": "integer",
+      "required": true
+    },
+    "imagem": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}
