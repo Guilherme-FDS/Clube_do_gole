@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     # ── Email ──────────────────────────────────────────────────────────────────
     gmail_user: str = ""
     gmail_app_password: str = ""
+    # Brevo (API HTTP) — usado em produção; Render bloqueia SMTP outbound.
+    # Quando definido, tem prioridade sobre o SMTP do Gmail.
+    brevo_api_key: str = ""
+    # Remetente verificado no Brevo (fallback: gmail_user)
+    email_remetente: str = ""
     frontend_url: str = "http://localhost:5173"
     reset_token_expire_minutes: int = 10
 

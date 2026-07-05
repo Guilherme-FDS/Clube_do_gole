@@ -57,7 +57,7 @@
           :class="{ selecionado: planoSelecionado === plano.id, 'plano-destaque': plano.recorrencia === 'semestral' }"
           @click="planoSelecionado = plano.id"
         >
-          <div class="plano-badge-popular" v-if="plano.recorrencia === 'semestral'">Mais Popular</div>
+          <div class="plano-badge-popular" v-if="plano.recorrencia === 'semestral'">Escolha dos membros</div>
 
           <div class="plano-header-row">
             <h3 class="plano-nome">{{ nomePlano(plano.recorrencia) }}</h3>

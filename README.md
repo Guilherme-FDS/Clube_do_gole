@@ -138,6 +138,11 @@ DATABASE_URL=sqlite+aiosqlite:///./database/clube_do_gole.db
 SECRET_KEY=<sua-chave>
 MP_ACCESS_TOKEN=<seu-access-token-mercado-pago>
 MP_PUBLIC_KEY=<sua-public-key-mercado-pago>
+# Emails transacionais (reset de senha, pedido, contato).
+# Em produção use o Brevo (API HTTP) — o Render bloqueia SMTP outbound,
+# então GMAIL_USER/GMAIL_APP_PASSWORD só funcionam em dev local.
+BREVO_API_KEY=<api-key-do-brevo>
+EMAIL_REMETENTE=<remetente-verificado-no-brevo>
 ```
 
 Frontend (`frontend/.env.local`):

@@ -55,7 +55,7 @@
           </div>
         </div>
         <div class="como-funciona-cta fade-in" :class="{ visible: fadeInVisible }">
-          <button class="btn-modern" @click="scrollToSection('planos')">Começar Agora</button>
+          <button class="btn-modern" @click="scrollToSection('planos')">Escolher meu plano</button>
         </div>
       </div>
     </section>
@@ -84,10 +84,9 @@
             class="plano-card fade-in"
             :class="{ visible: fadeInVisible, 'plano-destaque': plano.recorrencia === 'semestral' }"
           >
-            <div class="plano-badge-popular" v-if="plano.recorrencia === 'semestral'">Mais Popular</div>
+            <div class="plano-badge-popular" v-if="plano.recorrencia === 'semestral'">Escolha dos membros</div>
             <div class="plano-topo">
               <span class="plano-nome">{{ nomePlanoHome(plano.recorrencia) }}</span>
-              <span class="plano-badge-economia" v-if="plano.recorrencia === 'anual'">Melhor Oferta</span>
             </div>
             <div class="plano-preco-bloco">
               <span class="plano-valor">{{ formatarMoedaHome(precoMensal(plano)) }}</span>
@@ -104,7 +103,7 @@
               :class="{ 'plano-cta-destaque': plano.recorrencia === 'semestral' }"
               @click="irParaPlano"
               :disabled="!produtoId"
-            >Começar Agora</button>
+            >Tornar-me membro</button>
           </div>
         </div>
 

@@ -1,8 +1,11 @@
 import logging
+import httpx
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from config import get_settings
 
 logger = logging.getLogger("uvicorn")
+
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
 def _get_mail_config():
@@ -22,6 +25,58 @@ def _get_mail_config():
         VALIDATE_CERTS=False,
         TIMEOUT=15,
     )
+
+
+async def _enviar_brevo(destinatarios: list[str], assunto: str, html: str, reply_to: str | None = None) -> bool:
+    settings = get_settings()
+    remetente = settings.email_remetente or settings.gmail_user
+    payload = {
+        "sender": {"name": "Clube do Golê", "email": remetente},
+        "to": [{"email": e} for e in destinatarios],
+        "subject": assunto,
+        "htmlContent": html,
+    }
+    if reply_to:
+        payload["replyTo"] = {"email": reply_to}
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.post(
+            BREVO_API_URL,
+            json=payload,
+            headers={"api-key": settings.brevo_api_key, "accept": "application/json"},
+        )
+    if resp.status_code in (200, 201):
+        return True
+    logger.error(f"Brevo recusou envio ({resp.status_code}): {resp.text[:300]}")
+    return False
+
+
+async def _enviar_smtp(destinatarios: list[str], assunto: str, html: str, reply_to: str | None = None) -> bool:
+    conf = _get_mail_config()
+    if not conf:
+        logger.warning("Email não configurado (sem BREVO_API_KEY nem credenciais Gmail).")
+        return False
+    message = MessageSchema(
+        subject=assunto,
+        recipients=destinatarios,
+        reply_to=[reply_to] if reply_to else [],
+        body=html,
+        subtype=MessageType.html,
+    )
+    await FastMail(conf).send_message(message)
+    return True
+
+
+async def _enviar(destinatarios: list[str], assunto: str, html: str, reply_to: str | None = None) -> bool:
+    """Canal único de envio. Brevo (API HTTP) tem prioridade — SMTP outbound é
+    bloqueado no Render, então o fallback Gmail só serve para dev local."""
+    settings = get_settings()
+    try:
+        if settings.brevo_api_key:
+            return await _enviar_brevo(destinatarios, assunto, html, reply_to)
+        return await _enviar_smtp(destinatarios, assunto, html, reply_to)
+    except Exception as e:
+        logger.error(f"Erro ao enviar email '{assunto}' para {destinatarios}: {e}")
+        return False
 
 
 def _html_reset(nome: str, url: str, expire: int) -> str:
@@ -81,35 +136,19 @@ def _html_pagamento_aprovado(nome: str, venda_id: int, valor_total: float, plano
 
 
 async def send_pedido_confirmado(recipient_email: str, nome: str, venda_id: int, valor_total: float, itens: list[dict]) -> None:
-    conf = _get_mail_config()
-    if not conf:
-        return
-    try:
-        message = MessageSchema(
-            subject=f"Clube do Golê — Pedido #{venda_id} recebido!",
-            recipients=[recipient_email],
-            body=_html_pedido_confirmado(nome, venda_id, valor_total, itens),
-            subtype=MessageType.html,
-        )
-        await FastMail(conf).send_message(message)
-    except Exception as e:
-        logger.error(f"Erro ao enviar email pedido confirmado {recipient_email}: {e}")
+    await _enviar(
+        [recipient_email],
+        f"Clube do Golê — Pedido #{venda_id} recebido!",
+        _html_pedido_confirmado(nome, venda_id, valor_total, itens),
+    )
 
 
 async def send_pagamento_aprovado(recipient_email: str, nome: str, venda_id: int, valor_total: float, plano: str) -> None:
-    conf = _get_mail_config()
-    if not conf:
-        return
-    try:
-        message = MessageSchema(
-            subject=f"Clube do Golê — Pagamento aprovado! 🎉",
-            recipients=[recipient_email],
-            body=_html_pagamento_aprovado(nome, venda_id, valor_total, plano),
-            subtype=MessageType.html,
-        )
-        await FastMail(conf).send_message(message)
-    except Exception as e:
-        logger.error(f"Erro ao enviar email pagamento aprovado {recipient_email}: {e}")
+    await _enviar(
+        [recipient_email],
+        "Clube do Golê — Pagamento aprovado! 🎉",
+        _html_pagamento_aprovado(nome, venda_id, valor_total, plano),
+    )
 
 
 def _html_contato(nome: str, email: str, assunto: str, mensagem: str) -> str:
@@ -132,40 +171,26 @@ def _html_contato(nome: str, email: str, assunto: str, mensagem: str) -> str:
 async def send_contato(nome: str, email: str, assunto: str, mensagem: str) -> bool:
     """Envia a mensagem do formulário de contato para o e-mail da empresa.
     Retorna True se enviou, False se e-mail não configurado ou falhou."""
-    conf = _get_mail_config()
-    if not conf:
+    settings = get_settings()
+    destino = settings.email_remetente or settings.gmail_user
+    if not destino:
         logger.warning("Email não configurado — formulário de contato desabilitado.")
         return False
-    settings = get_settings()
-    try:
-        message = MessageSchema(
-            subject=f"[Contato] {assunto} — {nome}",
-            recipients=[settings.gmail_user],
-            reply_to=[email],
-            body=_html_contato(nome, email, assunto, mensagem),
-            subtype=MessageType.html,
-        )
-        await FastMail(conf).send_message(message)
-        return True
-    except Exception as e:
-        logger.error(f"Erro ao enviar mensagem de contato de {email}: {e}")
-        return False
+    return await _enviar(
+        [destino],
+        f"[Contato] {assunto} — {nome}",
+        _html_contato(nome, email, assunto, mensagem),
+        reply_to=email,
+    )
 
 
 async def send_reset_password_email(recipient_email: str, nome: str, token: str) -> None:
     settings = get_settings()
-    conf = _get_mail_config()
-    if not conf:
-        logger.warning("Email não configurado — reset de senha desabilitado.")
-        return
     url = f"{settings.frontend_url}/reset-password?token={token}"
-    try:
-        message = MessageSchema(
-            subject="Clube do Golê — Redefinição de senha",
-            recipients=[recipient_email],
-            body=_html_reset(nome, url, settings.reset_token_expire_minutes),
-            subtype=MessageType.html,
-        )
-        await FastMail(conf).send_message(message)
-    except Exception as e:
-        logger.error(f"Erro ao enviar email de reset para {recipient_email}: {e}")
+    enviado = await _enviar(
+        [recipient_email],
+        "Clube do Golê — Redefinição de senha",
+        _html_reset(nome, url, settings.reset_token_expire_minutes),
+    )
+    if not enviado:
+        logger.warning(f"Reset de senha NÃO enviado para {recipient_email} — verifique BREVO_API_KEY.")
