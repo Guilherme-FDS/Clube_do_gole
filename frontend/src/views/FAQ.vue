@@ -19,7 +19,7 @@
             <i :class="aberto === index ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
           </div>
           <div class="faq-resposta" v-show="aberto === index">
-            <p>{{ faq.resposta }}</p>
+            <p v-for="(paragrafo, pi) in faq.resposta" :key="pi">{{ paragrafo }}</p>
           </div>
         </div>
       </div>
@@ -41,13 +41,24 @@ const toggle = (index) => {
   aberto.value = aberto.value === index ? null : index
 }
 
+// resposta pode vir como string simples ou rich text (blocks) do Strapi
+const extrairParagrafos = (resposta) => {
+  if (typeof resposta === 'string') return resposta.split('\n').filter(Boolean)
+  if (Array.isArray(resposta)) {
+    return resposta
+      .map(bloco => (bloco.children || []).map(c => c.text || '').join(''))
+      .filter(Boolean)
+  }
+  return []
+}
+
 onMounted(async () => {
   try {
     const { data } = await getFaqs()
     faqs.value = (data?.data || []).map(f => ({
       id: f.id,
       pergunta: f.pergunta,
-      resposta: f.resposta
+      resposta: extrairParagrafos(f.resposta)
     }))
   } catch {
     faqs.value = []
@@ -136,6 +147,7 @@ onMounted(async () => {
   font-size: 0.9rem;
   line-height: 1.7;
 }
+.faq-resposta p + p { margin-top: 0.6rem; }
 
 .faq-vazio { text-align: center; color: #999; padding: 3rem; }
 
