@@ -1,9 +1,9 @@
 <template>
   <header class="main-header" :class="{ 'header-scrolled': isScrolled }">
     <div class="header-left">
-      <div class="logo">
+      <a href="/" class="logo" @click.prevent="irParaHome" aria-label="Ir para o início">
         <img src="/img/logo.webp" alt="Clube do Gole" class="logo-img-small">
-      </div>
+      </a>
       <nav class="nav-left" :class="{ 'mobile-open': isMobileMenuOpen }" @click="onNavClick">
         <ul>
           <!-- CHECKOUT -->
@@ -140,7 +140,7 @@ const isAdminRoute = computed(() => {
 const handleScroll = () => { isScrolled.value = window.scrollY > 100 }
 
 const scrollTo = (sectionId) => {
-  if (route.name !== 'home') {
+  if (route.path !== '/') {
     router.push('/').then(() => {
       setTimeout(() => {
         const el = document.getElementById(sectionId)
@@ -156,6 +156,15 @@ const scrollTo = (sectionId) => {
       const offset = document.querySelector('.main-header')?.offsetHeight || 72
       window.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' })
     }
+  }
+}
+
+const irParaHome = () => {
+  isMobileMenuOpen.value = false
+  if (route.path === '/') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } else {
+    router.push('/').then(() => window.scrollTo({ top: 0 }))
   }
 }
 
