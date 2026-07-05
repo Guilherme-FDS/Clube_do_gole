@@ -122,10 +122,10 @@ onUnmounted(() => clearInterval(autoplay))
 
 .entregas-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.15fr 1fr;
   gap: 3rem;
   align-items: center;
-  max-width: 900px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 
@@ -147,8 +147,8 @@ onUnmounted(() => clearInterval(autoplay))
   flex: 1;
   overflow: hidden;
   border-radius: 10px;
-  aspect-ratio: 1/1;
-  max-width: 380px;
+  aspect-ratio: 3/2;
+  max-width: 520px;
 }
 
 .carrossel-track {
@@ -269,6 +269,6 @@ onUnmounted(() => clearInterval(autoplay))
 
 @media (max-width: 900px) {
   .entregas-grid { grid-template-columns: 1fr; gap: 2rem; }
-  .carrossel-viewport { max-width: 100%; aspect-ratio: 4/3; }
+  .carrossel-viewport { max-width: 100%; aspect-ratio: 3/2; }
 }
 </style>
