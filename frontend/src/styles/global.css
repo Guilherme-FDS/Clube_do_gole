@@ -27,8 +27,8 @@
   --espacamento-xs: 0.5rem;
   --espacamento-sm: 1rem;
   --espacamento-md: 2rem;
-  --espacamento-lg: 4rem;
-  --espacamento-xl: 6rem;
+  --espacamento-lg: 5rem;
+  --espacamento-xl: 8rem;
   --borda-radius-sm: 8px;
   --borda-radius-md: 12px;
   --borda-radius-lg: 20px;
@@ -62,10 +62,10 @@ body.pagina-clara {
 /* ===== TIPOGRAFIA ===== */
 .titulo-xl {
   font-family: var(--fonte-principal);
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 1px;
+  font-size: clamp(2.75rem, 5.5vw, 4.75rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: 0.5px;
   margin-bottom: var(--espacamento-sm);
 }
 .titulo-lg {
@@ -339,39 +339,63 @@ body.pagina-clara {
 }
 .hero-botoes {
   display: flex;
-  gap: 1rem;
+  gap: 1.75rem;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 3.5rem;
 }
-.hero-stats {
+.hero-link-secundario {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  font-family: var(--fonte-ui);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(201,168,76,0.35);
+  padding-bottom: 2px;
+  transition: color 0.4s ease, border-color 0.4s ease;
+}
+.hero-link-secundario .link-seta {
+  display: inline-block;
+  transition: transform 0.4s ease;
+}
+.hero-link-secundario:hover {
+  color: var(--cor-dourado);
+  border-bottom-color: var(--cor-dourado);
+}
+.hero-link-secundario:hover .link-seta { transform: translateX(4px); }
+
+/* ===== NÚMEROS DO CLUBE (dentro do Como Funciona) ===== */
+.stats-inline {
   display: flex;
   gap: 1.5rem;
   justify-content: center;
   flex-wrap: wrap;
+  margin: var(--espacamento-lg) 0 0;
 }
 .stat-item {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(201,168,76,0.15);
-  border-radius: var(--borda-radius-md);
-  padding: 1.125rem 2rem;
   text-align: center;
-  min-width: 160px;
-  backdrop-filter: blur(4px);
+  min-width: 200px;
+  padding: 0 2rem;
+}
+.stat-item + .stat-item {
+  border-left: 1px solid rgba(27,26,25,0.12);
 }
 .stat-numero {
   font-family: var(--fonte-principal);
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: var(--cor-dourado);
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--cor-dourado-escuro);
   display: block;
   line-height: 1;
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.5rem;
 }
 .stat-label {
   font-family: var(--fonte-ui);
-  font-size: 0.8125rem;
-  color: rgba(255,255,255,0.55);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(27,26,25,0.55);
 }
 
 /* ===== COMO FUNCIONA — claro ===== */
@@ -414,7 +438,7 @@ body.pagina-clara {
   font-family: var(--fonte-ui);
 }
 .passo:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(27,26,25,0.1);
   border-color: rgba(201,168,76,0.3);
 }
@@ -470,7 +494,7 @@ body.pagina-clara {
   border: 1px solid rgba(255,255,255,0.06);
 }
 .sobre-bloco:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   box-shadow: var(--sombra-destaque);
   border-color: rgba(201,168,76,0.2);
 }
@@ -518,7 +542,7 @@ body.pagina-clara {
   display: flex; flex-direction: column; gap: 1rem;
 }
 .depoimento-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   border-color: rgba(201,168,76,0.3);
   box-shadow: 0 12px 30px rgba(27,26,25,0.1);
 }
@@ -590,7 +614,7 @@ body.pagina-clara {
 }
 .blog-preview-card:hover::after { transform: scaleX(1); }
 .blog-preview-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(27,26,25,0.1);
   border-color: rgba(201,168,76,0.3);
 }
@@ -672,7 +696,7 @@ body.pagina-clara {
   transition: all 0.25s ease;
 }
 .contato-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   border-color: rgba(201,168,76,0.2);
 }
 .contato-card-icone {
@@ -838,14 +862,14 @@ body.pagina-clara {
 .produto-card {
   background: var(--cor-fundo-card);
   border-radius: var(--borda-radius-md); overflow: hidden;
-  transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.06); position: relative;
+  transition: all 0.45s ease; border: 1px solid rgba(255,255,255,0.06); position: relative;
 }
 .produto-card::after {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: var(--gradiente-dourado); transform: scaleX(0); transition: transform 0.3s ease;
 }
 .produto-card:hover::after { transform: scaleX(1); }
-.produto-card:hover { transform: translateY(-6px); box-shadow: var(--sombra-destaque); border-color: rgba(201,168,76,0.2); }
+.produto-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.3); border-color: rgba(201,168,76,0.45); }
 .produto-imagem { position: relative; overflow: hidden; height: 240px; }
 .produto-imagem img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
 .produto-card:hover .produto-imagem img { transform: scale(1.04); }
@@ -904,9 +928,9 @@ body.pagina-clara {
 @media (max-width: 768px) {
   .main-header { padding: 0 var(--espacamento-sm); }
   .hero { padding: calc(120px + var(--espacamento-lg)) var(--espacamento-sm) var(--espacamento-lg); }
-  .hero-botoes { flex-direction: column; align-items: center; }
-  .hero-stats { gap: 0.875rem; }
-  .stat-item { min-width: 130px; padding: 1rem 1.25rem; }
+  .hero-botoes { flex-direction: column; align-items: center; gap: 1.25rem; }
+  .stats-inline { flex-direction: column; gap: 2rem; }
+  .stat-item + .stat-item { border-left: none; }
   .passos-container { grid-template-columns: 1fr; }
   .sobre-blocos { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; gap: var(--espacamento-md); }
@@ -914,7 +938,7 @@ body.pagina-clara {
   .contato-cards { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
-  :root { --espacamento-md: 1.5rem; --espacamento-lg: 3rem; --espacamento-xl: 4rem; }
+  :root { --espacamento-md: 1.5rem; --espacamento-lg: 3.5rem; --espacamento-xl: 5rem; }
   .container { padding: 0 var(--espacamento-xs); }
   .produtos-container { grid-template-columns: 1fr; }
   .icon-btn-label { display: none; }

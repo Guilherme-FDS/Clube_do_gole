@@ -12,21 +12,10 @@
         <p class="texto-corrido fade-in" :class="{ visible: fadeInVisible }" v-html="heroSubtitulo"></p>
         <div class="hero-botoes fade-in" :class="{ visible: fadeInVisible }">
           <button class="btn-modern" @click="scrollToSection('planos')">{{ heroCta }}</button>
-          <button class="btn-outline" @click="scrollToSection('como-funciona')">Como Funciona</button>
-        </div>
-        <div class="hero-stats fade-in" :class="{ visible: fadeInVisible }">
-          <div class="stat-item">
-            <span class="stat-numero">2</span>
-            <span class="stat-label">Rótulos por Mês</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-numero">100%</span>
-            <span class="stat-label">Curadoria Especializada</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-numero">Surpresa</span>
-            <span class="stat-label">Seleção Exclusiva</span>
-          </div>
+          <a href="#como-funciona" class="hero-link-secundario"
+            @click.prevent="scrollToSection('como-funciona')">
+            Como funciona <span class="link-seta">&rarr;</span>
+          </a>
         </div>
       </div>
     </section>
@@ -50,6 +39,20 @@
             </div>
             <h3 class="passo-titulo">{{ passo.titulo }}</h3>
             <p class="passo-descricao">{{ passo.descricao }}</p>
+          </div>
+        </div>
+        <div class="stats-inline fade-in" :class="{ visible: fadeInVisible }">
+          <div class="stat-item">
+            <span class="stat-numero">2</span>
+            <span class="stat-label">Rótulos por Mês</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-numero">100%</span>
+            <span class="stat-label">Curadoria Especializada</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-numero">Surpresa</span>
+            <span class="stat-label">Seleção Exclusiva</span>
           </div>
         </div>
         <div class="como-funciona-cta fade-in" :class="{ visible: fadeInVisible }">

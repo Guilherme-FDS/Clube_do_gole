@@ -81,7 +81,10 @@ const getImagem = (entrega) => {
 }
 
 const getTitulo = (entrega) => (entrega.attributes || entrega)?.titulo || ''
-const getMes = (entrega) => (entrega.attributes || entrega)?.mes_referencia || ''
+const getMes = (entrega) => {
+  const mes = (entrega.attributes || entrega)?.mes_referencia
+  return mes ? `Edição · ${mes}` : ''
+}
 
 const textoHtml = computed(() => {
   if (!props.textoMarkdown) return ''
