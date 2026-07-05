@@ -17,7 +17,7 @@
     <!-- HERO -->
     <div class="produto-hero">
       <div class="produto-imagem">
-        <img :src="strapiImagem || '/img/sem_imagem.png'" :alt="produto.nome" class="imagem-principal">
+        <img :src="strapiImagem || '/img/box-surpresa.webp'" :alt="produto.nome" class="imagem-principal">
         <span class="badge-surpresa">✦ Seleção Surpresa</span>
       </div>
 
@@ -145,7 +145,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCarrinhoStore } from '@/stores/carrinho'
 import { useAuthStore } from '@/stores/auth'
-import { getEntregasAnteriores } from '@/services/strapi'
+import { getEntregasAnteriores, getProdutoImagem } from '@/services/strapi'
 import EntregasAnteriores from '@/components/EntregasAnteriores.vue'
 import api from '@/services/api'
 
@@ -214,6 +214,18 @@ const carregarEntregas = async () => {
   } catch { /* silencioso */ }
 }
 
+const strapiUrl = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'
+
+const carregarImagemStrapi = async () => {
+  try {
+    const { data } = await getProdutoImagem(route.params.id)
+    const registro = (data?.data || [])[0]
+    const attr = registro?.attributes || registro
+    const img = attr?.imagem?.data?.attributes || attr?.imagem?.data || attr?.imagem
+    if (img?.url) strapiImagem.value = img.url.startsWith('http') ? img.url : `${strapiUrl}${img.url}`
+  } catch { /* silencioso — fica o fallback local */ }
+}
+
 const scrollToPlanos = () => {
   document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })
 }
@@ -270,6 +282,7 @@ onMounted(() => {
   document.body.classList.add('pagina-clara')
   carregarProduto()
   carregarEntregas()
+  carregarImagemStrapi()
 })
 
 onUnmounted(() => {
@@ -309,15 +322,38 @@ onUnmounted(() => {
   position: relative;
   border-radius: 24px;
   overflow: hidden;
-  background: #f5f4f2;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  background: #1b1a19;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  height: auto; /* anula o height fixo de .produto-imagem do global.css (cards de listagem) */
 }
 .imagem-principal {
   width: 100%; display: block; object-fit: cover;
   transition: transform 0.4s ease;
-  min-height: 400px;
+  aspect-ratio: 3 / 2;
+  height: auto;
+  animation: respirar 7s ease-in-out infinite;
 }
-.produto-imagem:hover .imagem-principal { transform: scale(1.03); }
+.produto-imagem::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 60% 35%, rgba(226,192,106,0.4) 0%, transparent 60%);
+  animation: pulsarBrilho 2s ease-in-out infinite;
+}
+@keyframes respirar {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+@keyframes pulsarBrilho {
+  0%, 100% { opacity: 0.1; }
+  50%      { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .imagem-principal { animation: none; }
+  .produto-imagem::after { animation: none; }
+}
+.produto-imagem:hover .imagem-principal { transform: scale(1.03); animation-play-state: paused; }
 
 .badge-surpresa {
   position: absolute; top: 1.25rem; left: 1.25rem;
@@ -606,7 +642,7 @@ onUnmounted(() => {
 /* ── RESPONSIVO ─────────────────────────────────── */
 @media (max-width: 1024px) {
   .produto-hero { grid-template-columns: 1fr; gap: 2.5rem; }
-  .imagem-principal { min-height: 300px; }
+  .imagem-principal { aspect-ratio: 3 / 2; }
 }
 @media (max-width: 768px) {
   .planos-grid { grid-template-columns: 1fr; }

@@ -51,3 +51,8 @@ export const getPagina = (slug) =>
 export default strapi
 export const getEntregasAnteriores = () =>
   get('/entrega-anteriores', { filters: { ativo: true }, sort: 'ordem:asc', populate: '*' })
+
+// Imagem de capa do produto, gerenciada no Strapi (collection "produto-imagem":
+// campos produto_id [Number], imagem [Media], ativo [Boolean])
+export const getProdutoImagem = (produtoId) =>
+  get('/produto-imagens', { filters: { produto_id: produtoId, ativo: true } })
