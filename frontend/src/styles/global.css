@@ -194,6 +194,24 @@ body.pagina-clara {
   align-items: center;
   gap: var(--espacamento-sm);
 }
+.mobile-nav-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.4);
+  color: var(--cor-dourado);
+  width: 38px; height: 38px;
+  border-radius: var(--borda-radius-sm);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.mobile-nav-toggle:hover {
+  background: rgba(201,168,76,0.1);
+  border-color: var(--cor-dourado);
+}
 
 /* ===== BOTÕES ===== */
 .icon-btn {
@@ -930,11 +948,37 @@ body.pagina-clara {
 @media (max-width: 1024px) {
   .passos-container { grid-template-columns: repeat(2, 1fr); }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: var(--espacamento-md); }
+
+  /* Header mobile: mesma barra de sempre, nav vira painel dropdown */
+  .mobile-nav-toggle { display: flex; }
+  .nav-left {
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: var(--cor-fundo);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .nav-left.mobile-open {
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  }
+  .nav-left ul {
+    flex-direction: column;
+    gap: 0;
+    padding: 0.5rem 0;
+  }
+  .nav-left a {
+    height: auto;
+    padding: 0.875rem var(--espacamento-md);
+    width: 100%;
+  }
+  .nav-left a::after { display: none; }
 }
 @media (max-width: 768px) {
-  .main-header { flex-direction: column; height: auto; padding: 0.875rem var(--espacamento-sm); gap: 0.75rem; }
-  .header-left { flex-direction: column; gap: 0.75rem; }
-  .nav-left ul { flex-wrap: wrap; justify-content: center; gap: 0.25rem; }
+  .main-header { padding: 0 var(--espacamento-sm); }
   .hero { padding: calc(120px + var(--espacamento-lg)) var(--espacamento-sm) var(--espacamento-lg); }
   .hero-botoes { flex-direction: column; align-items: center; }
   .hero-stats { gap: 0.875rem; }
@@ -949,4 +993,7 @@ body.pagina-clara {
   :root { --espacamento-md: 1.5rem; --espacamento-lg: 3rem; --espacamento-xl: 4rem; }
   .container { padding: 0 var(--espacamento-xs); }
   .produtos-container { grid-template-columns: 1fr; }
+  .icon-btn-label { display: none; }
+  .icon-btn { padding: 0.5rem 0.75rem; }
+  .logo-img-small { width: 42px; }
 }

@@ -4,7 +4,7 @@
       <div class="logo">
         <img src="/img/logo.webp" alt="Clube do Gole" class="logo-img-small">
       </div>
-      <nav class="nav-left">
+      <nav class="nav-left" :class="{ 'mobile-open': isMobileMenuOpen }" @click="onNavClick">
         <ul>
           <!-- CHECKOUT -->
           <template v-if="$route.name === 'checkout'">
@@ -67,7 +67,7 @@
 
     <div class="header-right">
       <router-link to="/carrinho" class="icon-btn">
-        <i class="fas fa-shopping-cart"></i> Carrinho
+        <i class="fas fa-shopping-cart"></i> <span class="icon-btn-label">Carrinho</span>
         <span class="cart-count">{{ cartCount }}</span>
       </router-link>
 
@@ -99,14 +99,18 @@
       </div>
 
       <router-link v-else to="/login" class="icon-btn">
-        <i class="fas fa-user"></i> Login
+        <i class="fas fa-user"></i> <span class="icon-btn-label">Login</span>
       </router-link>
+
+      <button class="mobile-nav-toggle" @click="toggleMobileMenu" :aria-expanded="isMobileMenuOpen" aria-label="Abrir menu">
+        <i class="fas" :class="isMobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+      </button>
     </div>
   </header>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useCarrinhoStore } from '@/stores/carrinho'
@@ -119,6 +123,7 @@ const carrinhoStore = useCarrinhoStore()
 const isScrolled = ref(false)
 const isUserMenuOpen = ref(false)
 const isInstitucionalOpen = ref(false)
+const isMobileMenuOpen = ref(false)
 const userMenu = ref(null)
 const institucionalMenu = ref(null)
 
@@ -156,6 +161,17 @@ const scrollTo = (sectionId) => {
 
 const toggleUserMenu = () => { isUserMenuOpen.value = !isUserMenuOpen.value }
 const toggleInstitucional = () => { isInstitucionalOpen.value = !isInstitucionalOpen.value }
+const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value }
+
+// fecha o menu mobile ao clicar em qualquer link do nav
+const onNavClick = (e) => {
+  if (e.target.closest('a')) {
+    isMobileMenuOpen.value = false
+    isInstitucionalOpen.value = false
+  }
+}
+
+watch(() => route.fullPath, () => { isMobileMenuOpen.value = false })
 
 const closeMenus = (e) => {
   if (userMenu.value && !userMenu.value.contains(e.target)) isUserMenuOpen.value = false
@@ -242,5 +258,23 @@ onUnmounted(() => {
 .institucional-dropdown .dropdown-item:hover {
   background: rgba(255,255,255,0.07);
   color: #fff;
+}
+
+@media (max-width: 1024px) {
+  .nav-institucional-btn {
+    height: auto;
+    width: 100%;
+    padding: 0.875rem var(--espacamento-md);
+  }
+  .institucional-dropdown {
+    position: static;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: rgba(255,255,255,0.04);
+  }
+  .institucional-dropdown .dropdown-item {
+    padding: 0.75rem calc(var(--espacamento-md) + 1rem);
+  }
 }
 </style>
