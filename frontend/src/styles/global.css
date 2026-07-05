@@ -297,11 +297,20 @@ body.pagina-clara {
   background: var(--gradiente-hero);
   overflow: hidden;
 }
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
 .hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
+    linear-gradient(rgba(15,13,10,0.55), rgba(15,13,10,0.75)),
     radial-gradient(ellipse at 20% 80%, rgba(123,47,224,0.12) 0%, transparent 55%),
     radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 55%);
   z-index: 1;
@@ -363,91 +372,6 @@ body.pagina-clara {
   font-family: var(--fonte-ui);
   font-size: 0.8125rem;
   color: rgba(255,255,255,0.55);
-}
-
-/* ===== CARROSSEL BANNER ===== */
-.carousel-modern { position: relative; overflow: hidden; }
-.carousel-container {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-}
-.carousel-slide {
-  position: relative;
-  min-width: 100%;
-  height: 0;
-  padding-bottom: 22%;
-}
-.carousel-slide::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 50%;
-  background: linear-gradient(transparent, rgba(0,0,0,0.65));
-  z-index: 2;
-}
-.carousel-slide img {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-.carousel-clickable { display: block; width: 100%; height: 100%; }
-.slide-overlay {
-  position: absolute;
-  bottom: 2rem; left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  background: rgba(27,26,25,0.8);
-  border: 1px solid var(--cor-dourado);
-  color: var(--cor-dourado);
-  padding: 0.5rem 1.25rem;
-  border-radius: var(--borda-radius-lg);
-  font-size: 0.875rem;
-  font-weight: 500;
-  white-space: nowrap;
-  backdrop-filter: blur(4px);
-}
-.seta {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(27,26,25,0.75);
-  color: var(--cor-dourado);
-  border: 1px solid rgba(201,168,76,0.3);
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 0.875rem 1rem;
-  z-index: 10;
-  transition: all 0.2s ease;
-  border-radius: var(--borda-radius-sm);
-  backdrop-filter: blur(4px);
-}
-.seta:hover {
-  background: rgba(201,168,76,0.15);
-  border-color: var(--cor-dourado);
-  transform: translateY(-50%) scale(1.05);
-}
-.seta.esquerda { left: 1rem; }
-.seta.direita { right: 1rem; }
-.indicadores {
-  position: absolute;
-  bottom: 1.25rem; left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 0.5rem;
-  z-index: 10;
-}
-.indicador {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.35);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.indicador.active {
-  background: var(--cor-dourado);
-  width: 24px;
-  border-radius: 4px;
 }
 
 /* ===== COMO FUNCIONA — claro ===== */

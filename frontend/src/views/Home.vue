@@ -3,6 +3,9 @@
 
     <!-- HERO -->
     <section class="hero" id="inicio">
+      <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+        <source src="/video/hero.mp4" type="video/mp4">
+      </video>
       <div class="hero-content">
         <div class="hero-badge">Curadoria Exclusiva de Destilados</div>
         <h2 class="titulo-xl fade-in" :class="{ visible: fadeInVisible }" v-html="heroTitulo"></h2>
@@ -25,26 +28,6 @@
             <span class="stat-label">Seleção Exclusiva</span>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- CARROSSEL -->
-    <section class="carousel-modern">
-      <button class="seta esquerda" @click="prevSlide">❮</button>
-      <div class="carousel-container" ref="carouselContainer">
-        <div class="carousel-slide" v-for="(slide, index) in slides" :key="index">
-          <a v-if="slide.link" href="#" @click.prevent="scrollToSection('planos')"
-            class="scroll-link carousel-clickable">
-            <img :src="slide.image" :alt="slide.alt">
-            <div class="slide-overlay"><span>{{ slide.overlayText }}</span></div>
-          </a>
-          <img v-else :src="slide.image" :alt="slide.alt">
-        </div>
-      </div>
-      <button class="seta direita" @click="nextSlide">❯</button>
-      <div class="indicadores">
-        <div v-for="(slide, index) in slides" :key="index" class="indicador"
-          :class="{ active: currentIndex === index }" @click="goToSlide(index)"></div>
       </div>
     </section>
 
@@ -318,7 +301,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { getBanners, getHome, getDepoimentos, getFaqs, getPosts, getEntregasAnteriores } from '@/services/strapi'
+import { getHome, getDepoimentos, getFaqs, getPosts, getEntregasAnteriores } from '@/services/strapi'
 import EntregasAnteriores from '@/components/EntregasAnteriores.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -368,10 +351,6 @@ const mediaUrl = (url) => {
 }
 
 const fadeInVisible = ref(false)
-const carouselContainer = ref(null)
-const currentIndex = ref(0)
-let carouselInterval = null
-let isCarouselAnimating = false
 
 const heroTitulo = ref('Pertencer a um clube que poucos conhecem.')
 const heroSubtitulo = ref('Curadoria global de destilados raros e cachaças premium entregues na sua porta todo mês. Você escolhe o nível de acesso. A surpresa é nossa.')
@@ -388,14 +367,6 @@ const entregasTexto = ref('')
 const contatoForm = ref({ nome: '', email: '', assunto: '', mensagem: '' })
 const contatoEnviando = ref(false)
 const contatoSucesso = ref(false)
-
-const slidesLocal = [
-  { image: '/img/carrossel1.webp', alt: 'Imagem 1', link: null },
-  { image: '/img/carrossel2.webp', alt: 'Imagem 2', link: null },
-  { image: '/img/carrossel3.webp', alt: 'Imagem 3', link: '#planos', overlayText: 'Conheça nossos planos' },
-  { image: '/img/carrossel4.webp', alt: 'Imagem 4', link: '#planos', overlayText: 'Conheça nossos planos' }
-]
-const slides = ref([])
 
 const passos = [
   { icone: 'fa-solid fa-wine-bottle', titulo: 'Escolha seu plano', descricao: 'Selecione a frequência que mais combina com você.' },
@@ -429,45 +400,6 @@ const scrollToSection = (sectionId) => {
     window.scrollTo({ top: element.offsetTop - headerHeight, behavior: 'smooth' })
   }
 }
-
-const updateCarousel = () => {
-  if (isCarouselAnimating || !carouselContainer.value) return
-  isCarouselAnimating = true
-  carouselContainer.value.style.transform = `translateX(-${currentIndex.value * 100}%)`
-  setTimeout(() => { isCarouselAnimating = false }, 500)
-}
-
-const nextSlide = () => {
-  if (isCarouselAnimating) return
-  currentIndex.value = (currentIndex.value + 1) % slides.value.length
-  updateCarousel(); resetCarouselInterval()
-}
-
-const prevSlide = () => {
-  if (isCarouselAnimating) return
-  currentIndex.value = (currentIndex.value - 1 + slides.value.length) % slides.value.length
-  updateCarousel(); resetCarouselInterval()
-}
-
-const goToSlide = (index) => {
-  if (index !== currentIndex.value && !isCarouselAnimating) {
-    currentIndex.value = index
-    updateCarousel(); resetCarouselInterval()
-  }
-}
-
-const startCarouselAutoPlay = () => {
-  carouselInterval = setInterval(() => {
-    currentIndex.value = (currentIndex.value + 1) % slides.value.length
-    updateCarousel()
-  }, 5000)
-}
-
-const stopCarouselAutoPlay = () => {
-  if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null }
-}
-
-const resetCarouselInterval = () => { stopCarouselAutoPlay(); startCarouselAutoPlay() }
 
 const contatoErro = ref('')
 const enviarContato = async () => {
@@ -540,39 +472,10 @@ onMounted(async () => {
     const { data } = await getEntregasAnteriores()
     entregasAnteriores.value = data?.data || []
   } catch {}
-  
-  try {
-    const { data } = await getBanners()
-    const banners = data?.data || []
-    slides.value = banners.length
-      ? banners.map(b => ({
-          image: mediaUrl(b.imagem?.url),
-          alt: b.titulo || '',
-          link: b.link || null,
-          overlayText: b.titulo || ''
-        }))
-      : slidesLocal
-  } catch {
-    slides.value = slidesLocal
-  }
-
-  startCarouselAutoPlay()
-
-  const carouselElement = carouselContainer.value
-  if (carouselElement) {
-    carouselElement.addEventListener('mouseenter', stopCarouselAutoPlay)
-    carouselElement.addEventListener('mouseleave', startCarouselAutoPlay)
-  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  stopCarouselAutoPlay()
-  const carouselElement = carouselContainer.value
-  if (carouselElement) {
-    carouselElement.removeEventListener('mouseenter', stopCarouselAutoPlay)
-    carouselElement.removeEventListener('mouseleave', startCarouselAutoPlay)
-  }
 })
 </script>
 
