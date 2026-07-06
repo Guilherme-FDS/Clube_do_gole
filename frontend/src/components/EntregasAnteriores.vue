@@ -44,7 +44,7 @@
             <p>Você não escolhe o que recebe. <strong>Quem escolhe é quem entende.</strong></p>
           </div>
           <ul class="entregas-features">
-            <li><i class="fas fa-check-circle"></i> Rótulos fora do circuito de importadoras</li>
+            <li><i class="fas fa-check-circle"></i> O que não chega às prateleiras, chega aqui</li>
             <li><i class="fas fa-check-circle"></i> A história de cada rótulo, impressa</li>
             <li><i class="fas fa-check-circle"></i> Embalagem numerada por edição</li>
             <li><i class="fas fa-check-circle"></i> Seleção assinada, nunca repetida</li>
