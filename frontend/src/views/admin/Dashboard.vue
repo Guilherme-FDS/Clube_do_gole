@@ -5,7 +5,7 @@
       <i class="fas fa-chart-line"></i> Dashboard de Vendas
     </h1>
     <p class="dashboard-subtitulo fade-in" :class="{ visible: fadeInVisible }">
-      Análise completa das vendas do Clube do Gole
+      Análise completa das vendas do Vaultierre
     </p>
 
     <!-- CARDS DE ESTATÍSTICAS -->

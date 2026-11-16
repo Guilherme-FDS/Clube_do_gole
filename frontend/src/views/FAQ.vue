@@ -3,7 +3,7 @@
     <div class="container">
       <div class="faq-header">
         <h1>Perguntas <span class="dourado">Frequentes</span></h1>
-        <p class="faq-subtitulo">Encontre respostas para as principais dúvidas sobre o Clube do Gole.</p>
+        <p class="faq-subtitulo">Encontre respostas para as principais dúvidas sobre o Vaultierre.</p>
       </div>
 
       <div v-if="carregando" class="faq-loading">

@@ -5,7 +5,7 @@
         <Transition name="card-switch" mode="out-in">
           <article v-if="!modoCadastro" key="login" class="card-login">
             <header class="topo">
-              <span class="chip">Clube do Gole</span>
+              <span class="chip">Vaultierre</span>
               <h1>Entrar</h1>
               <p class="subtitulo">Digite seu email e senha para acessar sua conta.</p>
             </header>
@@ -81,7 +81,7 @@
 
           <article v-else key="cadastro" class="card-login">
             <header class="topo">
-              <span class="chip">Clube do Gole</span>
+              <span class="chip">Vaultierre</span>
               <h1>Criar conta</h1>
               <p class="subtitulo">Informe os dados para se cadastrar.</p>
             </header>

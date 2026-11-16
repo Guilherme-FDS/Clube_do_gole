@@ -142,7 +142,7 @@
           <form @submit.prevent="salvarProduto">
             <div class="campo">
               <label>Nome *</label>
-              <input v-model="formProduto.nome" type="text" placeholder="Ex: Clube do Gole — Linha Gold" required />
+              <input v-model="formProduto.nome" type="text" placeholder="Ex: Vaultierre — Caixa do mês" required />
             </div>
             <div class="campo">
               <label>Descrição</label>

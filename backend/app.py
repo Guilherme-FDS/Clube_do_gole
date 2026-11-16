@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
         logger.info("ℹ️  Mercado Pago não configurado — pagamentos aprovados automaticamente (modo dev).")
     yield
 
-app = FastAPI(title="Clube do Gole API", lifespan=lifespan)
+app = FastAPI(title="Vaultierre API", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -89,6 +89,21 @@ app.include_router(assinaturas_router)
 app.include_router(pagamentos_router)
 app.include_router(estoque_router)
 app.include_router(contato_router)
+
+
+@app.get("/health", include_in_schema=False)
+async def health():
+    """Health check com ping no banco. Usado pelo keep-alive (GitHub Actions)
+    para manter o Render acordado e evitar que o Supabase pause por inatividade."""
+    from sqlalchemy import text
+    from database.engine import AsyncSessionLocal
+    try:
+        async with AsyncSessionLocal() as db:
+            await db.execute(text("SELECT 1"))
+        return {"status": "ok", "db": "ok"}
+    except Exception as e:
+        logger.error("Health check: banco indisponível: %s", e)
+        return JSONResponse(status_code=503, content={"status": "degraded", "db": "error"})
 
 if __name__ == "__main__":
     import uvicorn

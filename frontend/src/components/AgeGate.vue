@@ -1,7 +1,7 @@
 <template>
   <div class="age-gate-overlay">
     <div class="age-gate-card">
-      <span class="chip">Clube do Gole</span>
+      <span class="chip">Vaultierre</span>
       <h2>Você é maior de 18 anos?</h2>
       <p class="subtitulo">Este site contém conteúdo sobre bebidas alcoólicas e é destinado apenas a maiores de idade.</p>
       <div class="age-gate-botoes">

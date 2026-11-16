@@ -106,7 +106,7 @@ const msgTipo = ref('success')
 function enviar() {
   enviando.value = true
   const { nome, email, assunto, mensagem } = form.value
-  const subject = encodeURIComponent(`[Clube do Gole] ${assunto}`)
+  const subject = encodeURIComponent(`[Vaultierre] ${assunto}`)
   const body = encodeURIComponent(`Nome: ${nome}\nEmail: ${email}\nAssunto: ${assunto}\n\n${mensagem}`)
   window.location.href = `mailto:contato@clubedogole.com.br?subject=${subject}&body=${body}`
   msg.value = 'Seu cliente de e-mail foi aberto. Obrigado pelo contato!'

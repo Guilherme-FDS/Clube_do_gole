@@ -5,7 +5,7 @@
       <header class="hub-header">
         <div>
           <h1 class="hub-title">Painel Administrativo</h1>
-          <p class="hub-subtitle">Gestão do Clube do Gole</p>
+          <p class="hub-subtitle">Gestão do Vaultierre</p>
         </div>
         <span class="hub-data">{{ dataHoje }}</span>
       </header>

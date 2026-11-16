@@ -4,7 +4,7 @@
       <BotaoVoltarAdmin />
       <div class="cupons-header">
         <h1 class="titulo-lg">Gerenciar Cupons de Desconto</h1>
-        <p class="texto-corrido texto-centro">Controle os cupons de desconto do Clube do Gole</p>
+        <p class="texto-corrido texto-centro">Controle os cupons de desconto do Vaultierre</p>
         <button class="btn-adicionar" @click="abrirModal">
           <i class="fas fa-plus"></i> Adicionar Novo Cupom
         </button>

@@ -28,10 +28,10 @@
               <p v-for="(p, i) in sobreTexto" :key="i">{{ p }}</p>
             </template>
             <template v-else>
-              <p>O Clube do Gole nasceu em Maringá, Paraná — uma cidade vibrante, mas que historicamente enfrenta limitações no acesso a destilados premium vindos do mundo todo.</p>
+              <p>O Vaultierre nasceu em Maringá, Paraná — uma cidade vibrante, mas que historicamente enfrenta limitações no acesso a destilados premium vindos do mundo todo.</p>
               <p>Guilherme, fundador do clube, transitou por áreas distintas antes de chegar até aqui: sete anos no mercado financeiro, formação em Análise e Desenvolvimento de Sistemas, e uma paixão genuína pela gastronomia e cultura de bebidas.</p>
               <p>A frustração era simples: por que era tão difícil ter acesso a um bom whisky japonês, a um gin artesanal escocês, a uma cachaça de alambique envelhecida — sem precisar pagar o triplo ou depender de importadores incertos?</p>
-              <p>A resposta foi o Clube do Gole.</p>
+              <p>A resposta foi o Vaultierre.</p>
             </template>
           </div>
           <div class="historia-visual fade-in" :class="{ visible: fadeInVisible }" style="transition-delay:200ms;">

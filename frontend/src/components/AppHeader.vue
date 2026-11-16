@@ -2,7 +2,7 @@
   <header class="main-header" :class="{ 'header-scrolled': isScrolled }">
     <div class="header-left">
       <a href="/" class="logo" @click.prevent="irParaHome" aria-label="Ir para o início">
-        <img src="/img/logo.webp" alt="Clube do Gole" class="logo-img-small">
+        <img src="/img/logo.webp" alt="Vaultierre" class="logo-img-small">
       </a>
       <nav class="nav-left" :class="{ 'mobile-open': isMobileMenuOpen }" @click="onNavClick">
         <ul>

@@ -7,9 +7,9 @@
       <!-- Coluna 1: Marca -->
       <div class="footer-col footer-col-marca">
         <router-link to="/" class="footer-logo">
-          <img src="/img/logo.webp" alt="Clube do Gole" style="width:40px;height:auto;">
+          <img src="/img/logo.webp" alt="Vaultierre" style="width:40px;height:auto;">
           <div class="logo-text">
-            <span class="nome">CLUBE DO GOLE</span>
+            <span class="nome">VAULTIERRE</span>
             <span class="subtitulo">Bebidas Premium</span>
           </div>
         </router-link>
@@ -56,9 +56,9 @@
         </ul>
       </div>
 
-      <!-- Coluna 4: Clube do Gole -->
+      <!-- Coluna 4: Vaultierre -->
       <div class="footer-col">
-        <h4>Clube do Gole</h4>
+        <h4>Vaultierre</h4>
         <ul>
           <li><router-link to="/#como-funciona">Como Funciona</router-link></li>
           <li><router-link to="/corporativo">Corporativo</router-link></li>
@@ -85,7 +85,7 @@
 
     <!-- Bottom bar -->
     <div class="footer-bottom">
-      <p class="footer-copyright">© 2026 Clube do Gole. Todos os direitos reservados.</p>
+      <p class="footer-copyright">© 2026 Vaultierre. Todos os direitos reservados.</p>
       <div class="footer-legais">
         <a href="#">Termos e Condições</a>
         <a href="#">Política de Privacidade</a>

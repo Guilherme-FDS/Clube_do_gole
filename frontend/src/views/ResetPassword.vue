@@ -4,7 +4,7 @@
       <div class="card-viewport">
         <article class="card-login">
           <header class="topo">
-            <span class="chip">Clube do Gole</span>
+            <span class="chip">Vaultierre</span>
             <h1>Redefinir senha</h1>
             <p class="subtitulo">Crie uma nova senha para acessar sua conta.</p>
           </header>

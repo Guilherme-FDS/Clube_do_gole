@@ -62,7 +62,7 @@ async def criar_preferencia(venda_id: int, itens: list[dict], email_cliente: str
             "pending": f"{settings.frontend_url}/meus-pedidos?pagamento=pendente",
             "failure": f"{settings.frontend_url}/meus-pedidos?pagamento=falha",
         },
-        "statement_descriptor": "CLUBE DO GOLE",
+        "statement_descriptor": "VAULTIERRE",
     }
     if email_cliente:
         payload["payer"] = {"email": email_cliente}
