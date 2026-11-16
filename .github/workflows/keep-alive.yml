@@ -1,0 +1,25 @@
+name: Keep-alive
+
+# Mantém de pé a infra do Clube do Gole (backup):
+# - Supabase free pausa o banco após 7 dias sem atividade
+# - Render free hiberna o serviço sem tráfego
+# Roda a cada 2 dias (e manualmente em Actions → Keep-alive → Run workflow).
+# Se alguma etapa falhar, o GitHub envia e-mail de falha ao dono do repo.
+on:
+  schedule:
+    - cron: "17 11 */2 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      BACKEND_URL: ${{ vars.BACKEND_URL || 'https://clube-do-gole-backend.onrender.com' }}
+      STRAPI_URL: ${{ vars.STRAPI_URL || 'https://clube-do-gole-strapi.onrender.com' }}
+    steps:
+      - name: Backend + banco do backend
+        # /api/produtos/ é público e consulta o banco (Supabase do backend)
+        run: curl -fsS --retry 6 --retry-delay 30 --retry-all-errors -m 120 -o /dev/null -w "%{http_code}\n" "$BACKEND_URL/api/produtos/"
+      - name: Strapi + banco do Strapi
+        # /api/faqs consulta o banco do Strapi (projeto Supabase separado)
+        run: curl -fsS --retry 6 --retry-delay 30 --retry-all-errors -m 120 -o /dev/null -w "%{http_code}\n" "$STRAPI_URL/api/faqs"
